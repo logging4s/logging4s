@@ -1,0 +1,11 @@
+.idea
+**/target
+tasks/
+.metals
+metals.sbt
+.bloop
+/null
+.vscode
+.bsp
+*.db
+.jvmopts
