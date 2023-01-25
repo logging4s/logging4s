@@ -17,6 +17,7 @@ object Dependencies {
     val playJson   = "2.10.0-RC7"
     val sprayJson  = "1.3.6"
     val json4s     = "4.0.6"
+    val argonaut   = "6.3.8"
 
     val scalatest         = "3.2.15"
     val catsEffectTesting = "1.4.0"
@@ -56,6 +57,8 @@ object Dependencies {
     val sprayJson = "io.spray" %% "spray-json" % Versions.sprayJson
 
     val json4s = "org.json4s" %% "json4s-native" % Versions.json4s
+
+    val argonaut = "io.argonaut" %% "argonaut" % Versions.argonaut
   }
 
   object Testing {

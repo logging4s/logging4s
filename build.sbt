@@ -72,6 +72,14 @@ lazy val json4s = (project in file("json/json4s"))
   )
   .dependsOn(core)
 
+lazy val argonaut = (project in file("json/argonaut"))
+  .settings(commonSettings)
+  .settings(
+    name := "argonaut",
+    libraryDependencies += Dependencies.Json.argonaut
+  )
+  .dependsOn(core)
+
 lazy val json = (project in file("json"))
   .settings(commonSettings)
   .aggregate(
@@ -79,7 +87,8 @@ lazy val json = (project in file("json"))
     jsoniter,
     playJson,
     sprayJson,
-    json4s
+    json4s,
+    argonaut
   )
 
 lazy val root = (project in file("."))
