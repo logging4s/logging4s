@@ -48,6 +48,14 @@ lazy val jsoniter = (project in file("json/jsoniter"))
   )
   .dependsOn(core)
 
+lazy val playJson = (project in file("json/play"))
+  .settings(commonSettings)
+  .settings(
+    name := "play",
+    libraryDependencies += Dependencies.Json.playJson
+  )
+  .dependsOn(core)
+
 lazy val root = (project in file("."))
   .aggregate(
     core,

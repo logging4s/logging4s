@@ -14,6 +14,7 @@ object Dependencies {
     val catsEffect = "3.4.5"
     val circe      = "0.14.3"
     val jsoniter   = "2.20.2"
+    val playJson   = "2.10.0-RC7"
 
     val scalatest         = "3.2.15"
     val catsEffectTesting = "1.4.0"
@@ -47,6 +48,8 @@ object Dependencies {
     val jsoniterMacros = "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-macros" % Versions.jsoniter % "provided"
 
     val jsoniter: Seq[ModuleID] = Seq(jsoniterCore, jsoniterMacros)
+
+    val playJson = "com.typesafe.play" %% "play-json" % Versions.playJson
   }
 
   object Testing {
