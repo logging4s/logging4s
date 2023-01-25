@@ -56,10 +56,26 @@ lazy val playJson = (project in file("json/play"))
   )
   .dependsOn(core)
 
+lazy val sprayJson = (project in file("json/spray"))
+  .settings(commonSettings)
+  .settings(
+    name := "spray",
+    libraryDependencies += Dependencies.Json.sprayJson
+  )
+  .dependsOn(core)
+
+lazy val json = (project in file("json"))
+  .settings(commonSettings)
+  .aggregate(
+    circe,
+    jsoniter,
+    playJson,
+    sprayJson
+  )
+
 lazy val root = (project in file("."))
   .aggregate(
     core,
     cats,
-    circe,
-    jsoniter
+    json
   )

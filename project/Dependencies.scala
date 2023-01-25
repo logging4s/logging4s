@@ -15,6 +15,7 @@ object Dependencies {
     val circe      = "0.14.3"
     val jsoniter   = "2.20.2"
     val playJson   = "2.10.0-RC7"
+    val sprayJson  = "1.3.6"
 
     val scalatest         = "3.2.15"
     val catsEffectTesting = "1.4.0"
@@ -50,6 +51,8 @@ object Dependencies {
     val jsoniter: Seq[ModuleID] = Seq(jsoniterCore, jsoniterMacros)
 
     val playJson = "com.typesafe.play" %% "play-json" % Versions.playJson
+
+    val sprayJson = "io.spray" %% "spray-json" % Versions.sprayJson
   }
 
   object Testing {
