@@ -10,14 +10,19 @@ object Dependencies {
     val logback        = "1.4.5"
     val logbackEncoder = "7.2"
 
-    val cats       = "2.9.0"
-    val catsEffect = "3.4.5"
-    val circe      = "0.14.3"
-    val jsoniter   = "2.20.2"
-    val playJson   = "2.10.0-RC7"
-    val sprayJson  = "1.3.6"
-    val json4s     = "4.0.6"
-    val argonaut   = "6.3.8"
+    val cats        = "2.9.0"
+    val catsEffect2 = "2.5.5"
+    val catsEffect3 = "3.4.5"
+
+    val zio        = "2.0.6"
+    val zioPrelude = "1.0.0-RC16"
+
+    val circe     = "0.14.3"
+    val jsoniter  = "2.20.4"
+    val playJson  = "2.10.0-RC7"
+    val sprayJson = "1.3.6"
+    val json4s    = "4.0.6"
+    val argonaut  = "6.3.8"
 
     val scalatest         = "3.2.15"
     val catsEffectTesting = "1.4.0"
@@ -33,11 +38,20 @@ object Dependencies {
   }
 
   object Cats {
-    val cats       = "org.typelevel" %% "cats-core"   % Versions.cats
-    val catsEffect = "org.typelevel" %% "cats-effect" % Versions.catsEffect
+    val catsCore = "org.typelevel" %% "cats-core" % Versions.cats
 
-    val all: Seq[ModuleID] = Seq(cats, catsEffect)
+    val catsEffect2 = "org.typelevel" %% "cats-effect" % Versions.catsEffect2
 
+    val catsEffect3Kernel          = "org.typelevel" %% "cats-effect-kernel"            % Versions.catsEffect3
+    val catsEffects3Testing        = "org.typelevel" %% "cats-effect-testing-scalatest" % Versions.catsEffectTesting % Test
+    val catsEffect3: Seq[ModuleID] = Seq(catsEffect3Kernel, catsEffects3Testing)
+  }
+
+  object Zio {
+    val zio        = "dev.zio" %% "zio"         % Versions.zio
+    val zioPrelude = "dev.zio" %% "zio-prelude" % Versions.zioPrelude
+
+    val all: Seq[ModuleID] = Seq(zio, zioPrelude)
   }
 
   object Json {
@@ -47,9 +61,8 @@ object Dependencies {
 
     val circe: Seq[ModuleID] = Seq(circeCore, circeParser, circeGeneric)
 
-    val jsoniterCore   = "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-core"   % Versions.jsoniter
-    val jsoniterMacros = "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-macros" % Versions.jsoniter % "provided"
-
+    val jsoniterCore            = "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-core"   % Versions.jsoniter
+    val jsoniterMacros          = "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-macros" % Versions.jsoniter % "provided"
     val jsoniter: Seq[ModuleID] = Seq(jsoniterCore, jsoniterMacros)
 
     val playJson = "com.typesafe.play" %% "play-json" % Versions.playJson
@@ -62,12 +75,10 @@ object Dependencies {
   }
 
   object Testing {
-    val scalatest   = "org.scalatest" %% "scalatest"                     % Versions.scalatest         % Test
-    val scalactic   = "org.scalactic" %% "scalactic"                     % Versions.scalatest         % Test
-    val catsEffects = "org.typelevel" %% "cats-effect-testing-scalatest" % Versions.catsEffectTesting % Test
+    val scalatest = "org.scalatest" %% "scalatest" % Versions.scalatest % Test
+    val scalactic = "org.scalactic" %% "scalactic" % Versions.scalatest % Test
 
-    val core: Seq[ModuleID] = Seq(scalatest, scalactic)
-    val all: Seq[ModuleID]  = core :+ catsEffects
+    val all: Seq[ModuleID] = Seq(scalatest, scalactic)
   }
 
 }

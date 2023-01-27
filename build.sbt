@@ -1,7 +1,7 @@
 lazy val commonSettings = Seq(
   scalaVersion := Dependencies.Versions.scala,
-  organization := "com.github.logging4s",
-  libraryDependencies ++= Dependencies.Testing.core,
+  organization := "org.logging4s",
+  libraryDependencies ++= Dependencies.Testing.all,
   scalacOptions ++= Seq(
     "-source:future",
     "-Xmax-inlines",
@@ -20,22 +20,53 @@ lazy val commonSettings = Seq(
 lazy val core = (project in file("core"))
   .settings(commonSettings)
   .settings(
-    name := "core",
+    name := "logging4s-core",
     libraryDependencies ++= Dependencies.Logging.all
   )
 
-lazy val cats = (project in file("cats"))
+lazy val `cats-core` = (project in file("cats/core"))
   .settings(commonSettings)
   .settings(
-    name := "cats",
-    libraryDependencies ++= Dependencies.Cats.all :+ Dependencies.Testing.catsEffects
+    name := "logging4s-cats-core",
+    libraryDependencies += Dependencies.Cats.catsCore
+  )
+  .dependsOn(core)
+
+lazy val `cats-effect-2` = (project in file("cats/ce-2"))
+  .settings(commonSettings)
+  .settings(
+    name := "logging4s-ce-2",
+    libraryDependencies += Dependencies.Cats.catsEffect2
+  )
+  .dependsOn(`cats-core`)
+
+lazy val `cats-effect-3` = (project in file("cats/ce-3"))
+  .settings(commonSettings)
+  .settings(
+    name := "logging4s-ce-3",
+    libraryDependencies ++= Dependencies.Cats.catsEffect3
+  )
+  .dependsOn(`cats-core`)
+
+lazy val cats = (project in file("cats"))
+  .settings(commonSettings)
+  .aggregate(
+    `cats-effect-2`,
+    `cats-effect-3`
+  )
+
+lazy val zio = (project in file("zio"))
+  .settings(commonSettings)
+  .settings(
+    name := "logging4s-zio",
+    libraryDependencies ++= Dependencies.Zio.all
   )
   .dependsOn(core)
 
 lazy val circe = (project in file("json/circe"))
   .settings(commonSettings)
   .settings(
-    name := "circe",
+    name := "logging4s-circe",
     libraryDependencies ++= Dependencies.Json.circe
   )
   .dependsOn(core)
@@ -43,23 +74,23 @@ lazy val circe = (project in file("json/circe"))
 lazy val jsoniter = (project in file("json/jsoniter"))
   .settings(commonSettings)
   .settings(
-    name := "jsoniter",
+    name := "logging4s-jsoniter",
     libraryDependencies ++= Dependencies.Json.jsoniter
   )
   .dependsOn(core)
 
-lazy val playJson = (project in file("json/play"))
+lazy val `play-json` = (project in file("json/play"))
   .settings(commonSettings)
   .settings(
-    name := "play",
+    name := "logging4s-play-json",
     libraryDependencies += Dependencies.Json.playJson
   )
   .dependsOn(core)
 
-lazy val sprayJson = (project in file("json/spray"))
+lazy val `spray-json` = (project in file("json/spray"))
   .settings(commonSettings)
   .settings(
-    name := "spray",
+    name := "logging4s-spray-json",
     libraryDependencies += Dependencies.Json.sprayJson
   )
   .dependsOn(core)
@@ -67,7 +98,7 @@ lazy val sprayJson = (project in file("json/spray"))
 lazy val json4s = (project in file("json/json4s"))
   .settings(commonSettings)
   .settings(
-    name := "json4s",
+    name := "logging4s-json4s",
     libraryDependencies += Dependencies.Json.json4s
   )
   .dependsOn(core)
@@ -75,7 +106,7 @@ lazy val json4s = (project in file("json/json4s"))
 lazy val argonaut = (project in file("json/argonaut"))
   .settings(commonSettings)
   .settings(
-    name := "argonaut",
+    name := "logging4s-argonaut",
     libraryDependencies += Dependencies.Json.argonaut
   )
   .dependsOn(core)
@@ -85,8 +116,8 @@ lazy val json = (project in file("json"))
   .aggregate(
     circe,
     jsoniter,
-    playJson,
-    sprayJson,
+    `play-json`,
+    `spray-json`,
     json4s,
     argonaut
   )
@@ -95,5 +126,6 @@ lazy val root = (project in file("."))
   .aggregate(
     core,
     cats,
+    zio,
     json
   )

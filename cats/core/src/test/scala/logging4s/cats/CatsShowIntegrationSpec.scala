@@ -1,8 +1,8 @@
 package logging4s.cats
 
-import logging4s.core.{JsonEncoder, Loggable}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import logging4s.core.{JsonEncoder, Loggable}
 
 class CatsShowIntegrationSpec extends AnyWordSpec with Matchers:
 

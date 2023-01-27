@@ -1,0 +1,3 @@
+package logging4s.cats
+
+object instances extends ShowToPlainEncoderInstance with SyncToDelayInstance
