@@ -6,13 +6,12 @@ import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.effect.IO
 import logging4s.core.{Delay, Logging}
 
-class CatsEffectIntegrationSpec extends AsyncWordSpec with AsyncIOSpec with Matchers:
+class CatsEffect3IntegrationSpec extends AsyncWordSpec with AsyncIOSpec with Matchers:
 
-  "Cats-effect integration" must {
+  "Cats-effect 3 integration" must {
     import SyncToDelayInstance.given
 
     "use given instance with Sync implementation for Delay" in {
-
       val expected = "test_value"
 
       def delay[F[*]: Delay]: F[String] =

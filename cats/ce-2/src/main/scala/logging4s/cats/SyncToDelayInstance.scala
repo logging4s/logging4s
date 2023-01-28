@@ -7,6 +7,6 @@ trait SyncToDelayInstance:
 
   given [F[*]](using S: Sync[F]): Delay[F] =
     new Delay[F]:
-      override def delay[A](a: A): F[A] = S.delay(a)
+      override def delay[A](a: => A): F[A] = S.delay(a)
 
 object SyncToDelayInstance extends SyncToDelayInstance

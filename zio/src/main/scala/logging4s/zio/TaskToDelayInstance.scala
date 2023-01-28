@@ -1,4 +1,11 @@
 package logging4s.zio
 
-// TODO: implement logic for interop Delay with ZIO
-trait TaskToDelayInstance
+import zio.*
+import logging4s.core.Delay
+
+trait TaskToDelayInstance:
+
+  given Delay[Task] with
+    override def delay[A](a: => A): Task[A] = ZIO.attempt(a)
+
+object TaskToDelayInstance extends TaskToDelayInstance

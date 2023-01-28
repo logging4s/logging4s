@@ -1,15 +1,15 @@
-package logging4s.cats
+package logging4s.zio
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import logging4s.core.{JsonEncoder, Loggable}
 
-class CatsShowIntegrationSpec extends AnyWordSpec with Matchers:
+class ZioDebugIntegrationSpec extends AnyWordSpec with Matchers:
 
-  "Cats core integration" must {
+  "Zio prelude integration" must {
 
-    "use given instance with Show implementation for PlainEncoder" in {
-      import logging4s.cats.ShowToPlainEncoderInstance.given
+    "use given instance with Debug implementation for PlainEncoder" in {
+      import DebugToPlainEncoderInstance.given
 
       val expected = "test_value"
 

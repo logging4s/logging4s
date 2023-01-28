@@ -122,7 +122,11 @@ lazy val json = (project in file("json"))
     argonaut
   )
 
-lazy val root = (project in file("."))
+lazy val logging4s = (project in file("."))
+  .settings(commonSettings)
+  .settings(
+    name := "logging4s"
+  )
   .aggregate(
     core,
     cats,
