@@ -97,5 +97,5 @@ See `./examples` for more examples.
 
 ### Motivation
 
-Have a library for structured logging that supports `Scala 3` and various implementations of effects and jos libraries
+Have a library for structured logging that supports `Scala 3` and various implementations of `effects` and `json` libraries
 cause `izumi logstage` and `tofu-logging` still not ported for new scala.
