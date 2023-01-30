@@ -15,13 +15,12 @@
     * `logging4s-ce-3` - implementation for `cats-effect 3` `Sync`
 * `logging4s-zio` - implementation on top of `zio.Task` for runtime and `zio.prelude.Debug` for plain logs.
 * `logging4s-json` - implementation json logs for different libs
-    * `logging4s-circe` - for `circe.Encoder`
-    * `logging4s-jsoniter` - for `circe.Encoder`
-    * `logging4s-circe` - for `jsoneter-scala JsonValueCodec`
-    * `logging4s-argonaut` - for `argonaut EncodeJson`
-    * `logging4s-play-json` - for `play-json Writes`
-    * `logging4s-json4s` - for `json4s Formats`
-    * `logging4s-spray-json` - for `spray-json JsonWriter`
+    * `logging4s-circe` - implementation for `circe.Encoder`
+    * `logging4s-jsoniter` - implementation for `jsoneter-scala JsonValueCodec`
+    * `logging4s-argonaut` - implementation for `argonaut EncodeJson`
+    * `logging4s-play-json` - implementation for `play-json Writes`
+    * `logging4s-json4s` - implementation for `json4s Formats`
+    * `logging4s-spray-json` - implementation for `spray-json JsonWriter`
 
 #### Example
 
