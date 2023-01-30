@@ -1,5 +1,5 @@
 lazy val commonSettings = Seq(
-  scalaVersion := Dependencies.Versions.scala,
+  scalaVersion := Dependencies.Versions.scala3,
   organization := "org.logging4s",
   libraryDependencies ++= Dependencies.Testing.all,
   scalacOptions ++= Seq(
@@ -44,7 +44,10 @@ lazy val `cats-effect-3` = (project in file("cats/ce-3"))
   .settings(commonSettings)
   .settings(
     name := "logging4s-ce-3",
-    libraryDependencies ++= Dependencies.Cats.catsEffect3
+    libraryDependencies ++= Seq(
+      Dependencies.Cats.catsEffect3Kernel,
+      Dependencies.Cats.catsEffect3Testing,
+    )
   )
   .dependsOn(`cats-core`)
 
@@ -121,6 +124,16 @@ lazy val json = (project in file("json"))
     json4s,
     argonaut
   )
+
+lazy val examples = (project in file("examples"))
+  .settings(commonSettings)
+  .settings(
+    name := "logging4s-examples",
+    libraryDependencies += Dependencies.Cats.catsEffect3
+  )
+  .dependsOn(circe)
+  .dependsOn(`cats-effect-3`)
+  .dependsOn(zio)
 
 lazy val logging4s = (project in file("."))
   .settings(commonSettings)

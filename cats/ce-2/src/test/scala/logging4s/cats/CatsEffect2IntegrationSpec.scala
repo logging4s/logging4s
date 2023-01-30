@@ -3,7 +3,7 @@ package logging4s.cats
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import cats.effect.IO
-import logging4s.core.{Delay, Logging}
+import logging4s.core.Delay
 
 class CatsEffect2IntegrationSpec extends AnyWordSpec with Matchers:
 

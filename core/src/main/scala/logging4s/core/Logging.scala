@@ -1,10 +1,10 @@
 package logging4s.core
 
 import scala.reflect.ClassTag
-
 import com.typesafe.scalalogging.Logger
-
 import LoggableValue.extensions.*
+
+import scala.util.Try
 
 trait Logging[F[*]]:
 
@@ -37,11 +37,29 @@ object Logging:
 
   def apply[F[*]](using instance: Logging[F]): Logging[F] = instance
 
-  def create[F[_]: Delay, S](using s: ClassTag[S]): F[Logging[F]] =
-    Delay[F].delay(LoggingViaSlf4j(Logger(s.runtimeClass)))
+  def create[F[_]: Delay, S](using S: ClassTag[S]): F[Logging[F]] =
+    Delay[F].delay(LoggingViaSlf4j(Logger(S.runtimeClass)))
 
   def create[F[*]: Delay](name: String): F[Logging[F]] =
     Delay[F].delay(LoggingViaSlf4j(Logger(name)))
+
+  def createTry[S](using ClassTag[S]): Try[Logging[Try]] =
+    create[Try, S]
+
+  def createTry(name: String): Try[Logging[Try]] =
+    create[Try](name)
+
+  def createEither[S](using ClassTag[S]): ThrowableEither[Logging[ThrowableEither]] =
+    create[ThrowableEither, S]
+
+  def createEither(name: String): ThrowableEither[Logging[ThrowableEither]] =
+    create[ThrowableEither](name)
+
+  def createUnsafe[S](using ClassTag[S]): Identity[Logging[Identity]] =
+    create[Identity, S]
+
+  def createUnsafe(name: String): Identity[Logging[Identity]] =
+    create[Identity](name)
 
   private final class LoggingViaSlf4j[F[*]: Delay](logger: Logger) extends Logging[F]:
 

@@ -3,7 +3,9 @@ import sbt._
 object Dependencies {
 
   object Versions {
-    val scala = "3.2.1"
+    val scala212 = "2.12.17"
+    val scala213 = "2.13.10"
+    val scala3   = "3.2.1"
 
     val janino         = "3.1.9"
     val scalaLogging   = "3.9.5"
@@ -42,9 +44,9 @@ object Dependencies {
 
     val catsEffect2 = "org.typelevel" %% "cats-effect" % Versions.catsEffect2
 
-    val catsEffect3Kernel          = "org.typelevel" %% "cats-effect-kernel"            % Versions.catsEffect3
-    val catsEffects3Testing        = "org.typelevel" %% "cats-effect-testing-scalatest" % Versions.catsEffectTesting % Test
-    val catsEffect3: Seq[ModuleID] = Seq(catsEffect3Kernel, catsEffects3Testing)
+    val catsEffect3         = "org.typelevel" %% "cats-effect"                   % Versions.catsEffect3
+    val catsEffect3Kernel   = "org.typelevel" %% "cats-effect-kernel"            % Versions.catsEffect3
+    val catsEffect3Testing = "org.typelevel" %% "cats-effect-testing-scalatest" % Versions.catsEffectTesting % Test
   }
 
   object Zio {

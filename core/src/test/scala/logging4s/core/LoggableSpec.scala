@@ -12,13 +12,13 @@ class LoggableSpec extends AnyWordSpec with Matchers:
       override def plain(a: String): String = a
 
     "auto summon Seq and List instances" in {
-      Loggable[Seq[String]].json(Seq("a", "b", "c")) shouldEqual """["a","b","c"]"""
-      Loggable[Seq[String]].plain(Seq("a", "b", "c")) shouldEqual "[a,b,c]"
-      Loggable[Seq[String]].key(Seq("a", "b", "c")) shouldEqual "values"
+      Loggable[Iterable[String]].json(Seq("a", "b", "c")) shouldEqual """["a","b","c"]"""
+      Loggable[Iterable[String]].plain(Seq("a", "b", "c")) shouldEqual "[a,b,c]"
+      Loggable[Iterable[String]].key(Seq("a", "b", "c")) shouldEqual "values"
 
-      Loggable[List[String]].json(List("a", "b", "c")) shouldEqual """["a","b","c"]"""
-      Loggable[List[String]].plain(List("a", "b", "c")) shouldEqual "[a,b,c]"
-      Loggable[List[String]].key(List("a", "b", "c")) shouldEqual "values"
+      Loggable[Iterable[String]].json(List("a", "b", "c")) shouldEqual """["a","b","c"]"""
+      Loggable[Iterable[String]].plain(List("a", "b", "c")) shouldEqual "[a,b,c]"
+      Loggable[Iterable[String]].key(List("a", "b", "c")) shouldEqual "values"
     }
 
     "right rename key with extension" in {

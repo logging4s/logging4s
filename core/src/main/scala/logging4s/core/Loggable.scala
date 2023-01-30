@@ -13,16 +13,11 @@ object Loggable:
       override def key(a: A): String   = keyName
       override def json(a: A): String  = JsonEncoder[A].encode(a)
       override def plain(a: A): String = PlainEncoder[A].encode(a)
-
-  given [T](using L: Loggable[T]): Loggable[Seq[T]] with
-    override def key(a: Seq[T]): String   = a.headOption.fold("")(v => s"${L.key(v)}s")
-    override def plain(a: Seq[T]): String = a.map(v => L.plain(v)).mkString("[", ",", "]")
-    override def json(a: Seq[T]): String  = a.map(v => L.json(v)).mkString("[", ",", "]")
-
-  given [T](using L: Loggable[T]): Loggable[List[T]] with
-    override def key(a: List[T]): String   = a.headOption.fold("")(v => s"${L.key(v)}s")
-    override def plain(a: List[T]): String = a.map(v => L.plain(v)).mkString("[", ",", "]")
-    override def json(a: List[T]): String  = a.map(v => L.json(v)).mkString("[", ",", "]")
+  
+  given [T](using L: Loggable[T]): Loggable[Iterable[T]] with
+    override def key(a: Iterable[T]): String   = a.headOption.fold("")(v => s"${L.key(v)}s")
+    override def plain(a: Iterable[T]): String = a.map(v => L.plain(v)).mkString("[", ",", "]")
+    override def json(a: Iterable[T]): String  = a.map(v => L.json(v)).mkString("[", ",", "]")
 
   object extensions:
     extension [A](a: A)(using L: Loggable[A])

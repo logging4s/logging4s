@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <if condition='true'>
+        <then>
+            <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+                <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                    <fieldNames>
+                        <logger>name</logger>
+                        <thread>[ignore]</thread>
+                        <levelValue>[ignore]</levelValue>
+                        <stackTrace>[ignore]</stackTrace>
+                        <version>[ignore]</version>
+                    </fieldNames>
+                </encoder>
+            </appender>
+        </then>
+        <else>
+            <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+                <encoder>
+                    <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+                </encoder>
+            </appender>
+        </else>
+    </if>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+
+</configuration>
