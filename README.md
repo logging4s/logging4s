@@ -1,8 +1,8 @@
 ## Logging4s
 
-`Logging4s` is small logging library for structured (json) logs build on top of `logback` and `logstash-encoder`.
+<img width="256px" height="256px" src="logos/logging4s_logo_white.png"/>
 
-<img align="right" width="256px" height="256px" src="logos/logging4s_logo.png"/>
+`Logging4s` is small logging library for structured (json) logs build on top of `logback` and `logstash-encoder`.
 
 ### Quick start
 
