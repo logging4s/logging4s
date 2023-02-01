@@ -13,13 +13,13 @@ object ZioExample extends ZIOAppDefault:
 
   override def run: ZIO[Any, Any, Any] =
     for
-      logging <- Logging.create("CatsEffect3Example")
+      logging <- Logging.create("ZioExampleLogging")
 
-      johnShow <- createUser("Jogn Show", 22)
+      johnShow <- createUser("John Show", 22)
       _        <- logging.info("User created", johnShow)
 
       daenerys <- createUser("Daenerys Targaryen", 22)
       _        <- logging.info("User created", daenerys)
 
-      _ <- logging.info("All users created", Seq(johnShow, daenerys))
+      _ <- logging.info("All users created", Seq.empty[User])
     yield ()

@@ -1,6 +1,6 @@
 ## Logging4s
 
-<img width="256px" height="256px" src="logos/logging4s_logo_white.png"/>
+<img width="256px" height="256px" src="logos/logging4s_logo_white.png" alt="Logging4s logo - Beaver logging"/>
 
 `Logging4s` is small logging library for structured (json) logs build on top of `logback` and `logstash-encoder`.
 
@@ -34,7 +34,7 @@ libraryDependencies ++= Seq(
 )
 ```
 
-Create and use `Logging`
+Create `Loggable` implementation for your domain objects, create `Logging` instance and log your objects.
 
 ```scala
 // Your domain
@@ -71,7 +71,7 @@ object CatsEffect3Example extends IOApp:
     for
       logging <- Logging.create[IO]("CatsEffect3Example")
 
-      johnShow <- createUser("Jogn Show", 22)
+      johnShow <- createUser("John Show", 22)
       _        <- logging.info("User created", johnShow)
     
       daenerys <- createUser("Daenerys Targaryen", 22)
