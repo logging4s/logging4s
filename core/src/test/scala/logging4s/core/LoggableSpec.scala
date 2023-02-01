@@ -22,7 +22,7 @@ class LoggableSpec extends AnyWordSpec with Matchers:
     }
 
     "right rename key with extension" in {
-      import logging4s.core.Loggable.extensions.*
+      import logging4s.core.syntax.*
 
       "data".rename("test").key shouldEqual "test"
     }
