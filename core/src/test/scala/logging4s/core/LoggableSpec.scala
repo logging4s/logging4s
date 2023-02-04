@@ -13,11 +13,11 @@ class LoggableSpec extends AnyWordSpec with Matchers:
 
     "auto summon Seq and List instances" in {
       Loggable[Iterable[String]].json(Seq("a", "b", "c")) shouldEqual """["a","b","c"]"""
-      Loggable[Iterable[String]].plain(Seq("a", "b", "c")) shouldEqual "[a,b,c]"
+      Loggable[Iterable[String]].plain(Seq("a", "b", "c")) shouldEqual "[(a),(b),(c)]"
       Loggable[Iterable[String]].key shouldEqual "values"
 
       Loggable[Iterable[String]].json(List("a", "b", "c")) shouldEqual """["a","b","c"]"""
-      Loggable[Iterable[String]].plain(List("a", "b", "c")) shouldEqual "[a,b,c]"
+      Loggable[Iterable[String]].plain(List("a", "b", "c")) shouldEqual "[(a),(b),(c)]"
       Loggable[Iterable[String]].key shouldEqual "values"
     }
 

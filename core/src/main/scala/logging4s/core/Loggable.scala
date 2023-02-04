@@ -1,9 +1,17 @@
 package logging4s.core
 
 trait Loggable[A]:
+  self: Loggable[A] =>
+  
   def key: String
   def json(a: A): String
   def plain(a: A): String
+
+  final def contramap[B](f: B => A, keyName: String): Loggable[B] =
+    new Loggable[B]:
+      override def key: String         = keyName
+      override def json(b: B): String  = self.json(f(b))
+      override def plain(b: B): String = self.plain(f(b))
 
 object Loggable:
   inline def apply[A](using instance: Loggable[A]): Loggable[A] = instance

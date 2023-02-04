@@ -1,12 +1,15 @@
 package logging4s.core
 
-import scala.reflect.ClassTag
-import com.typesafe.scalalogging.Logger
-import LoggableValue.extensions.*
-
 import scala.util.Try
+import scala.reflect.ClassTag
+
+import com.typesafe.scalalogging.Logger
+
+import LoggableValue.extensions.plain
 
 trait Logging[F[*]]:
+
+  def withContext(context: LoggingContext): Logging[F]
 
   def error(message: String): F[Unit]
   def error(message: String, error: Throwable): F[Unit]
@@ -38,10 +41,16 @@ object Logging:
   def apply[F[*]](using instance: Logging[F]): Logging[F] = instance
 
   def create[F[_]: Delay, S](using S: ClassTag[S]): F[Logging[F]] =
-    Delay[F].delay(LoggingViaSlf4j(Logger(S.runtimeClass)))
+    Delay[F].delay(ImplViaSlf4j(Logger(S.runtimeClass)))
 
   def create[F[*]: Delay](name: String): F[Logging[F]] =
-    Delay[F].delay(LoggingViaSlf4j(Logger(name)))
+    Delay[F].delay(ImplViaSlf4j(Logger(name)))
+
+  def create[F[*]: Delay, S](context: LoggingContext)(using S: ClassTag[S]): F[Logging[F]] =
+    Delay[F].delay(ImplViaSlf4j(Logger(S.runtimeClass), context))
+
+  def create[F[*]: Delay](name: String, context: LoggingContext): F[Logging[F]] =
+    Delay[F].delay(ImplViaSlf4j(Logger(name), context))
 
   def createTry[S](using ClassTag[S]): Try[Logging[Try]] =
     create[Try, S]
@@ -49,11 +58,23 @@ object Logging:
   def createTry(name: String): Try[Logging[Try]] =
     create[Try](name)
 
+  def createTry[S](context: LoggingContext)(using ClassTag[S]): Try[Logging[Try]] =
+    create[Try, S](context)
+
+  def createTry(name: String, context: LoggingContext): Try[Logging[Try]] =
+    create[Try](name, context)
+
   def createEither[S](using ClassTag[S]): ThrowableEither[Logging[ThrowableEither]] =
     create[ThrowableEither, S]
 
   def createEither(name: String): ThrowableEither[Logging[ThrowableEither]] =
     create[ThrowableEither](name)
+
+  def createEither[S](context: LoggingContext)(using ClassTag[S]): ThrowableEither[Logging[ThrowableEither]] =
+    create[ThrowableEither, S](context)
+
+  def createEither(name: String, context: LoggingContext): ThrowableEither[Logging[ThrowableEither]] =
+    create[ThrowableEither](name, context)
 
   def createUnsafe[S](using ClassTag[S]): Identity[Logging[Identity]] =
     create[Identity, S]
@@ -61,7 +82,15 @@ object Logging:
   def createUnsafe(name: String): Identity[Logging[Identity]] =
     create[Identity](name)
 
-  private final class LoggingViaSlf4j[F[*]: Delay](logger: Logger) extends Logging[F]:
+  def createUnsafe[S](context: LoggingContext)(using ClassTag[S]): Identity[Logging[Identity]] =
+    create[Identity, S](context)
+
+  def createUnsafe(name: String, context: LoggingContext): Identity[Logging[Identity]] =
+    create[Identity](name, context)
+
+  private final class ImplViaSlf4j[F[*]: Delay](logger: Logger, context: LoggingContext = LoggingContext(Seq.empty)) extends Logging[F]:
+
+    override def withContext(moreContext: LoggingContext): Logging[F] = ImplViaSlf4j(logger, context + moreContext)
 
     override def error(message: String): F[Unit] =
       Delay[F].delay(logger.error(message))
@@ -75,18 +104,20 @@ object Logging:
       }
 
     override def error(message: String, values: LoggableValue*): F[Unit] =
+      val valuesWithContext = context.values ++ values
       Delay[F].delay {
         logger.error(
-          marker = MarkerHelper.fromLoggable(values),
-          message = s"$message: ${values.plain}"
+          marker = MarkerHelper.fromLoggable(valuesWithContext),
+          message = s"$message: ${valuesWithContext.plain}"
         )
       }
 
     override def error(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
+      val valuesWithContext = context.values ++ values
       Delay[F].delay {
         logger.error(
-          marker = MarkerHelper.fromLoggable(values),
-          message = s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${values.plain}",
+          marker = MarkerHelper.fromLoggable(valuesWithContext),
+          message = s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${valuesWithContext.plain}",
           cause = error
         )
       }
@@ -103,18 +134,20 @@ object Logging:
       }
 
     override def warn(message: String, values: LoggableValue*): F[Unit] =
+      val valuesWithContext = context.values ++ values
       Delay[F].delay {
         logger.warn(
-          marker = MarkerHelper.fromLoggable(values),
-          message = s"$message: ${values.plain}"
+          marker = MarkerHelper.fromLoggable(valuesWithContext),
+          message = s"$message: ${valuesWithContext.plain}"
         )
       }
 
     override def warn(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
+      val valuesWithContext = context.values ++ values
       Delay[F].delay {
         logger.warn(
-          marker = MarkerHelper.fromLoggable(values),
-          message = s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${values.plain}",
+          marker = MarkerHelper.fromLoggable(valuesWithContext),
+          message = s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${valuesWithContext.plain}",
           cause = error
         )
       }
@@ -131,18 +164,20 @@ object Logging:
       }
 
     override def info(message: String, values: LoggableValue*): F[Unit] =
+      val valuesWithContext = context.values ++ values
       Delay[F].delay {
         logger.info(
-          marker = MarkerHelper.fromLoggable(values),
-          message = s"$message: ${values.plain}"
+          marker = MarkerHelper.fromLoggable(valuesWithContext),
+          message = s"$message: ${valuesWithContext.plain}"
         )
       }
 
     override def info(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
+      val valuesWithContext = context.values ++ values
       Delay[F].delay {
         logger.info(
-          marker = MarkerHelper.fromLoggable(values),
-          message = s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${values.plain}",
+          marker = MarkerHelper.fromLoggable(valuesWithContext),
+          message = s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${valuesWithContext.plain}",
           cause = error
         )
       }
@@ -159,18 +194,20 @@ object Logging:
       }
 
     override def debug(message: String, values: LoggableValue*): F[Unit] =
+      val valuesWithContext = context.values ++ values
       Delay[F].delay {
         logger.debug(
-          marker = MarkerHelper.fromLoggable(values),
-          message = s"$message: ${values.plain}"
+          marker = MarkerHelper.fromLoggable(valuesWithContext),
+          message = s"$message: ${valuesWithContext.plain}"
         )
       }
 
     override def debug(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
+      val valuesWithContext = context.values ++ values
       Delay[F].delay {
         logger.debug(
-          marker = MarkerHelper.fromLoggable(values),
-          message = s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${values.plain}",
+          marker = MarkerHelper.fromLoggable(valuesWithContext),
+          message = s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${valuesWithContext.plain}",
           cause = error
         )
       }
@@ -187,18 +224,20 @@ object Logging:
       }
 
     override def trace(message: String, values: LoggableValue*): F[Unit] =
+      val valuesWithContext = context.values ++ values
       Delay[F].delay {
         logger.trace(
-          marker = MarkerHelper.fromLoggable(values),
-          message = s"$message: ${values.plain}"
+          marker = MarkerHelper.fromLoggable(valuesWithContext),
+          message = s"$message: ${valuesWithContext.plain}"
         )
       }
 
     override def trace(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
+      val valuesWithContext = context.values ++ values
       Delay[F].delay {
         logger.trace(
-          marker = MarkerHelper.fromLoggable(values),
-          message = s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${values.plain}",
+          marker = MarkerHelper.fromLoggable(valuesWithContext),
+          message = s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${valuesWithContext.plain}",
           cause = error
         )
       }

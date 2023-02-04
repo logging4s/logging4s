@@ -4,5 +4,5 @@ type Identity[A] = A
 
 type ThrowableEither[A] = Either[Throwable, A]
 
-
- 
+final case class LoggingContext(values: Seq[LoggableValue]):
+  def +(other: LoggingContext): LoggingContext = LoggingContext(values ++ other.values)
