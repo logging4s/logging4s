@@ -1,6 +1,6 @@
 ## Logging4s
 
-<img width="256px" height="256px" src="logos/logging4s_logo_white.png" alt="Logging4s logo - Beaver logging"/>
+<img width="256px" height="256px" src="logos/logging4s_logo.png" alt="Logging4s logo - Beaver logging"/>
 
 `Logging4s` is small logging library for structured (json) logs build on top of `logback` and `logstash-encoder`.
 
@@ -75,7 +75,7 @@ object CatsEffect3Example extends IOApp:
   override def run(args: List[String]): IO[ExitCode] =
     for
       context <- IO.randomUUID.map(uuid => LoggingContext(uuid.withKey("session_id")))
-      logging <- Logging.create[IO]("CatsEffect3Example")
+      logging <- Logging.create[IO]("CatsEffect3Example", context)
 
       johnShow <- createUser("John Show", 22)
       _        <- logging.info("User created", johnShow)

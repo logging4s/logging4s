@@ -1,20 +1,31 @@
+import xerial.sbt.Sonatype.GitHubHosting
+
 lazy val commonSettings = Seq(
-  scalaVersion := Dependencies.Versions.scala3,
-  organization := "org.logging4s",
-  libraryDependencies ++= Dependencies.Testing.all,
-  scalacOptions ++= Seq(
-    "-source:future",
-    "-Xmax-inlines",
-    "200"
-  ),
-  developers   := List(
+  organization           := "org.logging4s",
+  version                := "0.1.0",
+  versionScheme          := Some("early-semver"),
+  description            := "Structural logging for Scala 3 via slf4j and logback",
+  scalaVersion           := Dependencies.Versions.scala3,
+  publishMavenStyle      := true,
+  sonatypeTimeoutMillis  := 60 * 60 * 1000,
+  sonatypeCredentialHost := "s01.oss.sonatype.org",
+  sonatypeProjectHosting := Some(GitHubHosting("logging4s", "logging4s", "shadowsmind.dev@gmail.com")),
+  licenses               := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
+  publishTo              := Some("releases" at "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2"),
+  developers             := List(
     Developer(
       "shadowsmind",
       "Alexandr Oshlakov",
       "shadowsmind.dev@gmail.com",
       url("https://github.com/shadowsmind")
     )
-  )
+  ),
+  libraryDependencies ++= Dependencies.Testing.all,
+  scalacOptions ++= Seq(
+    "-source:future",
+    "-Xmax-inlines",
+    "200"
+  ),
 )
 
 lazy val core = (project in file("core"))
@@ -128,8 +139,9 @@ lazy val json = (project in file("json"))
 lazy val examples = (project in file("examples"))
   .settings(commonSettings)
   .settings(
-    name := "logging4s-examples",
-    libraryDependencies += Dependencies.Cats.catsEffect3
+    name           := "logging4s-examples",
+    publish / skip := true,
+    libraryDependencies += Dependencies.Cats.catsEffect3,
   )
   .dependsOn(circe)
   .dependsOn(`cats-effect-3`)
@@ -138,7 +150,8 @@ lazy val examples = (project in file("examples"))
 lazy val logging4s = (project in file("."))
   .settings(commonSettings)
   .settings(
-    name := "logging4s"
+    name           := "logging4s",
+    publish / skip := true,
   )
   .aggregate(
     core,
