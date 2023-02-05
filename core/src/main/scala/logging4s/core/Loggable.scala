@@ -2,7 +2,7 @@ package logging4s.core
 
 trait Loggable[A]:
   self: Loggable[A] =>
-  
+
   def key: String
   def json(a: A): String
   def plain(a: A): String
