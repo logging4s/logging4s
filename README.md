@@ -61,6 +61,11 @@ import cats.effect.std.UUIDGen
 import cats.effect.{ExitCode, IO, IOApp}
 import logging4s.cats.Logging
 
+import logging4s.core.syntax.withKey
+
+import logging4s.cats.instances.given
+import logging4s.json.circe.instances.given
+
 object CatsEffect3Example extends IOApp:
 
   private def createUser(name: String, age: Int): IO[User] =
@@ -69,6 +74,7 @@ object CatsEffect3Example extends IOApp:
 
   override def run(args: List[String]): IO[ExitCode] =
     for
+      context <- IO.randomUUID.map(uuid => LoggingContext(uuid.withKey("session_id")))
       logging <- Logging.create[IO]("CatsEffect3Example")
 
       johnShow <- createUser("John Show", 22)
@@ -84,9 +90,9 @@ object CatsEffect3Example extends IOApp:
 
 This will output:
 ```json
-{"@timestamp":"2023-01-30T13:42:13.249+03:00","message":"User created: user -> (id=5db8c5e2-6275-437a-bca8-1ad8cd84fbd8, name=Jogn Show, age=22)","name":"CatsEffect3Example","level":"INFO","user":{"id":"5db8c5e2-6275-437a-bca8-1ad8cd84fbd8","name":"Jogn Show","age":22}}
-{"@timestamp":"2023-01-30T13:42:13.249+03:00","message":"User created: user -> (id=c5e4bd53-abd8-4922-bcd2-5e40322e6b9b, name=Daenerys Targaryen, age=22)","name":"CatsEffect3Example","level":"INFO","user":{"id":"c5e4bd53-abd8-4922-bcd2-5e40322e6b9b","name":"Daenerys Targaryen","age":22}}
-{"@timestamp":"2023-01-30T13:42:13.249+03:00","message":"All users created: users -> ([id=5db8c5e2-6275-437a-bca8-1ad8cd84fbd8, name=Jogn Show, age=22,id=c5e4bd53-abd8-4922-bcd2-5e40322e6b9b, name=Daenerys Targaryen, age=22])","name":"CatsEffect3Example","level":"INFO","users":[{"id":"5db8c5e2-6275-437a-bca8-1ad8cd84fbd8","name":"Jogn Show","age":22},{"id":"c5e4bd53-abd8-4922-bcd2-5e40322e6b9b","name":"Daenerys Targaryen","age":22}]}
+{"@timestamp":"2023-01-30T13:42:13.249+03:00","message":"User created: session_id -> (9602ed80-e54b-4e0a-8b9c-64762d28d05e), user -> (id=5db8c5e2-6275-437a-bca8-1ad8cd84fbd8, name=Jogn Show, age=22)","name":"CatsEffect3Example","level":"INFO","user":{"id":"5db8c5e2-6275-437a-bca8-1ad8cd84fbd8","name":"Jogn Show","age":22}}
+{"@timestamp":"2023-01-30T13:42:13.249+03:00","message":"User created: session_id -> (9602ed80-e54b-4e0a-8b9c-64762d28d05e), user -> (id=c5e4bd53-abd8-4922-bcd2-5e40322e6b9b, name=Daenerys Targaryen, age=22)","name":"CatsEffect3Example","level":"INFO","user":{"id":"c5e4bd53-abd8-4922-bcd2-5e40322e6b9b","name":"Daenerys Targaryen","age":22}}
+{"@timestamp":"2023-01-30T13:42:13.249+03:00","message":"All users created: session_id -> (9602ed80-e54b-4e0a-8b9c-64762d28d05e), users -> ([id=5db8c5e2-6275-437a-bca8-1ad8cd84fbd8, name=Jogn Show, age=22,id=c5e4bd53-abd8-4922-bcd2-5e40322e6b9b, name=Daenerys Targaryen, age=22])","name":"CatsEffect3Example","level":"INFO","users":[{"id":"5db8c5e2-6275-437a-bca8-1ad8cd84fbd8","name":"Jogn Show","age":22},{"id":"c5e4bd53-abd8-4922-bcd2-5e40322e6b9b","name":"Daenerys Targaryen","age":22}]}
 
 ```
 
