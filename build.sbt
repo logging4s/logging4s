@@ -1,11 +1,12 @@
 import xerial.sbt.Sonatype.GitHubHosting
+import Dependencies.Versions
 
 lazy val commonSettings = Seq(
   organization           := "org.logging4s",
   version                := "0.1.0",
   versionScheme          := Some("early-semver"),
   description            := "Structural logging for Scala 3 via slf4j and logback",
-  scalaVersion           := Dependencies.Versions.scala3,
+  scalaVersion           := Versions.scala3,
   publishMavenStyle      := true,
   sonatypeTimeoutMillis  := 60 * 60 * 1000,
   sonatypeCredentialHost := "s01.oss.sonatype.org",
@@ -26,6 +27,7 @@ lazy val commonSettings = Seq(
     "-Xmax-inlines",
     "200"
   ),
+  credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials"),
 )
 
 lazy val core = (project in file("core"))
@@ -64,6 +66,9 @@ lazy val `cats-effect-3` = (project in file("cats/ce-3"))
 
 lazy val cats = (project in file("cats"))
   .settings(commonSettings)
+  .settings(
+    publish / skip := true
+  )
   .aggregate(
     `cats-effect-2`,
     `cats-effect-3`
@@ -127,6 +132,9 @@ lazy val argonaut = (project in file("json/argonaut"))
 
 lazy val json = (project in file("json"))
   .settings(commonSettings)
+  .settings(
+    publish / skip := true
+  )
   .aggregate(
     circe,
     jsoniter,
