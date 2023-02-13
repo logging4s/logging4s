@@ -3,16 +3,26 @@ import Dependencies.Versions
 
 lazy val commonSettings = Seq(
   organization           := "org.logging4s",
-  version                := "0.1.0",
-  versionScheme          := Some("early-semver"),
+  organizationName       := "Logging4s",
+  homepage               := Some(url("https://logging4s.org/")),
   description            := "Structural logging for Scala 3 via slf4j and logback",
+  version                := "0.1.0",
+  versionScheme          := Some("semver-spec"),
   scalaVersion           := Versions.scala3,
+  parallelExecution      := true,
   publishMavenStyle      := true,
+  Test / publishArtifact := false,
   sonatypeTimeoutMillis  := 60 * 60 * 1000,
   sonatypeCredentialHost := "s01.oss.sonatype.org",
   sonatypeProjectHosting := Some(GitHubHosting("logging4s", "logging4s", "shadowsmind.dev@gmail.com")),
   licenses               := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
-  publishTo              := Some("releases" at "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2"),
+  publishTo              := sonatypePublishToBundle.value,
+  scmInfo                := Some(
+    ScmInfo(
+      url("https://github.com/logging4s/logging4s"),
+      "git@github.com:logging4s/logging4s.git",
+    )
+  ),
   developers             := List(
     Developer(
       "shadowsmind",
@@ -23,9 +33,8 @@ lazy val commonSettings = Seq(
   ),
   libraryDependencies ++= Dependencies.Testing.all,
   scalacOptions ++= Seq(
-    "-source:future",
-    "-Xmax-inlines",
-    "200"
+    "-encoding",
+    "UTF-8",
   ),
   credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials"),
 )
