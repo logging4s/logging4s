@@ -6,7 +6,7 @@ lazy val commonSettings = Seq(
   organizationName       := "Logging4s",
   homepage               := Some(url("https://logging4s.org/")),
   description            := "Structural logging for Scala 3 via slf4j and logback",
-  version                := "0.1.0",
+  version                := "0.1.1",
   versionScheme          := Some("semver-spec"),
   scalaVersion           := Versions.scala3,
   parallelExecution      := true,
@@ -79,6 +79,7 @@ lazy val cats = (project in file("cats"))
     publish / skip := true
   )
   .aggregate(
+    `cats-core`,
     `cats-effect-2`,
     `cats-effect-3`
   )
