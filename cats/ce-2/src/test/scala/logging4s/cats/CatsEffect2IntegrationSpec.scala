@@ -20,7 +20,7 @@ class CatsEffect2IntegrationSpec extends AnyWordSpec with Matchers:
     }
 
     "right create logging instance for IO monad" in {
-      for _ <- Logging.create[IO]("test")
+      for _ <- LoggingCats.create[IO]("test")
       yield assert(true)
     }
 

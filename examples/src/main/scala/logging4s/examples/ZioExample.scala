@@ -1,7 +1,7 @@
 package logging4s.examples
 
 import zio.{Task, ZIO, ZIOAppDefault}
-import logging4s.zio.Logging
+import logging4s.zio.LoggingZio
 
 import java.util.UUID
 
@@ -13,7 +13,7 @@ object ZioExample extends ZIOAppDefault:
 
   override def run: ZIO[Any, Any, Any] =
     for
-      logging <- Logging.create("ZioExampleLogging")
+      logging <- LoggingZio.create("ZioExampleLogging")
 
       johnShow <- createUser("John Show", 22)
       _        <- logging.info("User created", johnShow)

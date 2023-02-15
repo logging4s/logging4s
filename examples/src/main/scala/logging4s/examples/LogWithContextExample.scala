@@ -1,7 +1,7 @@
 package logging4s.examples
 
 import cats.effect.{ExitCode, IO, IOApp}
-import logging4s.cats.Logging
+import logging4s.cats.LoggingCats
 import logging4s.core.LoggingContext
 
 import logging4s.core.syntax.withKey
@@ -18,7 +18,7 @@ object LogWithContextExample extends IOApp:
   override def run(args: List[String]): IO[ExitCode] =
     for
       context <- IO.randomUUID.map(uuid => LoggingContext(uuid.withKey("session_id")))
-      logging <- Logging.create[IO]("CatsEffectExampleLogging", context)
+      logging <- LoggingCats.create[IO]("CatsEffectExampleLogging", context)
 
       johnShow <- createUser("John Show", 22)
       _        <- logging.info("User created", johnShow)

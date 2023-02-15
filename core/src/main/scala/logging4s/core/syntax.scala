@@ -1,8 +1,12 @@
 package logging4s.core
 
+import LoggableValue.given
+
 object syntax:
 
   extension [A](a: A)(using L: Loggable[A])
+    def asLoggable: LoggableValue = LoggableValue(L.key, L.plain(a), L.json(a))
+
     def rename(updatedKey: String): Loggable[A] =
       new Loggable[A]:
         override def key: String         = updatedKey

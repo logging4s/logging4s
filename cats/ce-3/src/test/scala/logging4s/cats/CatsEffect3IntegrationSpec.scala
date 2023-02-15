@@ -21,7 +21,7 @@ class CatsEffect3IntegrationSpec extends AsyncWordSpec with AsyncIOSpec with Mat
     }
 
     "right create logging instance for IO monad" in {
-      for _ <- Logging.create[IO]("test")
+      for _ <- LoggingCats.create[IO]("test")
       yield assert(true)
     }
 
