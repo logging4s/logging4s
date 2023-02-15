@@ -4,11 +4,19 @@ final case class LoggableValue(key: String, plain: String, json: String)
 
 object LoggableValue:
 
-  given [T](using Loggable[T]): Conversion[T, LoggableValue] = v =>
+  given [T](using L: Loggable[T]): Conversion[T, LoggableValue] = v =>
     LoggableValue(
-      key = Loggable[T].key,
-      plain = Loggable[T].plain(v),
-      json = Loggable[T].json(v),
+      key = L.key,
+      plain = L.plain(v),
+      json = L.json(v),
+    )
+
+  // because sometimes the compiler can't convert for example Loggable[List[T] to LoggableValue
+  given [T, C[*]](using Loggable[C[T]]): Conversion[C[T], LoggableValue] = v =>
+    LoggableValue(
+      key = Loggable[C[T]].key,
+      plain = Loggable[C[T]].plain(v),
+      json = Loggable[C[T]].json(v),
     )
 
   object extensions:
