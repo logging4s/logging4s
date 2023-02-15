@@ -90,9 +90,9 @@ object CatsEffect3Example extends IOApp:
 
 This will output:
 ```json
-{"@timestamp":"2023-01-30T13:42:13.249+03:00","message":"User created: session_id -> (9602ed80-e54b-4e0a-8b9c-64762d28d05e), user -> (id=5db8c5e2-6275-437a-bca8-1ad8cd84fbd8, name=Jogn Show, age=22)","name":"CatsEffect3Example","level":"INFO","user":{"id":"5db8c5e2-6275-437a-bca8-1ad8cd84fbd8","name":"Jogn Show","age":22}}
+{"@timestamp":"2023-01-30T13:42:13.249+03:00","message":"User created: session_id -> (9602ed80-e54b-4e0a-8b9c-64762d28d05e), user -> (id=5db8c5e2-6275-437a-bca8-1ad8cd84fbd8, name=John Show, age=22)","name":"CatsEffect3Example","level":"INFO","user":{"id":"5db8c5e2-6275-437a-bca8-1ad8cd84fbd8","name":"John Show","age":22}}
 {"@timestamp":"2023-01-30T13:42:13.249+03:00","message":"User created: session_id -> (9602ed80-e54b-4e0a-8b9c-64762d28d05e), user -> (id=c5e4bd53-abd8-4922-bcd2-5e40322e6b9b, name=Daenerys Targaryen, age=22)","name":"CatsEffect3Example","level":"INFO","user":{"id":"c5e4bd53-abd8-4922-bcd2-5e40322e6b9b","name":"Daenerys Targaryen","age":22}}
-{"@timestamp":"2023-01-30T13:42:13.249+03:00","message":"All users created: session_id -> (9602ed80-e54b-4e0a-8b9c-64762d28d05e), users -> ([id=5db8c5e2-6275-437a-bca8-1ad8cd84fbd8, name=Jogn Show, age=22,id=c5e4bd53-abd8-4922-bcd2-5e40322e6b9b, name=Daenerys Targaryen, age=22])","name":"CatsEffect3Example","level":"INFO","users":[{"id":"5db8c5e2-6275-437a-bca8-1ad8cd84fbd8","name":"Jogn Show","age":22},{"id":"c5e4bd53-abd8-4922-bcd2-5e40322e6b9b","name":"Daenerys Targaryen","age":22}]}
+{"@timestamp":"2023-01-30T13:42:13.249+03:00","message":"All users created: session_id -> (9602ed80-e54b-4e0a-8b9c-64762d28d05e), users -> ([id=5db8c5e2-6275-437a-bca8-1ad8cd84fbd8, name=John Show, age=22,id=c5e4bd53-abd8-4922-bcd2-5e40322e6b9b, name=Daenerys Targaryen, age=22])","name":"CatsEffect3Example","level":"INFO","users":[{"id":"5db8c5e2-6275-437a-bca8-1ad8cd84fbd8","name":"John Show","age":22},{"id":"c5e4bd53-abd8-4922-bcd2-5e40322e6b9b","name":"Daenerys Targaryen","age":22}]}
 
 ```
 

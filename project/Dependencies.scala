@@ -12,12 +12,13 @@ object Dependencies {
     val logback        = "1.4.5"
     val logbackEncoder = "7.2"
 
-    val cats              = "2.9.0"
-    val catsEffect2       = "2.5.5"
-    val catsEffect3       = "3.4.6"
-    val catsEffectTesting = "1.4.0"
+    val cats               = "2.9.0"
+    val catsEffect2        = "2.5.5"
+    val catsEffect2Testing = "0.5.4"
+    val catsEffect3        = "3.4.7"
+    val catsEffectTesting  = "1.5.0"
 
-    val zio        = "2.0.6"
+    val zio        = "2.0.9"
     val zioPrelude = "1.0.0-RC16"
 
     val circe     = "0.14.4"
@@ -42,10 +43,11 @@ object Dependencies {
   object Cats {
     val catsCore = "org.typelevel" %% "cats-core" % Versions.cats
 
-    val catsEffect2 = "org.typelevel" %% "cats-effect" % Versions.catsEffect2
+    val catsEffect2        = "org.typelevel"  %% "cats-effect"                   % Versions.catsEffect2
+    val catsEffect2Testing = "com.codecommit" %% "cats-effect-testing-scalatest" % Versions.catsEffect2Testing
 
-    val catsEffect3         = "org.typelevel" %% "cats-effect"                   % Versions.catsEffect3
-    val catsEffect3Kernel   = "org.typelevel" %% "cats-effect-kernel"            % Versions.catsEffect3
+    val catsEffect3        = "org.typelevel" %% "cats-effect"                   % Versions.catsEffect3
+    val catsEffect3Kernel  = "org.typelevel" %% "cats-effect-kernel"            % Versions.catsEffect3
     val catsEffect3Testing = "org.typelevel" %% "cats-effect-testing-scalatest" % Versions.catsEffectTesting % Test
   }
 

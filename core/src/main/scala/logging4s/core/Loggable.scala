@@ -31,7 +31,7 @@ object Loggable:
   given Loggable[String] with
     override def key: String              = "value"
     override def plain(a: String): String = a
-    override def json(a: String): String  = a
+    override def json(a: String): String  = s"\"$a\""
 
   given Loggable[Byte] with
     override def key: String            = "value"
