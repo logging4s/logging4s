@@ -7,7 +7,7 @@ trait Delay[F[*]]:
 
 object Delay:
   def apply[F[*]](using F: Delay[F]): F.type = F
-  
+
   given Delay[Identity] with
     override def delay[A](a: => A): Identity[A] = a
 

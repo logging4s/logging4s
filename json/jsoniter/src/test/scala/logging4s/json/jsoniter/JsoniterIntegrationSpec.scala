@@ -20,7 +20,7 @@ class JsoniterIntegrationSpec extends AnyWordSpec with Matchers:
       given PlainEncoder[User]   = user => s"name=${user.name}, age=${user.age}"
       given JsonValueCodec[User] = JsonCodecMaker.make
 
-      val user = User("John", 18)
+      val user     = User("John", 18)
       val expected = writeToString(user)
 
       Loggable.make[User]("user").json(user) shouldEqual expected
