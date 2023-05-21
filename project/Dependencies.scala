@@ -1,10 +1,8 @@
-import sbt._
+import sbt.*
 
 object Dependencies {
 
   object Versions {
-    val scala212 = "2.12.17"
-    val scala213 = "2.13.10"
     val scala3   = "3.2.2"
 
     val janino         = "3.1.9"
@@ -15,7 +13,7 @@ object Dependencies {
     val cats               = "2.9.0"
     val catsEffect2        = "2.5.5"
     val catsEffect2Testing = "0.5.4"
-    val catsEffect3        = "3.4.10"
+    val catsEffect3        = "3.5.0"
     val catsEffectTesting  = "1.5.0"
 
     val zio        = "2.0.13"
@@ -28,7 +26,7 @@ object Dependencies {
     val json4s    = "4.0.6"
     val argonaut  = "6.3.8"
 
-    val scalatest = "3.2.15"
+    val scalatest = "3.2.16"
   }
 
   object Logging {
