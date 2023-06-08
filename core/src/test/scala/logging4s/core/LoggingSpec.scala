@@ -7,13 +7,13 @@ import scala.util.Try
 
 class LoggingSpec extends AnyWordSpec with Matchers:
 
-  "Logging" must {
-
-    "right create for default Delay implementations" in {
-      val resultTry = for
-        logging <- Logging.create[Try]("LoggingSpec")
-        _       <- logging.info("Test log")
-      yield ()
+  "Logging" must:
+    "right create for default Delay implementations" in:
+      val resultTry = 
+        for
+          logging <- Logging.create[Try]("LoggingSpec")
+          _ <- logging.info("Test log")
+        yield ()
 
       assert(resultTry.isSuccess)
 
@@ -28,6 +28,3 @@ class LoggingSpec extends AnyWordSpec with Matchers:
       Logging
         .createUnsafe("LoggingSpec")
         .info("Test log")
-    }
-
-  }

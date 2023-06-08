@@ -8,22 +8,18 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 
 import logging4s.core.{Loggable, PlainEncoder}
 
+import instances.given
+
 class JsoniterIntegrationSpec extends AnyWordSpec with Matchers:
 
-  "Jsoniter integration" must {
+  final case class User(name: String, age: Int)
 
-    "use given instance with JsonCodec implementation for JsonEncoder" in {
-      import instances.given
+  given PlainEncoder[User]   = user => s"name=${user.name}, age=${user.age}"
+  given JsonValueCodec[User] = JsonCodecMaker.make
 
-      final case class User(name: String, age: Int)
-
-      given PlainEncoder[User]   = user => s"name=${user.name}, age=${user.age}"
-      given JsonValueCodec[User] = JsonCodecMaker.make
-
+  "Jsoniter integration" must:
+    "use given instance with JsonCodec implementation for JsonEncoder" in:
       val user     = User("John", 18)
       val expected = writeToString(user)
 
       Loggable.make[User]("user").json(user) shouldEqual expected
-    }
-
-  }

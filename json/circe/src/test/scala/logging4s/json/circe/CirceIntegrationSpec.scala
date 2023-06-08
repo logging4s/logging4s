@@ -8,15 +8,14 @@ import io.circe.generic.semiauto.deriveEncoder
 
 import logging4s.core.{Loggable, PlainEncoder}
 
+import instances.given
+
 class CirceIntegrationSpec extends AnyWordSpec with Matchers:
 
-  "Circe integration" must {
+  final case class User(name: String, age: Int)
 
-    "use given instance with JsonCodec implementation for JsonEncoder" in {
-      import instances.given
-
-      final case class User(name: String, age: Int)
-
+  "Circe integration" must:
+    "use given instance with JsonCodec implementation for JsonEncoder" in:
       given PlainEncoder[User] = user => s"name=${user.name}, age=${user.age}"
       given Encoder[User]      = deriveEncoder
 
@@ -24,6 +23,3 @@ class CirceIntegrationSpec extends AnyWordSpec with Matchers:
       val expected = Encoder[User].apply(user).noSpaces
 
       Loggable.make[User]("user").json(user) shouldEqual expected
-    }
-
-  }
