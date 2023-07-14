@@ -5,27 +5,28 @@ object Dependencies {
   object Versions {
     val scala3 = "3.3.0"
 
-    val janino         = "3.1.9"
+    val janino         = "3.1.10"
     val scalaLogging   = "3.9.5"
-    val logback        = "1.4.7"
-    val logbackEncoder = "7.3"
+    val logback        = "1.4.8"
+    val logbackEncoder = "7.4"
 
     val cats               = "2.9.0"
     val catsEffect2        = "2.5.5"
     val catsEffect2Testing = "0.5.4"
-    val catsEffect3        = "3.5.0"
+    val catsEffect3        = "3.5.1"
     val catsEffectTesting  = "1.5.0"
 
-    val zio        = "2.0.13"
+    val zio        = "2.0.15"
     val zioPrelude = "1.0.0-RC19"
 
     val circe     = "0.14.5"
-    val jsoniter  = "2.23.1"
-    val playJson  = "2.10.0-RC7"
+    val jsoniter  = "2.23.2"
+    val playJson  = "2.10.0-RC9"
     val sprayJson = "1.3.6"
     val json4s    = "4.0.6"
     val argonaut  = "6.3.8"
 
+  
     val scalatest = "3.2.16"
   }
 

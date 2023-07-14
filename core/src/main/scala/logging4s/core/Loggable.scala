@@ -57,7 +57,7 @@ object Loggable:
   given [A, B](using AL: Loggable[A], BL: Loggable[B]): Loggable[(A, B)] with
     override def key: String              = s"${AL.key}_${BL.key}"
     override def plain(a: (A, B)): String = s"(${AL.plain(a._1)}, ${BL.plain(a._2)})"
-    override def json(a: (A, B)): String  = s"""{"${AL.key}": ${AL.json(a._1)}, "${BL.key}": ${BL.json(a._2)}"""
+    override def json(a: (A, B)): String  = s"""{"${AL.key}": ${AL.json(a._1)}, "${BL.key}": ${BL.json(a._2)}}"""
 
   given [T](using L: Loggable[T]): Loggable[List[T]] with
     override def key: String               = s"${L.key}s"

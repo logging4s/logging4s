@@ -1,7 +1,5 @@
 package logging4s.core
 
-import LoggableValue.given
-
 object syntax:
 
   extension [A](a: A)(using L: Loggable[A])
