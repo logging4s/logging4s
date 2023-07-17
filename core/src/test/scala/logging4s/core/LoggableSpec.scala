@@ -18,13 +18,13 @@ class LoggableSpec extends AnyWordSpec with Matchers:
 
     "right convert collection of tuples" in:
       val data = List(
-        1 -> Str("v1"),
-        2 -> Str("v2"),
-        3 -> Str("v3")
+        1 -> "v1",
+        2 -> "v2",
+        3 -> "v3",
       )
 
       val lv = data.asLogValue("data")
 
       lv.key shouldEqual "data"
-      lv.plain shouldEqual "data -> [(value=1, str=v1), (value=2, str=v2), (value=3, str=v3)]"
-      lv.json shouldEqual """{"data":[{"value":1,"str":"v1"},{"value":2,"str":"v2"},{"value":3,"str":"v3"}]}"""
+      lv.plain shouldEqual "[(1, v1),(2, v2),(3, v3)]"
+      lv.json shouldEqual """[[1,"v1"],[2,"v2"],[3,"v3"]]"""

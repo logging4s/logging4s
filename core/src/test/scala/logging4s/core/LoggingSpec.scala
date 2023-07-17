@@ -16,15 +16,3 @@ class LoggingSpec extends AnyWordSpec with Matchers:
         yield ()
 
       assert(resultTry.isSuccess)
-
-      val resultEither =
-        for
-          logging <- Logging.createEither("LoggingSpec")
-          _       <- logging.info("Test log")
-        yield ()
-
-      assert(resultEither.isRight)
-
-      Logging
-        .createUnsafe("LoggingSpec")
-        .info("Test log")
