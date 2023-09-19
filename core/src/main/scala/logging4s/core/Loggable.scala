@@ -59,15 +59,52 @@ object Loggable:
     override def plain(t: Option[T]): String = t.fold("")(L.plain)
     override def json(t: Option[T]): String  = t.fold("")(L.json)
 
+  given LoggableTuple[A <: Tuple]: Loggable[Tuple] = ???
+
   given LoggableTuple2[A, B](using AL: Loggable[A], BL: Loggable[B]): Loggable[(A, B)] with
     override def key: String              = if AL.key == BL.key then AL.key else s"${AL.key}_${BL.key}"
     override def plain(v: (A, B)): String = s"(${AL.plain(v._1)}, ${BL.plain(v._2)})"
     override def json(v: (A, B)): String  = s"[${AL.json(v._1)},${BL.json(v._2)}]"
 
-  given LoggableTuple3[A, B, C](using AL: Loggable[A], BL: Loggable[B], CL: Loggable[C]): Loggable[(A, B, C)] with
-    override def key: String                 = if AL.key == BL.key && BL.key == CL.key then AL.key else s"${AL.key}_${BL.key}_${CL.key}"
+  given LoggableTuple3[A, B, C](using
+      AL: Loggable[A],
+      BL: Loggable[B],
+      CL: Loggable[C]
+  ): Loggable[(A, B, C)] with
+    override def key: String                 =
+      if AL.key == BL.key && BL.key == CL.key
+      then AL.key
+      else s"${AL.key}_${BL.key}_${CL.key}"
     override def plain(v: (A, B, C)): String = s"(${AL.plain(v._1)}, ${BL.plain(v._2)}, ${CL.plain(v._3)})"
     override def json(v: (A, B, C)): String  = s"[${AL.json(v._1)},${BL.json(v._2)},${CL.json(v._3)}]"
+
+  given LoggableTuple4[A, B, C, D](using
+      AL: Loggable[A],
+      BL: Loggable[B],
+      CL: Loggable[C],
+      DL: Loggable[D]
+  ): Loggable[(A, B, C, D)] with
+    override def key: String                    =
+      if AL.key == BL.key && BL.key == CL.key && CL.key == DL.key
+      then AL.key
+      else s"${AL.key}_${BL.key}_${CL.key}_${DL.key}"
+    override def plain(v: (A, B, C, D)): String = s"(${AL.plain(v._1)}, ${BL.plain(v._2)}, ${CL.plain(v._3)}, ${DL.plain(v._4)})"
+    override def json(v: (A, B, C, D)): String  = s"[${AL.json(v._1)},${BL.json(v._2)},${CL.json(v._3)},${DL.json(v._4)}]"
+
+  given LoggableTuple5[A, B, C, D, E](using
+      AL: Loggable[A],
+      BL: Loggable[B],
+      CL: Loggable[C],
+      DL: Loggable[D],
+      EL: Loggable[E]
+  ): Loggable[(A, B, C, D, E)] with
+    override def key: String                       =
+      if AL.key == BL.key && BL.key == CL.key && CL.key == DL.key && DL.key == EL.key
+      then AL.key
+      else s"${AL.key}_${BL.key}_${CL.key}_${DL.key}_${EL.key}"
+    override def plain(v: (A, B, C, D, E)): String =
+      s"(${AL.plain(v._1)}, ${BL.plain(v._2)}, ${CL.plain(v._3)}, ${DL.plain(v._4)}, ${EL.plain(v._5)})"
+    override def json(v: (A, B, C, D, E)): String  = s"[${AL.json(v._1)},${BL.json(v._2)},${CL.json(v._3)},${DL.json(v._4)},${EL.json(v._5)}]"
 
   given LoggableList[T](using L: Loggable[T]): Loggable[List[T]] with
     override def key: String               = s"${L.key}s"
