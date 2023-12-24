@@ -1,14 +1,14 @@
-import xerial.sbt.Sonatype.GitHubHosting
 import Dependencies.Versions
+import xerial.sbt.Sonatype.GitHubHosting
 
 lazy val commonSettings = Seq(
   organization           := "org.logging4s",
   organizationName       := "Logging4s",
   homepage               := Some(url("https://logging4s.org/")),
   description            := "Structural logging for Scala 3 via slf4j and logback",
-  version                := "0.2.4",
+  version                := "0.2.5",
   versionScheme          := Some("semver-spec"),
-  scalaVersion           := Versions.scala3,
+  crossScalaVersions     := Seq(Versions.scala2, Versions.scala3),
   parallelExecution      := true,
   publishMavenStyle      := true,
   Test / publishArtifact := false,
