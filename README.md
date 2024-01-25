@@ -1,6 +1,6 @@
 ## Logging4s
 
-<img width="256px" height="256px" src="logos/logging4s_logo.png" alt="Logging4s logo - Beaver logging"/>
+<img width="256px" height="256px" src="logos/logging4s_icon.png" alt="Logging4s logo - Beaver logging"/>
 
 `Logging4s` is small logging library for structured (json) logs build on top of `logback` and `logstash-encoder`.
 
