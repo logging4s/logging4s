@@ -8,7 +8,7 @@ object Dependencies {
 
     val janino         = "3.1.12"
     val scalaLogging   = "3.9.5"
-    val logback        = "1.4.14"
+    val logback        = "1.5.0"
     val logbackEncoder = "7.4"
 
     val cats               = "2.10.0"
