@@ -27,6 +27,14 @@ object Loggable:
       override def json(a: A): String  = JsonEncoder[A].encode(a)
       override def plain(a: A): String = PlainEncoder[A].encode(a)
 
+  def make[A](keyName: String)(
+      encode: A => String,
+      show: A => String
+  ): Loggable[A] = new Loggable[A]:
+    override def key: String         = keyName
+    override def json(a: A): String  = encode(a)
+    override def plain(a: A): String = show(a)
+
   private def fromAnyVal[A <: AnyVal]: Loggable[A] =
     new Loggable[A]:
       override def key: String         = "value"
