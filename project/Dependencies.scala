@@ -11,21 +11,21 @@ object Dependencies {
     val logback        = "1.5.6"
     val logbackEncoder = "7.4"
 
-    val cats               = "2.10.0"
+    val cats               = "2.12.0"
     val catsEffect2        = "2.5.5"
     val catsEffect2Testing = "0.5.4"
-    val catsEffect3        = "3.5.3"
+    val catsEffect3        = "3.5.4"
     val catsEffectTesting  = "1.5.0"
 
-    val zio        = "2.1.1"
-    val zioPrelude = "1.0.0-RC26"
+    val zio        = "2.1.2"
+    val zioPrelude = "1.0.0-RC27"
 
     val circe     = "0.14.7"
-    val jsoniter  = "2.28.5"
+    val jsoniter  = "2.30.1"
     val playJson  = "2.10.5"
     val sprayJson = "1.3.6"
     val json4s    = "4.0.7"
-    val argonaut  = "6.3.9"
+    val argonaut  = "6.3.10"
 
     val scalatest = "3.2.18"
   }
