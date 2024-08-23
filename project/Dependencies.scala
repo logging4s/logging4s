@@ -4,12 +4,12 @@ object Dependencies {
 
   object Versions {
     val scala2 = "2.13.14"
-    val scala3 = "3.4.2"
+    val scala3 = "3.5.0"
 
     val janino         = "3.1.12"
     val scalaLogging   = "3.9.5"
-    val logback        = "1.5.6"
-    val logbackEncoder = "7.4"
+    val logback        = "1.5.7"
+    val logbackEncoder = "8.0"
 
     val cats               = "2.12.0"
     val catsEffect2        = "2.5.5"
@@ -17,17 +17,17 @@ object Dependencies {
     val catsEffect3        = "3.5.4"
     val catsEffectTesting  = "1.5.0"
 
-    val zio        = "2.1.2"
-    val zioPrelude = "1.0.0-RC27"
+    val zio        = "2.1.7"
+    val zioPrelude = "1.0.0-RC29"
 
-    val circe     = "0.14.7"
-    val jsoniter  = "2.30.1"
-    val playJson  = "2.10.5"
+    val circe     = "0.14.9"
+    val jsoniter  = "2.30.8"
+    val playJson  = "2.10.6"
     val sprayJson = "1.3.6"
     val json4s    = "4.0.7"
     val argonaut  = "6.3.10"
 
-    val scalatest = "3.2.18"
+    val scalatest = "3.2.19"
   }
 
   object Logging {
