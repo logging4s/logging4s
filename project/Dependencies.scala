@@ -8,21 +8,21 @@ object Dependencies {
 
     val janino         = "3.1.12"
     val scalaLogging   = "3.9.5"
-    val logback        = "1.5.11"
+    val logback        = "1.5.12"
     val logbackEncoder = "8.0"
 
     val cats               = "2.12.0"
     val catsEffect2        = "2.5.5"
     val catsEffect2Testing = "0.5.4"
-    val catsEffect3        = "3.5.5"
+    val catsEffect3        = "3.5.6"
     val catsEffectTesting  = "1.5.0"
 
-    val zio        = "2.1.11"
-    val zioPrelude = "1.0.0-RC29"
+    val zio        = "2.1.13"
+    val zioPrelude = "1.0.0-RC35"
 
     val circe     = "0.14.10"
-    val jsoniter  = "2.31.1"
-    val playJson  = "2.10.6"
+    val jsoniter  = "2.31.3"
+    val playJson  = "3.0.4"
     val sprayJson = "1.3.6"
     val json4s    = "4.0.7"
     val argonaut  = "6.3.10"
@@ -68,7 +68,7 @@ object Dependencies {
     val jsoniterMacros          = "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-macros" % Versions.jsoniter % "provided"
     val jsoniter: Seq[ModuleID] = Seq(jsoniterCore, jsoniterMacros)
 
-    val playJson = "com.typesafe.play" %% "play-json" % Versions.playJson
+    val playJson = "org.playframework" %% "play-json" % Versions.playJson
 
     val sprayJson = "io.spray" %% "spray-json" % Versions.sprayJson
 
