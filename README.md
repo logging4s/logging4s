@@ -18,9 +18,13 @@
     * `logging4s-circe` - implementation for `circe.Encoder`
     * `logging4s-jsoniter` - implementation for `jsoneter-scala JsonValueCodec`
     * `logging4s-argonaut` - implementation for `argonaut EncodeJson`
+    * `logging4s-borer` - implementation for `borer Encoder`
     * `logging4s-play-json` - implementation for `play-json Writes`
     * `logging4s-json4s` - implementation for `json4s Formats`
     * `logging4s-spray-json` - implementation for `spray-json JsonWriter`
+    * `logging4s-upickle` - implementation for `upickle Writer`
+    * `logging4s-weepickle` - implementation for `weepickle From`
+    * `logging4s-zio-json` - implementation for `zio-json JsonEncoder`
 
 #### Example
 
