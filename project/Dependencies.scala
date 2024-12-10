@@ -4,7 +4,7 @@ object Dependencies {
 
   object Versions {
     val scala2 = "2.13.15"
-    val scala3 = "3.5.2"
+    val scala3 = "3.6.2"
 
     val janino         = "3.1.12"
     val scalaLogging   = "3.9.5"
@@ -14,8 +14,8 @@ object Dependencies {
     val cats               = "2.12.0"
     val catsEffect2        = "2.5.5"
     val catsEffect2Testing = "0.5.4"
-    val catsEffect3        = "3.5.6"
-    val catsEffectTesting  = "1.5.0"
+    val catsEffect3        = "3.5.7"
+    val catsEffectTesting  = "1.6.0"
 
     val zio        = "2.1.13"
     val zioPrelude = "1.0.0-RC35"
@@ -26,6 +26,10 @@ object Dependencies {
     val sprayJson = "1.3.6"
     val json4s    = "4.0.7"
     val argonaut  = "6.3.10"
+    val borer     = "1.15.0"
+    val upickle   = "4.0.2"
+    val weepickle = "1.9.1"
+    val zioJson   = "0.7.3"
 
     val scalatest = "3.2.19"
   }
@@ -58,11 +62,11 @@ object Dependencies {
   }
 
   object Json {
-    val circeCore    = "io.circe" %% "circe-core"    % Versions.circe
-    val circeParser  = "io.circe" %% "circe-parser"  % Versions.circe
-    val circeGeneric = "io.circe" %% "circe-generic" % Versions.circe
-
-    val circe: Seq[ModuleID] = Seq(circeCore, circeParser, circeGeneric)
+    val circe: Seq[ModuleID] = Seq(
+      "io.circe" %% "circe-core",
+      "io.circe" %% "circe-parser",
+      "io.circe" %% "circe-generic",
+    ).map(_ % Versions.circe)
 
     val jsoniterCore            = "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-core"   % Versions.jsoniter
     val jsoniterMacros          = "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-macros" % Versions.jsoniter % "provided"
@@ -75,6 +79,13 @@ object Dependencies {
     val json4s = "org.json4s" %% "json4s-native" % Versions.json4s
 
     val argonaut = "io.argonaut" %% "argonaut" % Versions.argonaut
+
+    val upickle   = "com.lihaoyi"     %% "upickle"      % Versions.upickle
+    val weepickle = "com.rallyhealth" %% "weepickle-v1" % Versions.weepickle
+
+    val borer: ModuleID = "io.bullet" %% "borer-core" % Versions.borer
+
+    val zioJson: ModuleID = "dev.zio" %% "zio-json" % Versions.zioJson
   }
 
   object Testing {
