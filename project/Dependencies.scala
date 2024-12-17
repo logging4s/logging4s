@@ -21,7 +21,7 @@ object Dependencies {
     val zioPrelude = "1.0.0-RC35"
 
     val circe     = "0.14.10"
-    val jsoniter  = "2.31.3"
+    val jsoniter  = "2.32.0"
     val playJson  = "3.0.4"
     val sprayJson = "1.3.6"
     val json4s    = "4.0.7"
