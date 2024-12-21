@@ -6,7 +6,7 @@ lazy val commonSettings = Seq(
   organizationName       := "Logging4s",
   homepage               := Some(url("https://logging4s.org/")),
   description            := "Structural logging for Scala 3 via slf4j and logback",
-  version                := "0.5.1",
+  version                := "0.5.2",
   versionScheme          := Some("semver-spec"),
   scalaVersion           := Versions.scala3,
   parallelExecution      := true,
@@ -35,6 +35,10 @@ lazy val commonSettings = Seq(
   scalacOptions ++= Seq(
     "-encoding",
     "UTF-8",
+    "-source:future",
+    "-Wunused:all",
+    "-Xmax-inlines",
+    "200",
   ),
   credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials"),
 )
