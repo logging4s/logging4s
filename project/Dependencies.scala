@@ -8,7 +8,7 @@ object Dependencies {
 
     val janino         = "3.1.12"
     val scalaLogging   = "3.9.5"
-    val logback        = "1.5.14"
+    val logback        = "1.5.16"
     val logbackEncoder = "8.0"
 
     val cats               = "2.12.0"
@@ -18,7 +18,7 @@ object Dependencies {
     val catsEffectTesting  = "1.6.0"
 
     val zio        = "2.1.14"
-    val zioPrelude = "1.0.0-RC35"
+    val zioPrelude = "1.0.0-RC36"
 
     val circe     = "0.14.10"
     val jsoniter  = "2.33.0"
@@ -27,9 +27,9 @@ object Dependencies {
     val json4s    = "4.0.7"
     val argonaut  = "6.3.10"
     val borer     = "1.15.0"
-    val upickle   = "4.0.2"
+    val upickle   = "4.1.0"
     val weepickle = "1.9.1"
-    val zioJson   = "0.7.3"
+    val zioJson   = "0.7.4"
 
     val scalatest = "3.2.19"
   }
