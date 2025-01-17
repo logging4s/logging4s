@@ -1,3 +1,5 @@
 package logging4s.cats
 
-object instances extends ShowToPlainEncoderInstance with SyncToDelayInstance
+trait instances extends ShowToPlainEncoderInstance with SyncToDelayInstance
+
+object instances extends instances

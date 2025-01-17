@@ -1,3 +1,5 @@
 package logging4s.zio
 
-object instances extends DebugToPlainEncoderInstance with TaskToDelayInstance
+trait instances extends DebugToPlainEncoderInstance with TaskToDelayInstance
+
+object instances extends instances

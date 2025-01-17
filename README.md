@@ -14,6 +14,7 @@
     * `logging4s-ce-2` - implementation for `cats-effect 2` `Sync`
     * `logging4s-ce-3` - implementation for `cats-effect 3` `Sync`
 * `logging4s-zio` - implementation on top of `zio.Task` for runtime and `zio.prelude.Debug` for plain logs.
+* `logging4s-kyo` - implementation `kyo.IO` for effect and `kyo.Render` for plain logs.
 * `logging4s-json` - implementation json logs for different libs
     * `logging4s-circe` - implementation for `circe.Encoder`
     * `logging4s-jsoniter` - implementation for `jsoneter-scala JsonValueCodec`

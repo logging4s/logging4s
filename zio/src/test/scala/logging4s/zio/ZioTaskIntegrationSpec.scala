@@ -2,14 +2,16 @@ package logging4s.zio
 
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+
 import zio.{Runtime, Task, Unsafe}
+
 import logging4s.core.{Delay, Logging}
+
+import instances.given
 
 class ZioTaskIntegrationSpec extends AnyWordSpec with Matchers:
 
   "Zio integration" must {
-    import instances.given
-
     val runtime = Runtime.default
 
     "use given instance with Task for implement Delay" in {

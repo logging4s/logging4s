@@ -6,7 +6,7 @@ lazy val commonSettings = Seq(
   organizationName       := "Logging4s",
   homepage               := Some(url("https://logging4s.org/")),
   description            := "Structural logging for Scala 3 via slf4j and logback",
-  version                := "0.5.3",
+  version                := "0.6.0",
   versionScheme          := Some("semver-spec"),
   scalaVersion           := Versions.scala3,
   parallelExecution      := true,
@@ -102,6 +102,15 @@ lazy val zio = project
   .settings(
     name := "logging4s-zio",
     libraryDependencies ++= Dependencies.Zio.all,
+  )
+  .dependsOn(core)
+
+lazy val kyo = project
+  .in(file("kyo"))
+  .settings(commonSettings)
+  .settings(
+    name := "logging4s-kyo",
+    libraryDependencies ++= Dependencies.Kyo.all,
   )
   .dependsOn(core)
 
@@ -237,5 +246,6 @@ lazy val logging4s = project
     core,
     cats,
     zio,
+    kyo,
     json,
   )

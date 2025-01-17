@@ -3,8 +3,7 @@ import sbt.*
 object Dependencies {
 
   object Versions {
-    val scala2 = "2.13.15"
-    val scala3 = "3.6.2"
+    val scala3 = "3.6.3"
 
     val janino         = "3.1.12"
     val scalaLogging   = "3.9.5"
@@ -18,7 +17,9 @@ object Dependencies {
     val catsEffectTesting  = "1.6.0"
 
     val zio        = "2.1.14"
-    val zioPrelude = "1.0.0-RC36"
+    val zioPrelude = "1.0.0-RC37"
+
+    val kyo = "0.16.1"
 
     val circe     = "0.14.10"
     val jsoniter  = "2.33.0"
@@ -59,6 +60,13 @@ object Dependencies {
     val zioPrelude = "dev.zio" %% "zio-prelude" % Versions.zioPrelude
 
     val all: Seq[ModuleID] = Seq(zio, zioPrelude)
+  }
+
+  object Kyo {
+    val kyoCore = "io.getkyo" %% "kyo-core" % Versions.kyo
+    val kyoData = "io.getkyo" %% "kyo-data" % Versions.kyo
+
+    val all: Seq[ModuleID] = Seq(kyoCore, kyoData)
   }
 
   object Json {

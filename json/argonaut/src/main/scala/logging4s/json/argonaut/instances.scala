@@ -1,3 +1,5 @@
 package logging4s.json.argonaut
 
-object instances extends EncoderInstance
+trait instances extends EncoderInstance
+
+object instances extends instances

@@ -1,3 +1,5 @@
 package logging4s.json.circe
 
-object instances extends EncoderInstance
+trait instances extends EncoderInstance
+
+object instances extends instances

@@ -6,5 +6,5 @@ import logging4s.core.JsonEncoder
 
 trait EncoderInstance:
 
-  given [A](using E: Encoder[A]): JsonEncoder[A] =
+  given [A : Encoder as E] => JsonEncoder[A] = 
     a => E(a).noSpaces

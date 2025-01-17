@@ -1,3 +1,5 @@
 package logging4s.json.weepickle
 
-object instance extends EncoderInstance
+trait instance extends EncoderInstance
+
+object instance extends instance
