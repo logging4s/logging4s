@@ -5,7 +5,7 @@ import logging4s.core.Delay
 
 trait SyncToDelayInstance:
 
-  given [F[*]: Sync as S] => Delay[F] = 
+  given [F[*]: Sync as S] => Delay[F] =
     new:
       override def delay[A](a: => A): F[A] = S.delay(a)
 

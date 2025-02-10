@@ -1,7 +1,7 @@
 package logging4s.cats
 
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.{AnyWordSpec, AsyncWordSpec}
+import org.scalatest.wordspec.AsyncWordSpec
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
 import logging4s.core.Delay

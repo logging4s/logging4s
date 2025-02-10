@@ -20,7 +20,7 @@ trait Loggable[A]:
       override def plain(b: B): String = self.plain(f(b))
 
 object Loggable:
-  inline def apply[A : Loggable as i]: Loggable[A] = i
+  inline def apply[A: Loggable as i]: Loggable[A] = i
 
   def make[A: {JsonEncoder, PlainEncoder}](keyName: String): Loggable[A] =
     new Loggable[A]:
@@ -63,19 +63,19 @@ object Loggable:
   given LoggableFloat: Loggable[Float]     = fromAnyVal
   given LoggableDouble: Loggable[Double]   = fromAnyVal
 
-  given LoggableOption:[T: Loggable as L] => Loggable[Option[T]] =
+  given LoggableOption: [T: Loggable as L] => Loggable[Option[T]] =
     new:
       override def key: String                 = L.key
       override def plain(t: Option[T]): String = t.fold("")(L.plain)
       override def json(t: Option[T]): String  = t.fold("")(L.json)
 
-  given LoggableTuple2:[A, B] => (AL: Loggable[A], BL: Loggable[B]) => Loggable[(A, B)] =
+  given LoggableTuple2: [A, B] => (AL: Loggable[A], BL: Loggable[B]) => Loggable[(A, B)] =
     new:
-      override def key: String = if AL.key == BL.key then AL.key else s"${AL.key}_${BL.key}"
+      override def key: String              = if AL.key == BL.key then AL.key else s"${AL.key}_${BL.key}"
       override def plain(v: (A, B)): String = s"(${AL.plain(v._1)}, ${BL.plain(v._2)})"
-      override def json(v: (A, B)): String = s"[${AL.json(v._1)},${BL.json(v._2)}]"
+      override def json(v: (A, B)): String  = s"[${AL.json(v._1)},${BL.json(v._2)}]"
 
-  given LoggableTuple3:[A, B, C] => (
+  given LoggableTuple3: [A, B, C] => (
       AL: Loggable[A],
       BL: Loggable[B],
       CL: Loggable[C]
@@ -88,7 +88,7 @@ object Loggable:
       override def plain(v: (A, B, C)): String = s"(${AL.plain(v._1)}, ${BL.plain(v._2)}, ${CL.plain(v._3)})"
       override def json(v: (A, B, C)): String  = s"[${AL.json(v._1)},${BL.json(v._2)},${CL.json(v._3)}]"
 
-  given LoggableTuple4:[A, B, C, D] => (
+  given LoggableTuple4: [A, B, C, D] => (
       AL: Loggable[A],
       BL: Loggable[B],
       CL: Loggable[C],
@@ -102,7 +102,7 @@ object Loggable:
       override def plain(v: (A, B, C, D)): String = s"(${AL.plain(v._1)}, ${BL.plain(v._2)}, ${CL.plain(v._3)}, ${DL.plain(v._4)})"
       override def json(v: (A, B, C, D)): String  = s"[${AL.json(v._1)},${BL.json(v._2)},${CL.json(v._3)},${DL.json(v._4)}]"
 
-  given LoggableTuple5:[A, B, C, D, E] => (
+  given LoggableTuple5: [A, B, C, D, E] => (
       AL: Loggable[A],
       BL: Loggable[B],
       CL: Loggable[C],
@@ -118,13 +118,13 @@ object Loggable:
         s"(${AL.plain(v._1)}, ${BL.plain(v._2)}, ${CL.plain(v._3)}, ${DL.plain(v._4)}, ${EL.plain(v._5)})"
       override def json(v: (A, B, C, D, E)): String  = s"[${AL.json(v._1)},${BL.json(v._2)},${CL.json(v._3)},${DL.json(v._4)},${EL.json(v._5)}]"
 
-  given LoggableList:[T: Loggable as L] => Loggable[List[T]] =
+  given LoggableList: [T: Loggable as L] => Loggable[List[T]] =
     new:
       override def key: String               = s"${L.key}s"
       override def plain(a: List[T]): String = a.map(v => s"${L.plain(v)}").mkString("[", ",", "]")
       override def json(a: List[T]): String  = a.map(v => L.json(v)).mkString("[", ",", "]")
 
-  given LoggableSet:[T : Loggable as L] => Loggable[Set[T]] =
+  given LoggableSet: [T: Loggable as L] => Loggable[Set[T]] =
     new:
       override def key: String              = s"${L.key}s"
       override def plain(a: Set[T]): String = a.map(v => s"${L.plain(v)}").mkString("[", ",", "]")

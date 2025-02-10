@@ -17,12 +17,12 @@ object Dependencies {
     val catsEffectTesting  = "1.6.0"
 
     val zio        = "2.1.15"
-    val zioPrelude = "1.0.0-RC37"
+    val zioPrelude = "1.0.0-RC39"
 
     val kyo = "0.16.2"
 
     val circe     = "0.14.10"
-    val jsoniter  = "2.33.1"
+    val jsoniter  = "2.33.2"
     val playJson  = "3.0.4"
     val sprayJson = "1.3.6"
     val json4s    = "4.0.7"
