@@ -3,7 +3,7 @@ import sbt.*
 object Dependencies {
 
   object Versions {
-    val scala3 = "3.6.3"
+    val scala3 = "3.6.4"
 
     val janino         = "3.1.12"
     val scalaLogging   = "3.9.5"
@@ -30,7 +30,7 @@ object Dependencies {
     val borer     = "1.15.0"
     val upickle   = "4.1.0"
     val weepickle = "1.9.1"
-    val zioJson   = "0.7.38"
+    val zioJson   = "0.7.39"
 
     val scalatest = "3.2.19"
   }
