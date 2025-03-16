@@ -21,13 +21,13 @@ object Dependencies {
 
     val kyo = "0.16.2"
 
-    val circe     = "0.14.10"
+    val circe     = "0.14.11"
     val jsoniter  = "2.33.2"
     val playJson  = "3.0.4"
     val sprayJson = "1.3.6"
     val json4s    = "4.0.7"
     val argonaut  = "6.3.10"
-    val borer     = "1.15.0"
+    val borer     = "1.16.0"
     val upickle   = "4.1.0"
     val weepickle = "1.9.1"
     val zioJson   = "0.7.39"
