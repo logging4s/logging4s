@@ -7,7 +7,7 @@ object Dependencies {
 
     val janino         = "3.1.12"
     val scalaLogging   = "3.9.5"
-    val logback        = "1.5.17"
+    val logback        = "1.5.18"
     val logbackEncoder = "8.0"
 
     val cats               = "2.13.0"
@@ -22,7 +22,7 @@ object Dependencies {
     val kyo = "0.16.2"
 
     val circe     = "0.14.12"
-    val jsoniter  = "2.33.2"
+    val jsoniter  = "2.33.3"
     val playJson  = "3.0.4"
     val sprayJson = "1.3.6"
     val json4s    = "4.0.7"
