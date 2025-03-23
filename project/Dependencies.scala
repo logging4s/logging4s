@@ -19,7 +19,7 @@ object Dependencies {
     val zio        = "2.1.16"
     val zioPrelude = "1.0.0-RC39"
 
-    val kyo = "0.16.2"
+    val kyo = "0.17.0"
 
     val circe     = "0.14.12"
     val jsoniter  = "2.33.3"
