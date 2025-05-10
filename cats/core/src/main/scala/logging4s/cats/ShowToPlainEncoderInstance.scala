@@ -5,7 +5,7 @@ import logging4s.core.PlainEncoder
 
 trait ShowToPlainEncoderInstance:
 
-  given [T: Show as S] => PlainEncoder[T] =
+  given [T](using S: Show[T]): PlainEncoder[T] =
     (a: T) => S.show(a)
 
 object ShowToPlainEncoderInstance extends ShowToPlainEncoderInstance

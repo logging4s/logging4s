@@ -8,13 +8,13 @@ trait Delay[F[*]]:
 object Delay:
   def apply[F[*]](using F: Delay[F]): F.type = F
 
-  given Delay[Identity]:
+  given Delay[Identity] = new:
     override def delay[A](a: => A): Identity[A] = a
 
-  given Delay[Try]:
+  given Delay[Try] = new:
     override def delay[A](a: => A): Try[A] = Try(a)
 
-  given Delay[ThrowableEither]:
+  given Delay[ThrowableEither] = new:
     override def delay[A](a: => A): ThrowableEither[A] =
       try
         a

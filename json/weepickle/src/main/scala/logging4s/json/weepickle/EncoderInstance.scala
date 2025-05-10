@@ -7,5 +7,5 @@ import logging4s.core.JsonEncoder
 
 trait EncoderInstance:
 
-  given [A: From] => JsonEncoder[A] =
+  given [A: From]: JsonEncoder[A] =
     a => FromScala(a).transform(ToJson.string)

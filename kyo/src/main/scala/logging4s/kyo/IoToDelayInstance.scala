@@ -8,9 +8,8 @@ type KIO[T] = T < IO
 
 trait IoToDelayInstance:
 
-  given Delay[KIO] =
-    new Delay[KIO]:
-      override def delay[A](a: => A): KIO[A] =
-        IO(a)
+  given Delay[KIO] = new:
+    override def delay[A](a: => A): KIO[A] =
+      IO(a)
 
 object IoToDelayInstance extends IoToDelayInstance
