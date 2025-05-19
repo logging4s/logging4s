@@ -17,7 +17,7 @@ object Dependencies {
     val catsEffect3        = "3.6.1"
     val catsEffectTesting  = "1.6.0"
 
-    val zio        = "2.1.17"
+    val zio        = "2.1.18"
     val zioPrelude = "1.0.0-RC40"
 
     val kyo = "0.19.0"
@@ -29,7 +29,7 @@ object Dependencies {
     val json4s    = "4.0.7"
     val argonaut  = "6.3.10"
     val borer     = "1.16.1"
-    val upickle   = "4.1.0"
+    val upickle   = "4.2.1"
     val weepickle = "1.9.1"
     val zioJson   = "0.7.43"
 
