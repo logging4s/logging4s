@@ -4,7 +4,6 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 import org.json4s.{DefaultFormats, Formats}
-import org.json4s.native.Serialization
 
 import logging4s.core.{Loggable, PlainEncoder}
 
@@ -20,6 +19,6 @@ class Json4sIntegrationSpec extends AnyWordSpec with Matchers:
   "Json4s integration" must:
     "use given Formats for implementation JsonEncoder" in:
       val user     = User("John", 18)
-      val expected = Serialization.write(user)
+      val expected = """{"name":"John","age":18}"""
 
       Loggable.make[User]("user").json(user) shouldEqual expected

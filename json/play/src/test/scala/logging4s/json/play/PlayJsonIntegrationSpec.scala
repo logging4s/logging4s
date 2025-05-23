@@ -19,6 +19,6 @@ class PlayJsonIntegrationSpec extends AnyWordSpec with Matchers:
   "Play-json integration" must:
     "use given instance with Writes implementation for JsonEncoder" in:
       val user     = User("John", 18)
-      val expected = Json.toJson(user).toString
+      val expected = """{"name":"John","age":18}"""
 
       Loggable.make[User]("user").json(user) shouldEqual expected

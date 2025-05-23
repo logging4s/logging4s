@@ -8,7 +8,6 @@ import argonaut.{EncodeJson, Argonaut}
 import logging4s.core.{Loggable, PlainEncoder}
 
 import instances.given
-import Argonaut.given
 
 class ArgonautIntegrationSpec extends AnyWordSpec with Matchers:
 
@@ -20,6 +19,6 @@ class ArgonautIntegrationSpec extends AnyWordSpec with Matchers:
   "Argonaut integration" must:
     "use given EncodeJson implementation for JsonEncoder" in:
       val user     = User("John", 18)
-      val expected = user.jencode.nospaces
+      val expected = """{"name":"John","age":18}"""
 
       Loggable.make[User]("user").json(user) shouldEqual expected

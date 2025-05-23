@@ -18,8 +18,8 @@ class SprayJsonIntegrationSpec extends AnyWordSpec with Matchers:
   given JsonWriter[User]   = jsonFormat2(User.apply)
 
   "Spray-json integration" must:
-    "use given instance with JsonFormat implementation for JsonEncoder" in:
+    "use given instance with JsonWriter implementation for JsonEncoder" in:
       val user     = User("John", 18)
-      val expected = user.toJson.compactPrint
+      val expected = """{"age":18,"name":"John"}"""
 
       Loggable.make[User]("user").json(user) shouldEqual expected

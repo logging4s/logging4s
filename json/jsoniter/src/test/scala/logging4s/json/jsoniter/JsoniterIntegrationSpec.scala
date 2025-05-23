@@ -3,7 +3,7 @@ package logging4s.json.jsoniter
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-import com.github.plokhotnyuk.jsoniter_scala.core.{JsonValueCodec, writeToString}
+import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 
 import logging4s.core.{Loggable, PlainEncoder}
@@ -20,6 +20,6 @@ class JsoniterIntegrationSpec extends AnyWordSpec with Matchers:
   "Jsoniter integration" must:
     "use given instance with JsonCodec implementation for JsonEncoder" in:
       val user     = User("John", 18)
-      val expected = writeToString(user)
+      val expected = """{"name":"John","age":18}"""
 
       Loggable.make[User]("user").json(user) shouldEqual expected

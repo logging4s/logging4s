@@ -6,7 +6,7 @@ lazy val commonSettings = Seq(
   organizationName       := "Logging4s",
   homepage               := Some(url("https://logging4s.org/")),
   description            := "Structural logging for Scala 3 via slf4j and logback",
-  version                := "0.9.3",
+  version                := "0.9.4",
   versionScheme          := Some("semver-spec"),
   scalaVersion           := Versions.scalaLTS,
   parallelExecution      := true,
@@ -174,7 +174,7 @@ lazy val borer = project
   .settings(commonSettings)
   .settings(
     name := "logging4s-borer",
-    libraryDependencies += Dependencies.Json.borer,
+    libraryDependencies ++= Dependencies.Json.borer,
   )
   .dependsOn(core)
 
@@ -205,6 +205,15 @@ lazy val `zio-json` = project
   )
   .dependsOn(core)
 
+lazy val fabric = project
+  .in(file("json/fabric"))
+  .settings(commonSettings)
+  .settings(
+    name := "logging4s-fabric",
+    libraryDependencies ++= Dependencies.Json.fabric,
+  )
+  .dependsOn(core)
+
 lazy val json = project
   .in(file("json"))
   .settings(commonSettings)
@@ -222,6 +231,7 @@ lazy val json = project
     upickle,
     weepickle,
     `zio-json`,
+    fabric,
   )
 
 lazy val examples = project

@@ -14,12 +14,12 @@ class CirceIntegrationSpec extends AnyWordSpec with Matchers:
 
   final case class User(name: String, age: Int)
 
-  "Circe integration" must:
-    "use given instance with JsonCodec implementation for JsonEncoder" in:
-      given PlainEncoder[User] = user => s"name=${user.name}, age=${user.age}"
-      given Encoder[User]      = deriveEncoder
+  given PlainEncoder[User] = user => s"name=${user.name}, age=${user.age}"
+  given Encoder[User]      = deriveEncoder
 
+  "Circe integration" must:
+    "use given instance with Encoder implementation for JsonEncoder" in:
       val user     = User("John", 18)
-      val expected = Encoder[User].apply(user).noSpaces
+      val expected = """{"name":"John","age":18}"""
 
       Loggable.make[User]("user").json(user) shouldEqual expected

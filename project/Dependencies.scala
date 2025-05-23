@@ -32,6 +32,7 @@ object Dependencies {
     val upickle   = "4.2.1"
     val weepickle = "1.9.1"
     val zioJson   = "0.7.43"
+    val fabric    = "1.16.0"
 
     val scalatest = "3.2.19"
   }
@@ -92,9 +93,17 @@ object Dependencies {
     val upickle   = "com.lihaoyi"     %% "upickle"      % Versions.upickle
     val weepickle = "com.rallyhealth" %% "weepickle-v1" % Versions.weepickle
 
-    val borer: ModuleID = "io.bullet" %% "borer-core" % Versions.borer
+    val borer: Seq[ModuleID] = Seq(
+      "io.bullet" %% "borer-core",
+      "io.bullet" %% "borer-derivation",
+    ).map(_ % Versions.borer)
 
-    val zioJson: ModuleID = "dev.zio" %% "zio-json" % Versions.zioJson
+    val zioJson = "dev.zio" %% "zio-json" % Versions.zioJson
+
+    val fabric: Seq[ModuleID] = Seq(
+      "org.typelevel" %% "fabric-core",
+      "org.typelevel" %% "fabric-io",
+    ).map(_ % Versions.fabric)
   }
 
   object Testing {
