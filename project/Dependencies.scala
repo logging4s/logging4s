@@ -4,7 +4,7 @@ object Dependencies {
 
   object Versions {
     val scalaLTS  = "3.3.6"
-    val scalaLast = "3.7.0"
+    val scalaLast = "3.7.1"
 
     val janino         = "3.1.12"
     val scalaLogging   = "3.9.5"
@@ -18,12 +18,12 @@ object Dependencies {
     val catsEffectTesting  = "1.6.0"
 
     val zio        = "2.1.19"
-    val zioPrelude = "1.0.0-RC40"
+    val zioPrelude = "1.0.0-RC41"
 
     val kyo = "0.19.0"
 
     val circe     = "0.14.13"
-    val jsoniter  = "2.36.2"
+    val jsoniter  = "2.36.4"
     val playJson  = "3.0.4"
     val sprayJson = "1.3.6"
     val json4s    = "4.0.7"
@@ -32,7 +32,7 @@ object Dependencies {
     val upickle   = "4.2.1"
     val weepickle = "1.9.1"
     val zioJson   = "0.7.43"
-    val fabric    = "1.16.0"
+    val fabric    = "1.17.1"
 
     val scalatest = "3.2.19"
   }

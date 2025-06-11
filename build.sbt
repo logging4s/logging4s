@@ -6,7 +6,7 @@ lazy val commonSettings = Seq(
   organizationName       := "Logging4s",
   homepage               := Some(url("https://logging4s.org/")),
   description            := "Structural logging for Scala 3 via slf4j and logback",
-  version                := "0.9.5",
+  version                := "0.9.6",
   versionScheme          := Some("semver-spec"),
   scalaVersion           := Versions.scalaLTS,
   parallelExecution      := true,
@@ -240,7 +240,6 @@ lazy val examples = project
   .settings(
     name           := "logging4s-examples",
     publish / skip := true,
-    libraryDependencies += Dependencies.Cats.catsEffect3,
   )
   .dependsOn(circe)
   .dependsOn(`cats-effect-3`)
