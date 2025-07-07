@@ -23,8 +23,8 @@ object Dependencies {
     val kyo = "0.19.0"
 
     val circe     = "0.14.14"
-    val jsoniter  = "2.36.5"
-    val playJson  = "3.0.4"
+    val jsoniter  = "2.36.7"
+    val playJson  = "3.0.5"
     val sprayJson = "1.3.6"
     val json4s    = "4.0.7"
     val argonaut  = "6.3.10"
