@@ -1,4 +1,5 @@
 import Dependencies.Versions
+import xerial.sbt.Sonatype.autoImport.sonatypeRepository
 import xerial.sbt.Sonatype.GitHubHosting
 
 lazy val commonSettings = Seq(
@@ -13,7 +14,8 @@ lazy val commonSettings = Seq(
   publishMavenStyle      := true,
   Test / publishArtifact := false,
   sonatypeTimeoutMillis  := 60 * 60 * 1000,
-  sonatypeCredentialHost := "s01.oss.sonatype.org",
+  sonatypeCredentialHost := "central.sonatype.com",
+  sonatypeRepository     := "https://s01.oss.sonatype.org/service/local",
   sonatypeProjectHosting := Some(GitHubHosting("logging4s", "logging4s", "shadowsmind.dev@gmail.com")),
   licenses               := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
   publishTo              := sonatypePublishToBundle.value,
@@ -36,9 +38,7 @@ lazy val commonSettings = Seq(
     "-encoding",
     "UTF-8",
     "-source:future",
-    "-Wunused:all",
-    "-Xmax-inlines",
-    "200",
+    "-Wunused:all"
   ),
   credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials"),
 )
