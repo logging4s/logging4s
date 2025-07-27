@@ -1,11 +1,13 @@
-package logging4s.json.jsoniter
+package logging4s.json.fabric
 
-import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
-import com.github.plokhotnyuk.jsoniter_scala.core.writeToString
+import fabric.rw.RW
+import fabric.io.JsonFormatter
 
 import logging4s.core.JsonEncoder
 
+import fabric.rw.given
+
 trait EncoderInstance:
 
-  given [A: JsonValueCodec]: JsonEncoder[A] =
-    a => writeToString(a)
+  given [A: RW]: JsonEncoder[A] =
+    a => JsonFormatter.Compact(a.asJson)
