@@ -4,7 +4,7 @@ object Dependencies {
 
   object Versions {
     val scalaLTS  = "3.3.6"
-    val scalaLast = "3.7.1"
+    val scalaLast = "3.7.2"
 
     val janino         = "3.1.12"
     val scalaLogging   = "3.9.5"
@@ -14,7 +14,7 @@ object Dependencies {
     val cats               = "2.13.0"
     val catsEffect2        = "2.5.5"
     val catsEffect2Testing = "0.5.4"
-    val catsEffect3        = "3.6.1"
+    val catsEffect3        = "3.6.3"
     val catsEffectTesting  = "1.6.0"
 
     val zio        = "2.1.20"
@@ -23,7 +23,7 @@ object Dependencies {
     val kyo = "0.19.0"
 
     val circe     = "0.14.14"
-    val jsoniter  = "2.37.0"
+    val jsoniter  = "2.37.1"
     val playJson  = "3.0.5"
     val sprayJson = "1.3.6"
     val json4s    = "4.0.7"
