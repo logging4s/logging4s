@@ -22,8 +22,10 @@ object Dependencies {
 
     val kyo = "0.19.0"
 
+    val rapid = "0.19.0"
+
     val circe     = "0.14.14"
-    val jsoniter  = "2.37.1"
+    val jsoniter  = "2.37.3"
     val playJson  = "3.0.5"
     val sprayJson = "1.3.6"
     val json4s    = "4.0.7"
@@ -69,6 +71,13 @@ object Dependencies {
     val kyoData = "io.getkyo" %% "kyo-data" % Versions.kyo
 
     val all: Seq[ModuleID] = Seq(kyoCore, kyoData)
+  }
+
+  object Rapid {
+    val rapidCore = "com.outr" %% "rapid-core" % Versions.rapid
+    val rapidTest = "com.outr" %% "rapid-test" % Versions.rapid % Test
+
+    val all: Seq[ModuleID] = Seq(rapidCore, rapidTest)
   }
 
   object Json {

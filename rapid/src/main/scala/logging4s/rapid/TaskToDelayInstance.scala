@@ -1,12 +1,12 @@
-package logging4s.zio
+package logging4s.rapid
 
-import zio.*
+import rapid.Task
 
 import logging4s.core.Delay
 
 trait TaskToDelayInstance:
 
   given Delay[Task] = new:
-    override def delay[A](a: => A): Task[A] = ZIO.attempt(a)
+    override def delay[A](a: => A): Task[A] = Task(a)
 
 object TaskToDelayInstance extends TaskToDelayInstance
