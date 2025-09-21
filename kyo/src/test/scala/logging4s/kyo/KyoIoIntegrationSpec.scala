@@ -16,7 +16,8 @@ import AllowUnsafe.embrace.given
 
 class KyoIoIntegrationSpec extends AsyncWordSpec with Matchers:
 
-  override implicit val executionContext: ExecutionContext = Platform.executionContext
+  override val executionContext: ExecutionContext = Platform.executionContext
+  given ExecutionContext = executionContext
 
   "Kyo integration" must:
     "use given instance with IO implementation for Delay" in runKyo:
