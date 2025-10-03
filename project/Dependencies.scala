@@ -8,7 +8,7 @@ object Dependencies {
 
     val janino         = "3.1.12"
     val scalaLogging   = "3.9.6"
-    val logback        = "1.5.18"
+    val logback        = "1.5.19"
     val logbackEncoder = "8.1"
 
     val cats               = "2.13.0"
@@ -24,8 +24,8 @@ object Dependencies {
 
     val rapid = "1.1.0"
 
-    val circe     = "0.14.14"
-    val jsoniter  = "2.38.0"
+    val circe     = "0.14.15"
+    val jsoniter  = "2.38.3"
     val playJson  = "3.0.5"
     val sprayJson = "1.3.6"
     val json4s    = "4.0.7"
@@ -52,7 +52,7 @@ object Dependencies {
     val catsCore = "org.typelevel" %% "cats-core" % Versions.cats
 
     val catsEffect2        = "org.typelevel"  %% "cats-effect"                   % Versions.catsEffect2
-    val catsEffect2Testing = "com.codecommit" %% "cats-effect-testing-scalatest" % Versions.catsEffect2Testing
+    val catsEffect2Testing = "com.codecommit" %% "cats-effect-testing-scalatest" % Versions.catsEffect2Testing % Test
 
     val catsEffect3        = "org.typelevel" %% "cats-effect"                   % Versions.catsEffect3
     val catsEffect3Kernel  = "org.typelevel" %% "cats-effect-kernel"            % Versions.catsEffect3
