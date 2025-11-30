@@ -7,7 +7,7 @@ lazy val commonSettings = Seq(
   organizationName       := "Logging4s",
   homepage               := Some(url("https://logging4s.org/")),
   description            := "Structural logging for Scala 3 via slf4j and logback",
-  version                := "0.14.2",
+  version                := "0.15.0",
   versionScheme          := Some("semver-spec"),
   scalaVersion           := Versions.scalaLTS,
   parallelExecution      := true,
@@ -52,7 +52,7 @@ lazy val core = project
   )
 
 lazy val `cats-core` = project
-  .in(file("cats/core"))
+  .in(file("runtime/cats/core"))
   .settings(commonSettings)
   .settings(
     name := "logging4s-cats-core",
@@ -61,7 +61,7 @@ lazy val `cats-core` = project
   .dependsOn(core)
 
 lazy val `cats-effect-2` = project
-  .in(file("cats/ce-2"))
+  .in(file("runtime/cats/ce-2"))
   .settings(commonSettings)
   .settings(
     name := "logging4s-ce-2",
@@ -73,7 +73,7 @@ lazy val `cats-effect-2` = project
   .dependsOn(`cats-core`)
 
 lazy val `cats-effect-3` = project
-  .in(file("cats/ce-3"))
+  .in(file("runtime/cats/ce-3"))
   .settings(commonSettings)
   .settings(
     name := "logging4s-ce-3",
@@ -85,7 +85,7 @@ lazy val `cats-effect-3` = project
   .dependsOn(`cats-core`)
 
 lazy val cats = project
-  .in(file("cats"))
+  .in(file("runtime/cats"))
   .settings(commonSettings)
   .settings(
     publish / skip := true
@@ -97,7 +97,7 @@ lazy val cats = project
   )
 
 lazy val zio = project
-  .in(file("zio"))
+  .in(file("runtime/zio"))
   .settings(commonSettings)
   .settings(
     name := "logging4s-zio",
@@ -116,7 +116,7 @@ lazy val kyo = project
   .dependsOn(core)
 
 lazy val rapid = project
-  .in(file("rapid"))
+  .in(file("runtime/rapid"))
   .settings(commonSettings)
   .settings(
     name := "logging4s-rapid",
@@ -124,6 +124,7 @@ lazy val rapid = project
     libraryDependencies ++= Dependencies.Rapid.all,
   )
   .dependsOn(core)
+
 
 lazy val circe = project
   .in(file("json/circe"))
@@ -224,6 +225,19 @@ lazy val fabric = project
   )
   .dependsOn(core)
 
+val runtime = project
+  .in(file("runtime"))
+  .settings(commonSettings)
+  .settings(
+    publish / skip := true
+  )
+  .aggregate(
+    cats,
+    zio,
+    kyo,
+    rapid,
+  )
+
 lazy val json = project
   .in(file("json"))
   .settings(commonSettings)
@@ -264,9 +278,6 @@ lazy val logging4s = project
   )
   .aggregate(
     core,
-    cats,
-    zio,
-    kyo,
-    rapid,
+    runtime,
     json,
   )
