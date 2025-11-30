@@ -17,7 +17,7 @@ object Dependencies {
     val catsEffect3        = "3.6.3"
     val catsEffectTesting  = "1.7.0"
 
-    val zio        = "2.1.33"
+    val zio        = "2.1.23"
     val zioPrelude = "1.0.0-RC42"
 
     val kyo = "0.19.0"
