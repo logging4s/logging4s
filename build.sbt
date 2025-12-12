@@ -7,7 +7,7 @@ lazy val commonSettings = Seq(
   organizationName       := "Logging4s",
   homepage               := Some(url("https://logging4s.org/")),
   description            := "Structural logging for Scala 3 via slf4j and logback",
-  version                := "0.14.3",
+  version                := "0.14.4",
   versionScheme          := Some("semver-spec"),
   scalaVersion           := Versions.scalaLTS,
   parallelExecution      := true,
@@ -17,7 +17,7 @@ lazy val commonSettings = Seq(
   sonatypeCredentialHost := "central.sonatype.com",
   sonatypeRepository     := "https://s01.oss.sonatype.org/service/local",
   sonatypeProjectHosting := Some(GitHubHosting("logging4s", "logging4s", "shadowsmind.dev@gmail.com")),
-  licenses               := Seq("APL2" -> url("http://www.apache.org/licenses/LICENSE-2.0.txt")),
+  licenses               := Seq("APL2" -> url("https://www.apache.org/licenses/LICENSE-2.0.txt")),
   publishTo              := sonatypePublishToBundle.value,
   scmInfo                := Some(
     ScmInfo(
