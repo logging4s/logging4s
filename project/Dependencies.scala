@@ -25,7 +25,7 @@ object Dependencies {
     val rapid = "2.3.1"
 
     val circe     = "0.14.15"
-    val jsoniter  = "2.38.5"
+    val jsoniter  = "2.38.6"
     val playJson  = "3.0.6"
     val sprayJson = "1.3.6"
     val json4s    = "4.0.7"
@@ -33,7 +33,7 @@ object Dependencies {
     val borer     = "1.16.2"
     val upickle   = "4.4.1"
     val weepickle = "1.9.1"
-    val zioJson   = "0.7.45"
+    val zioJson   = "0.8.0"
     val fabric    = "1.19.0"
 
     val scalatest = "3.2.19"
