@@ -4,11 +4,11 @@ object Dependencies {
 
   object Versions {
     val scalaLTS  = "3.3.7"
-    val scalaLast = "3.7.4"
+    val scalaLast = "3.8.1"
 
     val janino         = "3.1.12"
     val scalaLogging   = "3.9.6"
-    val logback        = "1.5.23"
+    val logback        = "1.5.32"
     val logbackEncoder = "9.0"
 
     val cats               = "2.13.0"
@@ -22,7 +22,7 @@ object Dependencies {
 
     val kyo = "0.19.0"
 
-    val rapid = "2.3.1"
+    val rapid = "2.5.0"
 
     val circe     = "0.14.15"
     val jsoniter  = "2.38.8"
@@ -31,7 +31,7 @@ object Dependencies {
     val json4s    = "4.0.7"
     val argonaut  = "6.3.10"
     val borer     = "1.16.2"
-    val upickle   = "4.4.2"
+    val upickle   = "4.4.3"
     val weepickle = "1.9.1"
     val zioJson   = "0.8.0"
     val fabric    = "1.19.0"
