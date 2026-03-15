@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>logging4s - Structured Logging for Scala</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+          background-image: url('https://www.example.com/forest-texture.jpg');
+          background-size: cover;
+          background-attachment: fixed;
+        }
+        .card {
+          background: rgba(255, 255, 255, 0.9);
+          border-radius: 12px;
+          padding: 20px;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body class="text-gray-900">
+<!-- Hero Section -->
+<header class="bg-green-700 text-white py-10 text-center">
+    <img src="https://github.com/logging4s/logging4s/raw/main/logos/logging4s_icon.png" alt="logging4s logo"
+         class="mx-auto w-24 h-24">
+    <h1 class="text-4xl font-bold mt-4">logging4s</h1>
+    <p class="mt-2 text-lg">Transforming raw data into structured logs – like beavers building a dam!</p>
+</header>
+
+<!-- Quick Start Section -->
+<section id="start" class="container mx-auto my-12 px-4 text-center">
+    <h2 class="text-3xl font-semibold">Quick Start</h2>
+    <p class="text-gray-600 mt-4">Get up and running with logging4s in just a few minutes.</p>
+    <pre class="bg-gray-100 p-4 rounded mt-4 text-left overflow-x-auto">
+      <code>
+        libraryDependencies += "org.logging4s" %% "logging4s-core" % "latest-version"
+      </code>
+    </pre>
+</section>
+
+<!-- About Section -->
+<section class="container mx-auto my-12 px-4 text-center">
+    <h2 class="text-3xl font-semibold">Why logging4s?</h2>
+    <p class="text-gray-600 mt-4">Just like beavers efficiently process wood into strong structures, logging4s processes
+        data into structured logs.</p>
+    <p class="text-gray-600 mt-2">Seamlessly integrates with <strong>Cats Effect</strong> and <strong>ZIO</strong>,
+        supporting major JSON libraries like <strong>Circe</strong>, <strong>Jsoniter</strong>, <strong>Json4s</strong>,
+        and <strong>uPickle</strong>.</p>
+    <p class="text-gray-600 mt-2">Effortless JSON logging makes it simple to send logs to <strong>Kibana</strong> and
+        other analytics platforms.</p>
+</section>
+
+<!-- Features Section -->
+<section class="py-12 bg-green-100">
+    <div class="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
+        <div class="card text-center">
+            <i class="ph ph-tree text-4xl text-green-700"></i>
+            <h3 class="text-xl font-bold mt-4">Simple and Safe</h3>
+            <p class="mt-2 text-gray-600">Like a beaver’s ecosystem, our logs are well-structured and efficient.</p>
+        </div>
+        <div class="card text-center">
+            <i class="ph ph-gear-six text-4xl text-green-700"></i>
+            <h3 class="text-xl font-bold mt-4">Functional Integration</h3>
+            <p class="mt-2 text-gray-600">Works seamlessly with Cats Effect, ZIO, and FS2.</p>
+        </div>
+        <div class="card text-center">
+            <i class="ph ph-database text-4xl text-green-700"></i>
+            <h3 class="text-xl font-bold mt-4">JSON-First Approach</h3>
+            <p class="mt-2 text-gray-600">Logs are structured for modern observability tools.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Adapters Section -->
+<section class="container mx-auto my-12 px-4 text-center">
+    <h2 class="text-3xl font-semibold">Library Adapters</h2>
+    <div class="flex justify-center space-x-12 mt-6">
+        <div class="flex flex-col items-center">
+            <img src="https://avatars.mds.yandex.net/i?id=838757fde6c7a6562aade90eabf7f16cfa3d0287-4888343-images-thumbs&n=13"
+                 alt="Betby" class="w-32">
+            <a href="https://www.betby.com/" class="text-blue-500 mt-2 hover:underline">Betby</a>
+        </div>
+        <div class="flex flex-col items-center">
+            <img src="https://yt3.googleusercontent.com/ytc/AIdro_mJS2qzwMzAd2SnTc8r8gcIeC0p3TnL3fgIrRjAJx138A=s900-c-k-c0x00ffffff-no-rj"
+                 alt="Onlinetours" class="w-32">
+            <a href="https://www.onlinetours.ru/" class="text-blue-500 mt-2 hover:underline">Onlinetours</a>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-green-800 text-white py-6 text-center">
+    <p>© 2025 logging4s. All rights reserved.</p>
+    <div class="mt-2 space-x-4 flex justify-center items-center">
+        <a href="https://github.com/logging4s/logging4s"
+           class="text-yellow-400  flex items-center space-x-1">
+            <i class="ph ph-github-logo text-2xl"></i>
+            <span class="hover:underline">GitHub</span>
+        </a>
+    </div>
+</footer>
+</body>
+</html>
