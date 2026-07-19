@@ -1,27 +1,22 @@
 import Dependencies.Versions
-import xerial.sbt.Sonatype.autoImport.sonatypeRepository
-import xerial.sbt.Sonatype.GitHubHosting
 
 lazy val commonSettings = Seq(
   organization           := "org.logging4s",
   organizationName       := "Logging4s",
-  homepage               := Some(url("https://logging4s.org/")),
+  homepage               := Some(uri("https://logging4s.org/")),
   description            := "Structural logging for Scala 3 via slf4j and logback",
-  version                := "0.18.1",
+  version                := "0.19.0",
   versionScheme          := Some("semver-spec"),
   scalaVersion           := Versions.scalaLTS,
   parallelExecution      := true,
   publishMavenStyle      := true,
   Test / publishArtifact := false,
-  sonatypeTimeoutMillis  := 60 * 60 * 1000,
-  sonatypeCredentialHost := "central.sonatype.com",
-  sonatypeRepository     := "https://s01.oss.sonatype.org/service/local",
-  sonatypeProjectHosting := Some(GitHubHosting("logging4s", "logging4s", "shadowsmind.dev@gmail.com")),
-  licenses               := Seq("APL2" -> url("https://www.apache.org/licenses/LICENSE-2.0.txt")),
-  publishTo              := sonatypePublishToBundle.value,
+  licenses               := List(License.Apache2),
+  pomIncludeRepository   := { _ => false },
+  publishTo              := localStaging.value,
   scmInfo                := Some(
     ScmInfo(
-      url("https://github.com/logging4s/logging4s"),
+      uri("https://github.com/logging4s/logging4s"),
       "git@github.com:logging4s/logging4s.git",
     )
   ),
@@ -30,7 +25,7 @@ lazy val commonSettings = Seq(
       "shadowsmind",
       "Alexandr Oshlakov",
       "shadowsmind.dev@gmail.com",
-      url("https://github.com/shadowsmind"),
+      uri("https://github.com/shadowsmind"),
     )
   ),
   libraryDependencies ++= Dependencies.Testing.all,
@@ -106,7 +101,7 @@ lazy val zio = project
   .dependsOn(core)
 
 lazy val kyo = project
-  .in(file("kyo"))
+  .in(file("runtime/kyo"))
   .settings(commonSettings)
   .settings(
     name         := "logging4s-kyo",
@@ -119,12 +114,11 @@ lazy val rapid = project
   .in(file("runtime/rapid"))
   .settings(commonSettings)
   .settings(
-    name := "logging4s-rapid",
+    name         := "logging4s-rapid",
     scalaVersion := Versions.scalaLast,
     libraryDependencies ++= Dependencies.Rapid.all,
   )
   .dependsOn(core)
-
 
 lazy val circe = project
   .in(file("json/circe"))
@@ -211,7 +205,7 @@ lazy val `zio-json` = project
   .in(file("json/zio"))
   .settings(commonSettings)
   .settings(
-    name := "logging4s-zio",
+    name := "logging4s-zio-json",
     libraryDependencies += Dependencies.Json.zioJson,
   )
   .dependsOn(core)

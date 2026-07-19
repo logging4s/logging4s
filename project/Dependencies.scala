@@ -3,12 +3,12 @@ import sbt.*
 object Dependencies {
 
   object Versions {
-    val scalaLTS  = "3.3.7"
+    val scalaLTS  = "3.3.8"
     val scalaLast = "3.8.4"
 
     val janino         = "3.1.12"
     val scalaLogging   = "3.9.6"
-    val logback        = "1.5.34"
+    val logback        = "1.5.38"
     val logbackEncoder = "9.0"
 
     val cats               = "2.13.0"
@@ -22,10 +22,10 @@ object Dependencies {
 
     val kyo = "0.19.0"
 
-    val rapid = "2.9.7"
+    val rapid = "2.9.9"
 
-    val circe     = "0.14.15"
-    val jsoniter  = "2.38.14"
+    val circe     = "0.14.16"
+    val jsoniter  = "2.39.1"
     val playJson  = "3.0.6"
     val sprayJson = "1.3.6"
     val json4s    = "4.0.7"
@@ -34,18 +34,17 @@ object Dependencies {
     val upickle   = "4.4.3"
     val weepickle = "1.9.1"
     val zioJson   = "0.9.2"
-    val fabric    = "1.29.3"
+    val fabric    = "1.30.0"
 
     val scalatest = "3.2.20"
   }
 
   object Logging {
-    val janino         = "org.codehaus.janino"         % "janino"                   % Versions.janino
     val scalaLogging   = "com.typesafe.scala-logging" %% "scala-logging"            % Versions.scalaLogging
     val logbackClassic = "ch.qos.logback"              % "logback-classic"          % Versions.logback
     val logbackEncoder = "net.logstash.logback"        % "logstash-logback-encoder" % Versions.logbackEncoder
 
-    val all: Seq[ModuleID] = Seq(janino, scalaLogging, logbackClassic, logbackEncoder)
+    val all: Seq[ModuleID] = Seq(scalaLogging, logbackClassic, logbackEncoder)
   }
 
   object Cats {
