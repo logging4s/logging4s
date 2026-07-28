@@ -8,7 +8,7 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 
 import logging4s.core.{Loggable, PlainEncoder}
 
-import instances.given
+import JsoniterInstances.given
 
 class JsoniterIntegrationSpec extends AnyWordSpec with Matchers:
 

@@ -10,9 +10,9 @@ import kyo.*
 import kyo.kernel.Platform
 
 import logging4s.core.{Delay, Logging}
-import logging4s.logback.instances.given
+import logging4s.logback.LogbackInstances.given
 
-import instances.given
+import KyoInstances.given
 import AllowUnsafe.embrace.given
 
 class KyoIoIntegrationSpec extends AsyncWordSpec with Matchers:

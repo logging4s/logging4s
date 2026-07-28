@@ -16,34 +16,43 @@ import org.scalatest.wordspec.AnyWordSpec
 
 import logging4s.core.{Logging, LoggableValue}
 
-import instances.given
+import LogbackInstances.given
+
+object LoggingLogbackJsonSpec:
+  // logback's Logger/LoggerContext are process-wide singletons shared across every project's tests in the same
+  // sbt test JVM; serialize access to the dynamic appender-attach/detach sequence below.
+  private val appenderLock = new Object
 
 class LoggingLogbackJsonSpec extends AnyWordSpec with Matchers:
+
+  LogbackWarmup.touch()
 
   private val mapper = new ObjectMapper()
 
   private def captureJson(loggerName: String)(run: Logging[Try] => Unit): JsonNode =
-    val logbackLogger = LoggerFactory.getLogger(loggerName).asInstanceOf[LogbackLogger]
-    logbackLogger.setLevel(Level.ALL)
+    LoggingLogbackJsonSpec.appenderLock.synchronized {
+      val logbackLogger = LoggerFactory.getLogger(loggerName).asInstanceOf[LogbackLogger]
+      logbackLogger.setLevel(Level.ALL)
 
-    val context = logbackLogger.getLoggerContext
+      val context = logbackLogger.getLoggerContext
 
-    val encoder = new LogstashEncoder()
-    encoder.setContext(context)
-    encoder.start()
+      val encoder = new LogstashEncoder()
+      encoder.setContext(context)
+      encoder.start()
 
-    val appender = new ListAppender[ILoggingEvent]()
-    appender.setContext(context)
-    appender.start()
+      val appender = new ListAppender[ILoggingEvent]()
+      appender.setContext(context)
+      appender.start()
 
-    logbackLogger.addAppender(appender)
-    try
-      val logging = Logging.createTry(loggerName).get
-      run(logging)
-    finally logbackLogger.detachAppender(appender)
+      logbackLogger.addAppender(appender)
+      try
+        val logging = Logging.createTry(loggerName).get
+        run(logging)
+      finally logbackLogger.detachAppender(appender)
 
-    val event = appender.list.asScala.last
-    mapper.readTree(encoder.encode(event))
+      val event = appender.list.asScala.last
+      mapper.readTree(encoder.encode(event))
+    }
 
   "Logging backed by logback, actually encoded to JSON" must:
     "produce a real nested JSON object, not a double-encoded string" in:

@@ -8,7 +8,7 @@ import io.circe.generic.semiauto.deriveEncoder
 
 import logging4s.core.{Loggable, PlainEncoder}
 
-import instances.given
+import CirceInstances.given
 
 class CirceIntegrationSpec extends AnyWordSpec with Matchers:
 

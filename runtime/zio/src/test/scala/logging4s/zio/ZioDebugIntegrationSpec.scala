@@ -5,7 +5,7 @@ import org.scalatest.wordspec.AnyWordSpec
 
 import logging4s.core.{JsonEncoder, Loggable}
 
-import instances.given
+import ZioInstances.given
 
 class ZioDebugIntegrationSpec extends AnyWordSpec with Matchers:
 

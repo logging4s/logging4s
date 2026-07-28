@@ -7,7 +7,7 @@ import argonaut.{EncodeJson, Argonaut}
 
 import logging4s.core.{Loggable, PlainEncoder}
 
-import instances.given
+import ArgonautInstances.given
 
 class ArgonautIntegrationSpec extends AnyWordSpec with Matchers:
 

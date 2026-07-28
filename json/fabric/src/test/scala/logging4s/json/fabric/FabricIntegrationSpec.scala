@@ -8,7 +8,7 @@ import fabric.rw.RW
 import logging4s.core.{Loggable, PlainEncoder}
 
 import fabric.rw.given
-import instances.given
+import FabricInstances.given
 
 class FabricIntegrationSpec extends AnyWordSpec with Matchers:
 

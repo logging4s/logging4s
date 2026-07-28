@@ -4,8 +4,8 @@ import org.scalatest.wordspec.AsyncWordSpec
 import org.scalatest.matchers.should.Matchers
 import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.effect.IO
-import logging4s.core.Delay
-import logging4s.logback.instances.given
+import logging4s.core.{Delay, Logging}
+import logging4s.logback.LogbackInstances.given
 
 import SyncToDelayInstance.given
 
@@ -17,5 +17,5 @@ class CatsEffect3IntegrationSpec extends AsyncWordSpec with AsyncIOSpec with Mat
       Delay[IO].delay(expected).map(_ shouldEqual expected)
 
     "right create logging instance for IO monad" in:
-      for _ <- LoggingCats.create[IO]("test")
+      for _ <- Logging.create[IO]("test")
       yield assert(true)

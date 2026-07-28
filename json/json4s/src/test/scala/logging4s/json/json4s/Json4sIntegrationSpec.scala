@@ -7,7 +7,7 @@ import org.json4s.{DefaultFormats, Formats}
 
 import logging4s.core.{Loggable, PlainEncoder}
 
-import instances.given
+import Json4sInstances.given
 
 class Json4sIntegrationSpec extends AnyWordSpec with Matchers:
 

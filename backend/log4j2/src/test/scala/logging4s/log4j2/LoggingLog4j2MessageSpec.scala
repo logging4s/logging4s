@@ -13,7 +13,7 @@ import org.scalatest.wordspec.AnyWordSpec
 
 import logging4s.core.{Logging, LoggableValue}
 
-import instances.given
+import Log4j2Instances.given
 
 final class MessageCapturingAppender extends AbstractAppender("message-capturing-appender", null, null, false, Property.EMPTY_ARRAY):
   private var lastCapturedMessage: Option[Message] = None
@@ -29,6 +29,8 @@ object LoggingLog4j2MessageSpec:
   private val configurationLock = new Object
 
 class LoggingLog4j2MessageSpec extends AnyWordSpec with Matchers:
+
+  Log4j2Warmup.touch()
 
   private def captureMessage(loggerName: String)(run: Logging[Try] => Unit): Message =
     LoggingLog4j2MessageSpec.configurationLock.synchronized {

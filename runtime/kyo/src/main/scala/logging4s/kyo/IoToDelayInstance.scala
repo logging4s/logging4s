@@ -4,8 +4,6 @@ import kyo.{Frame, IO, <}
 
 import logging4s.core.Delay
 
-type KIO[T] = T < IO
-
 trait IoToDelayInstance:
 
   given Delay[KIO] = new:

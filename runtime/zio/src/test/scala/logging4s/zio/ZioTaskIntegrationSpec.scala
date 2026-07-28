@@ -6,9 +6,9 @@ import org.scalatest.wordspec.AnyWordSpec
 import zio.{Runtime, Task, Unsafe}
 
 import logging4s.core.{Delay, Logging}
-import logging4s.logback.instances.given
+import logging4s.logback.LogbackInstances.given
 
-import instances.given
+import ZioInstances.given
 
 class ZioTaskIntegrationSpec extends AnyWordSpec with Matchers:
 

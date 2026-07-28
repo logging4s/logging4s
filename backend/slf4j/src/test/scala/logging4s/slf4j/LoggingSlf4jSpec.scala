@@ -5,7 +5,7 @@ import org.scalatest.wordspec.AnyWordSpec
 
 import logging4s.core.{Logging, LoggableValue}
 
-import instances.given
+import Slf4jInstances.given
 
 class LoggingSlf4jSpec extends AnyWordSpec with Matchers:
 

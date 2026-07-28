@@ -6,12 +6,11 @@ object Dependencies {
     val scalaLTS  = "3.3.8"
     val scalaLast = "3.8.4"
 
-    val janino         = "3.1.12"
-    val scalaLogging   = "3.9.6"
-    val logback        = "1.6.0"
-    val logbackEncoder = "9.0"
-    val log4j          = "2.26.1"
-    val slf4j          = "2.0.18"
+    val janino          = "3.1.12"
+    val logback         = "1.6.0"
+    val logbackEncoder  = "9.0"
+    val log4j           = "2.26.1"
+    val slf4j           = "2.0.18"
     val jacksonDatabind = "2.22.1"
 
     val cats               = "2.13.0"
@@ -36,19 +35,18 @@ object Dependencies {
     val borer     = "1.16.2"
     val upickle   = "4.4.3"
     val weepickle = "1.9.1"
-    val zioJson   = "0.9.2"
+    val zioJson   = "0.10.0"
     val fabric    = "1.30.0"
 
     val scalatest = "3.2.20"
   }
 
   object Logback {
-    val scalaLogging   = "com.typesafe.scala-logging" %% "scala-logging"            % Versions.scalaLogging
-    val logbackClassic = "ch.qos.logback"              % "logback-classic"          % Versions.logback
-    val logbackEncoder = "net.logstash.logback"        % "logstash-logback-encoder" % Versions.logbackEncoder
-    val jacksonDatabind = "com.fasterxml.jackson.core"  % "jackson-databind"         % Versions.jacksonDatabind % Test
+    val logbackClassic  = "ch.qos.logback"             % "logback-classic"          % Versions.logback
+    val logbackEncoder  = "net.logstash.logback"       % "logstash-logback-encoder" % Versions.logbackEncoder
+    val jacksonDatabind = "com.fasterxml.jackson.core" % "jackson-databind"         % Versions.jacksonDatabind % Test
 
-    val all: Seq[ModuleID] = Seq(scalaLogging, logbackClassic, logbackEncoder)
+    val all: Seq[ModuleID] = Seq(logbackClassic, logbackEncoder)
   }
 
   object Log4j2 {

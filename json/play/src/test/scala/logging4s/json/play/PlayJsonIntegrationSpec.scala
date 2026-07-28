@@ -7,7 +7,7 @@ import play.api.libs.json.{Json, Writes}
 
 import logging4s.core.{Loggable, PlainEncoder}
 
-import instances.given
+import PlayJsonInstances.given
 
 class PlayJsonIntegrationSpec extends AnyWordSpec with Matchers:
 

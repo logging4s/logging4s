@@ -1,0 +1,5 @@
+package logging4s.cats
+
+trait CatsCoreInstances extends DataInstances with ShowToPlainEncoderInstance
+
+object CatsCoreInstances extends CatsCoreInstances

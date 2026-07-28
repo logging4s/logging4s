@@ -7,7 +7,7 @@ import zio.json.{JsonEncoder, DeriveJsonEncoder}
 
 import logging4s.core.{Loggable, PlainEncoder}
 
-import logging4s.json.zio.instances.given
+import logging4s.json.zio.ZioJsonInstances.given
 
 class ZioJsonIntegrationSpec extends AnyWordSpec with Matchers:
 

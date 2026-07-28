@@ -1,5 +1,10 @@
 package logging4s.core
 
+import java.util.UUID
+import java.time.{Instant, LocalDateTime, ZonedDateTime}
+
+import scala.concurrent.duration.FiniteDuration
+
 trait Loggable[A]:
   self: Loggable[A] =>
 
@@ -62,11 +67,57 @@ object Loggable:
   given LoggableFloat: Loggable[Float]     = fromAnyVal
   given LoggableDouble: Loggable[Double]   = fromAnyVal
 
+  given LoggableChar: Loggable[Char] = new:
+    override def key: String            = "value"
+    override def plain(a: Char): String = a.toString
+    override def json(a: Char): String  = s"\"$a\""
+
+  given LoggableBigDecimal: Loggable[BigDecimal] = new:
+    override def key: String                  = "value"
+    override def plain(a: BigDecimal): String = a.toString
+    override def json(a: BigDecimal): String  = a.toString
+
+  given LoggableBigInt: Loggable[BigInt] = new:
+    override def key: String              = "value"
+    override def plain(a: BigInt): String = a.toString
+    override def json(a: BigInt): String  = a.toString
+
+  given LoggableUUID: Loggable[UUID] = new:
+    override def key: String            = "value"
+    override def plain(a: UUID): String = a.toString
+    override def json(a: UUID): String  = s"\"$a\""
+
+  given LoggableInstant: Loggable[Instant] = new:
+    override def key: String               = "value"
+    override def plain(a: Instant): String = a.toString
+    override def json(a: Instant): String  = s"\"$a\""
+
+  given LoggableLocalDateTime: Loggable[LocalDateTime] = new:
+    override def key: String                     = "value"
+    override def plain(a: LocalDateTime): String = a.toString
+    override def json(a: LocalDateTime): String  = s"\"$a\""
+
+  given LoggableZonedDateTime: Loggable[ZonedDateTime] = new:
+    override def key: String                     = "value"
+    override def plain(a: ZonedDateTime): String = a.toString
+    override def json(a: ZonedDateTime): String  = s"\"$a\""
+
+  given LoggableFiniteDuration: Loggable[FiniteDuration] = new:
+    override def key: String                      = "time_ms"
+    override def plain(a: FiniteDuration): String = a.toMillis.toString
+    override def json(a: FiniteDuration): String  = plain(a)
+
   given LoggableOption[T](using L: Loggable[T]): Loggable[Option[T]] =
     new:
       override def key: String                 = L.key
       override def plain(t: Option[T]): String = t.fold("")(L.plain)
       override def json(t: Option[T]): String  = t.fold("")(L.json)
+
+  given LoggableEither[A, B](using AL: Loggable[A], BL: Loggable[B]): Loggable[Either[A, B]] =
+    new:
+      override def key: String                    = if AL.key == BL.key then AL.key else s"${AL.key}_${BL.key}"
+      override def plain(e: Either[A, B]): String = e.fold(AL.plain, BL.plain)
+      override def json(e: Either[A, B]): String  = e.fold(AL.json, BL.json)
 
   given LoggableTuple2[A, B](using AL: Loggable[A], BL: Loggable[B]): Loggable[(A, B)] =
     new:
@@ -122,6 +173,12 @@ object Loggable:
       override def key: String               = s"${L.key}s"
       override def plain(a: List[T]): String = a.map(v => s"${L.plain(v)}").mkString("[", ",", "]")
       override def json(a: List[T]): String  = a.map(v => L.json(v)).mkString("[", ",", "]")
+
+  given LoggableVector[T](using L: Loggable[T]): Loggable[Vector[T]] =
+    new:
+      override def key: String                 = s"${L.key}s"
+      override def plain(a: Vector[T]): String = a.map(v => s"${L.plain(v)}").mkString("[", ",", "]")
+      override def json(a: Vector[T]): String  = a.map(v => L.json(v)).mkString("[", ",", "]")
 
   given LoggableSet[T](using L: Loggable[T]): Loggable[Set[T]] =
     new:

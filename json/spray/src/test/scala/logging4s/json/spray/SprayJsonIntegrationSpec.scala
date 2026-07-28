@@ -8,7 +8,7 @@ import DefaultJsonProtocol.*
 
 import logging4s.core.{Loggable, PlainEncoder}
 
-import instances.given
+import SprayJsonInstances.given
 
 class SprayJsonIntegrationSpec extends AnyWordSpec with Matchers:
 

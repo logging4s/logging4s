@@ -8,7 +8,7 @@ import io.bullet.borer.derivation.CompactMapBasedCodecs.deriveEncoder
 
 import logging4s.core.{Loggable, PlainEncoder}
 
-import instances.given
+import BorerInstances.given
 
 class BorerIntegrationSpec extends AnyWordSpec with Matchers:
 

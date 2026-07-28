@@ -5,9 +5,11 @@ import org.scalatest.wordspec.AnyWordSpec
 
 import logging4s.core.Logging
 
-import instances.given
+import LogbackInstances.given
 
 class LoggingLogbackSpec extends AnyWordSpec with Matchers:
+
+  LogbackWarmup.touch()
 
   "Logging backed by logback" must:
     "right create for default Delay implementations" in:

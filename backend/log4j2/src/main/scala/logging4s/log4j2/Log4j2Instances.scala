@@ -4,10 +4,10 @@ import org.apache.logging.log4j.LogManager
 
 import logging4s.core.{Delay, Logging, LoggingFactory, LoggingContext}
 
-trait instances:
+trait Log4j2Instances:
 
   given LoggingFactory with
     def create[F[*]: Delay](name: String, context: LoggingContext): F[Logging[F]] =
       Delay[F].delay(LoggingLog4j2Impl(LogManager.getLogger(name), context))
 
-object instances extends instances
+object Log4j2Instances extends Log4j2Instances

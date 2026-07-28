@@ -7,7 +7,7 @@ import upickle.default.{Writer, macroW}
 
 import logging4s.core.{Loggable, PlainEncoder}
 
-import instances.given
+import UpickleInstances.given
 
 class UpickleIntegrationSpec extends AnyWordSpec with Matchers:
 

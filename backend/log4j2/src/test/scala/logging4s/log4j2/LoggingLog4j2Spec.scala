@@ -5,9 +5,11 @@ import org.scalatest.wordspec.AnyWordSpec
 
 import logging4s.core.{Logging, LoggableValue}
 
-import instances.given
+import Log4j2Instances.given
 
 class LoggingLog4j2Spec extends AnyWordSpec with Matchers:
+
+  Log4j2Warmup.touch()
 
   "Logging backed by log4j2" must:
     "right create for default Delay implementations" in:

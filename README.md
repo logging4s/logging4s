@@ -20,8 +20,18 @@ and the `Logging` interface) - the concrete implementation lives in a separate b
   whether they show up at all depends on the slf4j provider/version you plug in.
 
 All three backends expose the same `Logging.create`/`createTry`/`createEither`/`createUnsafe` from `logging4s.core.Logging` -
-you just bring a `given LoggingFactory` into scope by importing `logging4s.<backend>.instances.given` for whichever
-backend module you depend on. No per-backend helper object to remember.
+you just bring a `given LoggingFactory` into scope by importing `logging4s.<backend>.<Backend>Instances.given` for
+whichever backend module you depend on. No per-backend helper object to remember.
+
+Every integration module (backends, runtime effect modules, JSON modules) exposes its `given`s as a named trait with a
+matching companion object - `LogbackInstances`, `CatsInstances`, `CirceInstances`, and so on. Import
+`logging4s.<module>.<Module>Instances.given` directly for just that one module, or mix several traits into your own
+combined object if you'd rather have a single import in your app:
+```scala
+package com.example.logging
+
+object instances extends LogbackInstances with CatsInstances with CirceInstances
+```
 
 ### Quick start
 
@@ -29,7 +39,7 @@ backend module you depend on. No per-backend helper object to remember.
 
 * `logging4s-core` - type classes for abstract encoding and the `Logging` interface itself, independent of any concrete backend.
 * `logging4s-logback` - backend implementation: `Logging` on top of `slf4j` via `logback` and `logstash-encoder`, with support for Try, Either and unsafe variants.
-* `logging4s-log4j2` - backend implementation: `Logging` on top of Log4j2's own API, structured values via `ThreadContext`.
+* `logging4s-log4j2` - backend implementation: `Logging` on top of Log4j2's own API, structured values via a `MapMessage` argument.
 * `logging4s-slf4j` - backend implementation: `Logging` on bare `slf4j-api` using its native `addKeyValue` fluent API.
 * `logging4s-cats` - implementation for `cats` and `cats-effect`
     * `logging4s-cats-core` - implementation for `PlainEncoder` via `cats.Show`
@@ -72,8 +82,8 @@ import io.circe.Encoder
 import io.circe.generic.semiauto.deriveEncoder
 import logging4s.core.Loggable
 
-import logging4s.cats.instances.given
-import logging4s.json.circe.instances.given
+import logging4s.cats.CatsInstances.given
+import logging4s.json.circe.CirceInstances.given
 
 final case class User(id: UUID, name: String, age: Int)
 
@@ -87,14 +97,14 @@ object User:
 import java.util.UUID
 import cats.effect.std.UUIDGen
 import cats.effect.{ExitCode, IO, IOApp}
-import logging4s.cats.LoggingCats
+import logging4s.core.Logging
 
 import logging4s.core.LoggingContext
 import logging4s.core.syntax.withKey
 
-import logging4s.cats.instances.given
-import logging4s.json.circe.instances.given
-import logging4s.logback.instances.given // pick your backend by importing its `given LoggingBackend`
+import logging4s.cats.CatsInstances.given
+import logging4s.json.circe.CirceInstances.given
+import logging4s.logback.LogbackInstances.given // pick your backend by importing its `given LoggingFactory`
 
 object CatsEffect3Example extends IOApp:
 
@@ -105,7 +115,7 @@ object CatsEffect3Example extends IOApp:
   override def run(args: List[String]): IO[ExitCode] =
     for
       context <- IO.randomUUID.map(uuid => LoggingContext(uuid.withKey("session_id")))
-      logging <- LoggingCats.create[IO]("CatsEffect3Example", context)
+      logging <- Logging.create[IO]("CatsEffect3Example", context)
 
       johnShow <- createUser("John Show", 22)
       _        <- logging.info("User created", johnShow)

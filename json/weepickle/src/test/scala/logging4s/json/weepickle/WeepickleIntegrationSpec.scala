@@ -7,7 +7,7 @@ import com.rallyhealth.weepickle.v1.WeePickle.{From, macroFrom}
 
 import logging4s.core.{Loggable, PlainEncoder}
 
-import instances.given
+import WeepickleInstances.given
 
 class WeepickleIntegrationSpec extends AnyWordSpec with Matchers:
 

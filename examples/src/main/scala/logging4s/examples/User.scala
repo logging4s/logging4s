@@ -5,8 +5,8 @@ import cats.Show
 import io.circe.Encoder
 import io.circe.generic.semiauto.deriveEncoder
 import logging4s.core.Loggable
-import logging4s.cats.instances.given
-import logging4s.json.circe.instances.given
+import logging4s.cats.CatsInstances.given
+import logging4s.json.circe.CirceInstances.given
 
 final case class User(id: UUID, name: String, age: Int)
 

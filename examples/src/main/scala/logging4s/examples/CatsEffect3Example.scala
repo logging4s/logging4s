@@ -1,8 +1,11 @@
 package logging4s.examples
 
 import cats.effect.{ExitCode, IO, IOApp}
-import logging4s.cats.LoggingCats
-import logging4s.logback.instances.given
+
+import logging4s.core.Logging
+
+import logging4s.cats.CatsInstances.given
+import logging4s.logback.LogbackInstances.given
 
 object CatsEffect3Example extends IOApp:
 
@@ -12,7 +15,7 @@ object CatsEffect3Example extends IOApp:
 
   override def run(args: List[String]): IO[ExitCode] =
     for
-      logging <- LoggingCats.create[IO]("CatsEffectExampleLogging")
+      logging <- Logging.create[IO]("CatsEffectExampleLogging")
 
       johnShow <- createUser("John Show", 22)
       _        <- logging.info("User created", johnShow)

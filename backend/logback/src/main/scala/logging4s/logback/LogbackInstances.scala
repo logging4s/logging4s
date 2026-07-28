@@ -1,13 +1,13 @@
 package logging4s.logback
 
-import com.typesafe.scalalogging.Logger
+import org.slf4j.LoggerFactory
 
 import logging4s.core.{Delay, Logging, LoggingFactory, LoggingContext}
 
-trait instances:
+trait LogbackInstances:
 
   given LoggingFactory with
     def create[F[*]: Delay](name: String, context: LoggingContext): F[Logging[F]] =
-      Delay[F].delay(LoggingLogbackImpl(Logger(name), context))
+      Delay[F].delay(LoggingLogbackImpl(LoggerFactory.getLogger(name), context))
 
-object instances extends instances
+object LogbackInstances extends LogbackInstances
