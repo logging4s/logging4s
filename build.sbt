@@ -43,7 +43,47 @@ lazy val core = project
   .settings(commonSettings)
   .settings(
     name := "logging4s-core",
-    libraryDependencies ++= Dependencies.Logging.all,
+  )
+
+lazy val logback = project
+  .in(file("backend/logback"))
+  .settings(commonSettings)
+  .settings(
+    name := "logging4s-logback",
+    libraryDependencies ++= Dependencies.Logback.all,
+    libraryDependencies += Dependencies.Logback.jacksonDatabind,
+  )
+  .dependsOn(core)
+
+lazy val log4j2 = project
+  .in(file("backend/log4j2"))
+  .settings(commonSettings)
+  .settings(
+    name := "logging4s-log4j2",
+    libraryDependencies ++= Dependencies.Log4j2.all,
+  )
+  .dependsOn(core)
+
+lazy val slf4j = project
+  .in(file("backend/slf4j"))
+  .settings(commonSettings)
+  .settings(
+    name := "logging4s-slf4j",
+    libraryDependencies ++= Dependencies.Slf4j.all,
+  )
+  .dependsOn(core)
+  .dependsOn(logback % Test)
+
+lazy val backend = project
+  .in(file("backend"))
+  .settings(commonSettings)
+  .settings(
+    publish / skip := true
+  )
+  .aggregate(
+    logback,
+    log4j2,
+    slf4j,
   )
 
 lazy val `cats-core` = project
@@ -66,6 +106,7 @@ lazy val `cats-effect-2` = project
     )
   )
   .dependsOn(`cats-core`)
+  .dependsOn(logback % Test)
 
 lazy val `cats-effect-3` = project
   .in(file("runtime/cats/ce-3"))
@@ -78,6 +119,7 @@ lazy val `cats-effect-3` = project
     )
   )
   .dependsOn(`cats-core`)
+  .dependsOn(logback % Test)
 
 lazy val cats = project
   .in(file("runtime/cats"))
@@ -99,6 +141,7 @@ lazy val zio = project
     libraryDependencies ++= Dependencies.Zio.all,
   )
   .dependsOn(core)
+  .dependsOn(logback % Test)
 
 lazy val kyo = project
   .in(file("runtime/kyo"))
@@ -109,6 +152,7 @@ lazy val kyo = project
     libraryDependencies ++= Dependencies.Kyo.all,
   )
   .dependsOn(core)
+  .dependsOn(logback % Test)
 
 lazy val rapid = project
   .in(file("runtime/rapid"))
@@ -119,6 +163,7 @@ lazy val rapid = project
     libraryDependencies ++= Dependencies.Rapid.all,
   )
   .dependsOn(core)
+  .dependsOn(logback % Test)
 
 lazy val circe = project
   .in(file("json/circe"))
@@ -258,10 +303,12 @@ lazy val examples = project
   .settings(
     name           := "logging4s-examples",
     publish / skip := true,
+    libraryDependencies += Dependencies.Cats.catsEffect3,
   )
   .dependsOn(circe)
   .dependsOn(`cats-effect-3`)
   .dependsOn(zio)
+  .dependsOn(logback)
 
 lazy val logging4s = project
   .in(file("."))
@@ -272,6 +319,7 @@ lazy val logging4s = project
   )
   .aggregate(
     core,
+    backend,
     runtime,
     json,
   )

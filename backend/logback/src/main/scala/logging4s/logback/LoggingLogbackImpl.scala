@@ -1,12 +1,13 @@
-package logging4s.core
+package logging4s.logback
 
 import com.typesafe.scalalogging.Logger
 
-import LoggableValue.extensions.plain
+import logging4s.core.{Delay, Logging, LoggingContext, LoggableValue}
+import logging4s.core.LoggableValue.extensions.plain
 
-class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: LoggingContext = LoggingContext(Seq.empty)) extends Logging[F]:
+class LoggingLogbackImpl[F[*]: Delay](logger: Logger, context: LoggingContext = LoggingContext(Seq.empty)) extends Logging[F]:
 
-  override def withContext(moreContext: LoggingContext): Logging[F] = LoggingSlf4jImpl(logger, context + moreContext)
+  override def withContext(moreContext: LoggingContext): Logging[F] = LoggingLogbackImpl(logger, context + moreContext)
 
   override def error(message: String): F[Unit] =
     Delay[F].delay(logger.error(message))

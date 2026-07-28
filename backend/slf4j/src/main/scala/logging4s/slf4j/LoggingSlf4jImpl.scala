@@ -1,0 +1,138 @@
+package logging4s.slf4j
+
+import org.slf4j.Logger
+
+import logging4s.core.{Delay, Logging, LoggingContext, LoggableValue}
+import logging4s.core.LoggableValue.extensions.plain
+
+class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: LoggingContext = LoggingContext(Seq.empty)) extends Logging[F]:
+
+  override def withContext(moreContext: LoggingContext): Logging[F] = LoggingSlf4jImpl(logger, context + moreContext)
+
+  private def logWithValues(
+      values: Seq[LoggableValue],
+      cause: Option[Throwable],
+      message: Seq[LoggableValue] => String,
+      builder: Logger => org.slf4j.spi.LoggingEventBuilder,
+  ): Unit =
+    val deduplicated  = LoggableValue.deduplicateKeys(values)
+    val base          = builder(logger)
+    val withCause     = cause.fold(base)(base.setCause)
+    val withKeyValues = deduplicated.foldLeft(withCause) { (b, v) => b.addKeyValue(v.key, v.json) }
+
+    withKeyValues.log(message(deduplicated))
+
+  override def error(message: String): F[Unit] =
+    Delay[F].delay(logger.error(message))
+
+  override def error(message: String, error: Throwable): F[Unit] =
+    Delay[F].delay(logger.error(s"$message: class=${error.getClass.getName}, message=${error.getMessage}", error))
+
+  override def error(message: String, values: LoggableValue*): F[Unit] =
+    Delay[F].delay {
+      val valuesWithContext = context.values ++ values
+      logWithValues(valuesWithContext, None, vs => s"$message: ${vs.plain}", _.atError())
+    }
+
+  override def error(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
+    Delay[F].delay {
+      val valuesWithContext = context.values ++ values
+      logWithValues(
+        valuesWithContext,
+        Some(error),
+        vs => s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${vs.plain}",
+        _.atError(),
+      )
+    }
+
+  override def warn(message: String): F[Unit] =
+    Delay[F].delay(logger.warn(message))
+
+  override def warn(message: String, error: Throwable): F[Unit] =
+    Delay[F].delay(logger.warn(s"$message: class=${error.getClass.getName}, message=${error.getMessage}", error))
+
+  override def warn(message: String, values: LoggableValue*): F[Unit] =
+    Delay[F].delay {
+      val valuesWithContext = context.values ++ values
+      logWithValues(valuesWithContext, None, vs => s"$message: ${vs.plain}", _.atWarn())
+    }
+
+  override def warn(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
+    Delay[F].delay {
+      val valuesWithContext = context.values ++ values
+      logWithValues(
+        valuesWithContext,
+        Some(error),
+        vs => s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${vs.plain}",
+        _.atWarn(),
+      )
+    }
+
+  override def info(message: String): F[Unit] =
+    Delay[F].delay(logger.info(message))
+
+  override def info(message: String, error: Throwable): F[Unit] =
+    Delay[F].delay(logger.info(s"$message: class=${error.getClass.getName}, message=${error.getMessage}", error))
+
+  override def info(message: String, values: LoggableValue*): F[Unit] =
+    Delay[F].delay {
+      val valuesWithContext = context.values ++ values
+      logWithValues(valuesWithContext, None, vs => s"$message: ${vs.plain}", _.atInfo())
+    }
+
+  override def info(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
+    Delay[F].delay {
+      val valuesWithContext = context.values ++ values
+      logWithValues(
+        valuesWithContext,
+        Some(error),
+        vs => s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${vs.plain}",
+        _.atInfo(),
+      )
+    }
+
+  override def debug(message: String): F[Unit] =
+    Delay[F].delay(logger.debug(message))
+
+  override def debug(message: String, error: Throwable): F[Unit] =
+    Delay[F].delay(logger.debug(s"$message: class=${error.getClass.getName}, message=${error.getMessage}", error))
+
+  override def debug(message: String, values: LoggableValue*): F[Unit] =
+    Delay[F].delay {
+      val valuesWithContext = context.values ++ values
+      logWithValues(valuesWithContext, None, vs => s"$message: ${vs.plain}", _.atDebug())
+    }
+
+  override def debug(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
+    Delay[F].delay {
+      val valuesWithContext = context.values ++ values
+      logWithValues(
+        valuesWithContext,
+        Some(error),
+        vs => s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${vs.plain}",
+        _.atDebug(),
+      )
+    }
+
+  override def trace(message: String): F[Unit] =
+    Delay[F].delay(logger.trace(message))
+
+  override def trace(message: String, error: Throwable): F[Unit] =
+    Delay[F].delay(logger.trace(s"$message: class=${error.getClass.getName}, message=${error.getMessage}", error))
+
+  override def trace(message: String, values: LoggableValue*): F[Unit] =
+    Delay[F].delay {
+      val valuesWithContext = context.values ++ values
+      logWithValues(valuesWithContext, None, vs => s"$message: ${vs.plain}", _.atTrace())
+    }
+
+  override def trace(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
+    Delay[F].delay {
+      val valuesWithContext = context.values ++ values
+      logWithValues(
+        valuesWithContext,
+        Some(error),
+        vs => s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${vs.plain}",
+        _.atTrace(),
+      )
+    }

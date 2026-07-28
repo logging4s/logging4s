@@ -2,6 +2,7 @@ package logging4s.examples
 
 import cats.effect.{ExitCode, IO, IOApp}
 import logging4s.cats.LoggingCats
+import logging4s.logback.instances.given
 
 object CatsEffect3Example extends IOApp:
 

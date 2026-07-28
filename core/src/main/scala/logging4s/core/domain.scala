@@ -10,4 +10,5 @@ final case class LoggingContext(values: Seq[LoggableValue]):
   @targetName("plus") def +(other: LoggingContext): LoggingContext = LoggingContext(values ++ other.values)
 
 object LoggingContext:
+  def empty: LoggingContext                       = LoggingContext(Seq.empty)
   def apply(value: LoggableValue): LoggingContext = LoggingContext(Seq(value))

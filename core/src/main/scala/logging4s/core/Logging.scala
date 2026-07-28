@@ -3,11 +3,10 @@ package logging4s.core
 import scala.util.Try
 import scala.reflect.ClassTag
 
-import com.typesafe.scalalogging.Logger
-
 trait Logging[F[*]]:
 
   def withContext(context: LoggingContext): Logging[F]
+  def withContext(values: LoggableValue*): Logging[F] = withContext(LoggingContext(values))
 
   def error(message: String): F[Unit]
   def error(message: String, error: Throwable): F[Unit]
@@ -38,50 +37,52 @@ object Logging:
 
   def apply[F[*]](using instance: Logging[F]): Logging[F] = instance
 
-  def create[F[_]: Delay, S](using S: ClassTag[S]): F[Logging[F]] =
-    Delay[F].delay(LoggingSlf4jImpl(Logger(S.runtimeClass)))
+  def create[F[*]: Delay, S](using factory: LoggingFactory, S: ClassTag[S]): F[Logging[F]] =
+    factory.create(S.runtimeClass.getName, LoggingContext.empty)
 
-  def create[F[*]: Delay](name: String): F[Logging[F]] =
-    Delay[F].delay(LoggingSlf4jImpl(Logger(name)))
+  def create[F[*]: Delay](name: String)(using factory: LoggingFactory): F[Logging[F]] =
+    factory.create(name, LoggingContext.empty)
 
-  def create[F[*]: Delay, S](context: LoggingContext)(using S: ClassTag[S]): F[Logging[F]] =
-    Delay[F].delay(LoggingSlf4jImpl(Logger(S.runtimeClass), context))
+  def create[F[*]: Delay, S](context: LoggingContext)(using factory: LoggingFactory, S: ClassTag[S]): F[Logging[F]] =
+    factory.create(S.runtimeClass.getName, context)
 
-  def create[F[*]: Delay](name: String, context: LoggingContext): F[Logging[F]] =
-    Delay[F].delay(LoggingSlf4jImpl(Logger(name), context))
+  def create[F[*]: Delay](name: String, context: LoggingContext)(using factory: LoggingFactory): F[Logging[F]] =
+    factory.create(name, context)
 
-  def createTry[S](using ClassTag[S]): Try[Logging[Try]] =
+  def createTry[S](using factory: LoggingFactory, S: ClassTag[S]): Try[Logging[Try]] =
     create[Try, S]
 
-  def createTry(name: String): Try[Logging[Try]] =
+  def createTry(name: String)(using factory: LoggingFactory): Try[Logging[Try]] =
     create[Try](name)
 
-  def createTry[S](context: LoggingContext)(using ClassTag[S]): Try[Logging[Try]] =
+  def createTry[S](context: LoggingContext)(using factory: LoggingFactory, S: ClassTag[S]): Try[Logging[Try]] =
     create[Try, S](context)
 
-  def createTry(name: String, context: LoggingContext): Try[Logging[Try]] =
+  def createTry(name: String, context: LoggingContext)(using factory: LoggingFactory): Try[Logging[Try]] =
     create[Try](name, context)
 
-  def createEither[S](using ClassTag[S]): ThrowableEither[Logging[ThrowableEither]] =
+  def createEither[S](using factory: LoggingFactory, S: ClassTag[S]): ThrowableEither[Logging[ThrowableEither]] =
     create[ThrowableEither, S]
 
-  def createEither(name: String): ThrowableEither[Logging[ThrowableEither]] =
+  def createEither(name: String)(using factory: LoggingFactory): ThrowableEither[Logging[ThrowableEither]] =
     create[ThrowableEither](name)
 
-  def createEither[S](context: LoggingContext)(using ClassTag[S]): ThrowableEither[Logging[ThrowableEither]] =
+  def createEither[S](
+      context: LoggingContext
+  )(using factory: LoggingFactory, S: ClassTag[S]): ThrowableEither[Logging[ThrowableEither]] =
     create[ThrowableEither, S](context)
 
-  def createEither(name: String, context: LoggingContext): ThrowableEither[Logging[ThrowableEither]] =
+  def createEither(name: String, context: LoggingContext)(using factory: LoggingFactory): ThrowableEither[Logging[ThrowableEither]] =
     create[ThrowableEither](name, context)
 
-  def createUnsafe[S](using ClassTag[S]): Identity[Logging[Identity]] =
+  def createUnsafe[S](using factory: LoggingFactory, S: ClassTag[S]): Identity[Logging[Identity]] =
     create[Identity, S]
 
-  def createUnsafe(name: String): Identity[Logging[Identity]] =
+  def createUnsafe(name: String)(using factory: LoggingFactory): Identity[Logging[Identity]] =
     create[Identity](name)
 
-  def createUnsafe[S](context: LoggingContext)(using ClassTag[S]): Identity[Logging[Identity]] =
+  def createUnsafe[S](context: LoggingContext)(using factory: LoggingFactory, S: ClassTag[S]): Identity[Logging[Identity]] =
     create[Identity, S](context)
 
-  def createUnsafe(name: String, context: LoggingContext): Identity[Logging[Identity]] =
+  def createUnsafe(name: String, context: LoggingContext)(using factory: LoggingFactory): Identity[Logging[Identity]] =
     create[Identity](name, context)

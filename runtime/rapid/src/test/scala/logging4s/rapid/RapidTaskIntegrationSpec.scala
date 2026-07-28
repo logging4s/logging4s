@@ -5,7 +5,8 @@ import org.scalatest.matchers.should.Matchers
 
 import rapid.{AsyncTaskSpec, Task}
 
-import logging4s.core.{Logging, Delay}
+import logging4s.core.{Delay, Logging}
+import logging4s.logback.instances.given
 
 import logging4s.rapid.instances.given
 

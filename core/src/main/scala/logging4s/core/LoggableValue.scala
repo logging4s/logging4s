@@ -21,3 +21,16 @@ object LoggableValue:
 
   object extensions:
     extension (values: Seq[LoggableValue]) def plain: String = values.map(v => s"${v.key} -> (${v.plain})").mkString(", ")
+
+  // keeps the first occurrence of a duplicated key unsuffixed and suffixes the rest with _2, _3, ...
+  def deduplicateKeys(values: Seq[LoggableValue]): Seq[LoggableValue] =
+    val counts = values.groupBy(_.key).view.mapValues(_.size).toMap
+    val seen   = scala.collection.mutable.Map.empty[String, Int].withDefaultValue(0)
+
+    values.map { value =>
+      if counts(value.key) == 1
+      then value
+      else
+        seen(value.key) += 1
+        if seen(value.key) == 1 then value else value.copy(key = s"${value.key}_${seen(value.key)}")
+    }

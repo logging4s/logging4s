@@ -1,6 +1,7 @@
 package logging4s.examples
 
 import logging4s.core.Logging
+import logging4s.logback.instances.given
 
 import java.util.UUID
 

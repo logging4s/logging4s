@@ -5,6 +5,7 @@ import org.scalatest.wordspec.AsyncWordSpec
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
 import logging4s.core.Delay
+import logging4s.logback.instances.given
 
 import instances.given
 

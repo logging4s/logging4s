@@ -1,0 +1,33 @@
+package logging4s.core
+
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.should.Matchers
+
+import logging4s.core.syntax.*
+
+class SyntaxSpec extends AnyWordSpec with Matchers:
+
+  "syntax" must:
+    "build a LoggableValue via asLogValue using the summoned key" in:
+      val lv = 5.asLogValue
+
+      lv.key shouldEqual "value"
+      lv.plain shouldEqual "5"
+      lv.json shouldEqual "5"
+
+    "build a LoggableValue via asLogValue with a custom key" in:
+      val lv = "hello".asLogValue("greeting")
+
+      lv.key shouldEqual "greeting"
+      lv.plain shouldEqual "hello"
+      lv.json shouldEqual "\"hello\""
+
+    "build a LoggableValue via withKey from JsonEncoder/PlainEncoder" in:
+      given JsonEncoder[Int]  = i => i.toString
+      given PlainEncoder[Int] = i => s"n=$i"
+
+      val lv = 42.withKey("answer")
+
+      lv.key shouldEqual "answer"
+      lv.plain shouldEqual "n=42"
+      lv.json shouldEqual "42"

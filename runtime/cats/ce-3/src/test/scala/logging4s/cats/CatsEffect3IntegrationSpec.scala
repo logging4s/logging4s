@@ -5,6 +5,7 @@ import org.scalatest.matchers.should.Matchers
 import cats.effect.testing.scalatest.AsyncIOSpec
 import cats.effect.IO
 import logging4s.core.Delay
+import logging4s.logback.instances.given
 
 import SyncToDelayInstance.given
 

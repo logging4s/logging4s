@@ -8,6 +8,7 @@ import logging4s.core.syntax.withKey
 
 import logging4s.cats.instances.given
 import logging4s.json.circe.instances.given
+import logging4s.logback.instances.given
 
 object LogWithContextExample extends IOApp:
 

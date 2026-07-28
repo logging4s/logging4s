@@ -10,6 +10,7 @@ import kyo.*
 import kyo.kernel.Platform
 
 import logging4s.core.{Delay, Logging}
+import logging4s.logback.instances.given
 
 import instances.given
 import AllowUnsafe.embrace.given
@@ -17,7 +18,7 @@ import AllowUnsafe.embrace.given
 class KyoIoIntegrationSpec extends AsyncWordSpec with Matchers:
 
   override val executionContext: ExecutionContext = Platform.executionContext
-  given ExecutionContext = executionContext
+  given ExecutionContext                          = executionContext
 
   "Kyo integration" must:
     "use given instance with IO implementation for Delay" in runKyo:

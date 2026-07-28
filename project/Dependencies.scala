@@ -8,8 +8,11 @@ object Dependencies {
 
     val janino         = "3.1.12"
     val scalaLogging   = "3.9.6"
-    val logback        = "1.5.38"
+    val logback        = "1.6.0"
     val logbackEncoder = "9.0"
+    val log4j          = "2.26.1"
+    val slf4j          = "2.0.18"
+    val jacksonDatabind = "2.22.1"
 
     val cats               = "2.13.0"
     val catsEffect2        = "2.5.5"
@@ -39,12 +42,26 @@ object Dependencies {
     val scalatest = "3.2.20"
   }
 
-  object Logging {
+  object Logback {
     val scalaLogging   = "com.typesafe.scala-logging" %% "scala-logging"            % Versions.scalaLogging
     val logbackClassic = "ch.qos.logback"              % "logback-classic"          % Versions.logback
     val logbackEncoder = "net.logstash.logback"        % "logstash-logback-encoder" % Versions.logbackEncoder
+    val jacksonDatabind = "com.fasterxml.jackson.core"  % "jackson-databind"         % Versions.jacksonDatabind % Test
 
     val all: Seq[ModuleID] = Seq(scalaLogging, logbackClassic, logbackEncoder)
+  }
+
+  object Log4j2 {
+    val log4jApi  = "org.apache.logging.log4j" % "log4j-api"  % Versions.log4j
+    val log4jCore = "org.apache.logging.log4j" % "log4j-core" % Versions.log4j
+
+    val all: Seq[ModuleID] = Seq(log4jApi, log4jCore)
+  }
+
+  object Slf4j {
+    val slf4jApi = "org.slf4j" % "slf4j-api" % Versions.slf4j
+
+    val all: Seq[ModuleID] = Seq(slf4jApi)
   }
 
   object Cats {

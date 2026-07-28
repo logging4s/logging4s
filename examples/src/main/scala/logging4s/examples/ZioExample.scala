@@ -2,6 +2,7 @@ package logging4s.examples
 
 import zio.{Task, ZIO, ZIOAppDefault}
 import logging4s.zio.LoggingZio
+import logging4s.logback.instances.given
 
 import java.util.UUID
 

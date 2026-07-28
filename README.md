@@ -2,13 +2,35 @@
 
 <img width="256px" height="256px" src="logos/logging4s_icon.png" alt="Logging4s logo - Beaver logging"/>
 
-`Logging4s` is small logging library for structured (json) logs build on top of `logback` and `logstash-encoder`.
+`Logging4s` is small logging library for structured (json) logs. The `core` module is backend-agnostic (just type classes
+and the `Logging` interface) - the concrete implementation lives in a separate backend module. Pick one:
+
+* `logging4s-logback` - `Logging` on top of `slf4j` via `logback` and `logstash-encoder`. Structured values are attached as
+  real JSON fields via logstash's raw-JSON markers - the only backend that gives nested objects/arrays as genuine JSON
+  rather than an escaped string.
+* `logging4s-log4j2` - `Logging` directly on Log4j2's own API (not via slf4j). Structured values are passed as a
+  `MapMessage` argument to the log call itself (like logback passes a `Marker`) - no `ThreadContext`/MDC involved, so
+  no thread-locality concerns and no risk of clobbering a pre-existing MDC entry with the same key. Even with
+  `JsonTemplateLayout` configured in your `log4j2.xml`, values are still plain `String` entries in the map, so a
+  `Loggable` that renders a nested object or array will come out double-encoded unless your layout knows how to treat
+  a specific field as raw JSON.
+* `logging4s-slf4j` - `Logging` on bare `slf4j-api` 2.x, using its native fluent `addKeyValue` builder. No backend is
+  bundled - bring your own slf4j binding. **Weakest guarantee**: `addKeyValue`'s value is serialized like any other
+  object, so structured values are escaped as JSON strings too (confirmed even against a modern logstash-encoder), and
+  whether they show up at all depends on the slf4j provider/version you plug in.
+
+All three backends expose the same `Logging.create`/`createTry`/`createEither`/`createUnsafe` from `logging4s.core.Logging` -
+you just bring a `given LoggingFactory` into scope by importing `logging4s.<backend>.instances.given` for whichever
+backend module you depend on. No per-backend helper object to remember.
 
 ### Quick start
 
 #### Modules
 
-* `logging4s-core` - type classes for abstract encoding, base Logging support work with Try, Either and unsafe variants.
+* `logging4s-core` - type classes for abstract encoding and the `Logging` interface itself, independent of any concrete backend.
+* `logging4s-logback` - backend implementation: `Logging` on top of `slf4j` via `logback` and `logstash-encoder`, with support for Try, Either and unsafe variants.
+* `logging4s-log4j2` - backend implementation: `Logging` on top of Log4j2's own API, structured values via `ThreadContext`.
+* `logging4s-slf4j` - backend implementation: `Logging` on bare `slf4j-api` using its native `addKeyValue` fluent API.
 * `logging4s-cats` - implementation for `cats` and `cats-effect`
     * `logging4s-cats-core` - implementation for `PlainEncoder` via `cats.Show`
     * `logging4s-ce-2` - implementation for `cats-effect 2` `Sync`
@@ -35,7 +57,8 @@ Plug the library in for sbt
 ```scala
 libraryDependencies ++= Seq(
   "org.logging4s" %% "logging4s-ce-3" % version,
-  "org.logging4s" %% "logging4s-circe" % version
+  "org.logging4s" %% "logging4s-circe" % version,
+  "org.logging4s" %% "logging4s-logback" % version
 )
 ```
 
@@ -64,12 +87,14 @@ object User:
 import java.util.UUID
 import cats.effect.std.UUIDGen
 import cats.effect.{ExitCode, IO, IOApp}
-import logging4s.cats.Logging
+import logging4s.cats.LoggingCats
 
+import logging4s.core.LoggingContext
 import logging4s.core.syntax.withKey
 
 import logging4s.cats.instances.given
 import logging4s.json.circe.instances.given
+import logging4s.logback.instances.given // pick your backend by importing its `given LoggingBackend`
 
 object CatsEffect3Example extends IOApp:
 
@@ -80,7 +105,7 @@ object CatsEffect3Example extends IOApp:
   override def run(args: List[String]): IO[ExitCode] =
     for
       context <- IO.randomUUID.map(uuid => LoggingContext(uuid.withKey("session_id")))
-      logging <- Logging.create[IO]("CatsEffect3Example", context)
+      logging <- LoggingCats.create[IO]("CatsEffect3Example", context)
 
       johnShow <- createUser("John Show", 22)
       _        <- logging.info("User created", johnShow)
