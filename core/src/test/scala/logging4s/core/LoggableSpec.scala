@@ -1,24 +1,24 @@
 package logging4s.core
 
-import java.time.{Instant, LocalDateTime, ZonedDateTime, ZoneOffset}
 import java.util.UUID
-import scala.concurrent.duration.*
+import java.time.{Instant, LocalDateTime, ZonedDateTime, ZoneOffset}
+
+import scala.concurrent.duration.FiniteDuration
 
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers
 
 import logging4s.core.syntax.*
 
-class LoggableSpec extends AnyWordSpec with Matchers:
+import scala.concurrent.duration.given
+
+class LoggableSpec extends AnyWordSpec, Matchers:
 
   "Loggable" must:
     "auto summon Seq and List instances" in:
       Loggable[Seq[String]].key shouldEqual "values"
       Loggable[Seq[String]].plain(Seq("a", "b", "c")) shouldEqual "[a,b,c]"
       Loggable[Seq[String]].json(Seq("a", "b", "c")) shouldEqual """["a","b","c"]"""
-
-    "right rename key with extension" in:
-      "data".rename("test").key shouldEqual "test"
 
     "right rename key with the trait method" in:
       val renamed = Loggable[Int].rename("count")
@@ -83,6 +83,10 @@ class LoggableSpec extends AnyWordSpec with Matchers:
       Loggable[Char].plain('a') shouldEqual "a"
       Loggable[Char].json('a') shouldEqual "\"a\""
 
+    "combine tuple keys, keeping a shared key and joining distinct ones with '_'" in:
+      Loggable[(Int, Int)].key shouldEqual "value"
+      Loggable[(Int, FiniteDuration)].key shouldEqual "value_time_ms"
+
     "right summon BigDecimal instances" in:
       Loggable[BigDecimal].plain(BigDecimal("10.50")) shouldEqual "10.50"
       Loggable[BigDecimal].json(BigDecimal("10.50")) shouldEqual "10.50"
@@ -123,3 +127,20 @@ class LoggableSpec extends AnyWordSpec with Matchers:
       Loggable[Either[String, Int]].json(Left("err")) shouldEqual "\"err\""
       Loggable[Either[String, Int]].plain(Right(5)) shouldEqual "5"
       Loggable[Either[String, Int]].json(Right(5)) shouldEqual "5"
+
+    "right summon Unit instance" in:
+      Loggable[Unit].plain(()) shouldEqual ""
+      Loggable[Unit].json(()) shouldEqual ""
+
+    "right redact a value with the default mask" in:
+      val loggable = Loggable[String].redacted()
+
+      loggable.plain("secret") shouldEqual "***"
+      loggable.json("secret") shouldEqual "\"***\""
+
+    "right redact with a custom mask and keep the key" in:
+      val loggable = Loggable[String].rename("password").redacted("<hidden>")
+
+      loggable.key shouldEqual "password"
+      loggable.plain("hunter2") shouldEqual "<hidden>"
+      loggable.json("hunter2") shouldEqual "\"<hidden>\""

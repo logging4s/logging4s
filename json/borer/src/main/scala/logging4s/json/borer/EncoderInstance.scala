@@ -2,9 +2,9 @@ package logging4s.json.borer
 
 import io.bullet.borer.{Encoder, Json}
 
-import logging4s.core.JsonEncoder
+import logging4s.core.{JsonEncoder, JsonString}
 
 trait EncoderInstance:
 
-  given [A: Encoder]: JsonEncoder[A] =
-    a => Json.encode(a).toUtf8String
+  given BorerJsonEncoder[A: Encoder]: JsonEncoder[A] =
+    a => JsonString(Json.encode(a).toUtf8String)

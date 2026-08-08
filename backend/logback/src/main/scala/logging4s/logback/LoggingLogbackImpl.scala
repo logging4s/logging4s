@@ -3,7 +3,7 @@ package logging4s.logback
 import org.slf4j.Logger
 
 import logging4s.core.{Delay, Logging, LoggingContext, LoggableValue}
-import logging4s.core.LoggableValue.extensions.plain
+import logging4s.core.syntax.plain
 
 class LoggingLogbackImpl[F[*]: Delay](logger: Logger, context: LoggingContext = LoggingContext(Seq.empty)) extends Logging[F]:
 

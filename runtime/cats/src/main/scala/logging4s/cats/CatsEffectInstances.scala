@@ -1,0 +1,5 @@
+package logging4s.cats
+
+trait CatsEffectInstances extends SyncToDelayInstance
+
+object CatsEffectInstances extends CatsEffectInstances

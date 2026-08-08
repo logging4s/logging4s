@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-import logging4s.core.{Logging, LoggableValue}
+import logging4s.core.{JsonString, Loggable, Logging, LoggableValue, PlainString, ValueKey}
 
 import LogbackInstances.given
 
@@ -56,7 +56,7 @@ class LoggingLogbackJsonSpec extends AnyWordSpec with Matchers:
 
   "Logging backed by logback, actually encoded to JSON" must:
     "produce a real nested JSON object, not a double-encoded string" in:
-      val user = LoggableValue("user", "id=1, name=John", """{"id":1,"name":"John"}""")
+      val user = LoggableValue(ValueKey("user"), PlainString("id=1, name=John"), JsonString("""{"id":1,"name":"John"}"""))
 
       val json = captureJson("LoggingLogbackJsonSpec-object") { logging =>
         logging.info("User created", user)
@@ -68,7 +68,7 @@ class LoggingLogbackJsonSpec extends AnyWordSpec with Matchers:
       json.get("message").asText() should include("User created")
 
     "produce a real JSON array, not a double-encoded string" in:
-      val tags = LoggableValue("tags", "[a,b]", """["a","b"]""")
+      val tags = LoggableValue(ValueKey("tags"), PlainString("[a,b]"), JsonString("""["a","b"]"""))
 
       val json = captureJson("LoggingLogbackJsonSpec-array") { logging =>
         logging.info("Tagged", tags)
@@ -82,8 +82,8 @@ class LoggingLogbackJsonSpec extends AnyWordSpec with Matchers:
       val json = captureJson("LoggingLogbackJsonSpec-duplicates") { logging =>
         logging.info(
           "duplicate keys",
-          LoggableValue("k", "1", "1"),
-          LoggableValue("k", "2", "2"),
+          LoggableValue(ValueKey("k"), PlainString("1"), JsonString("1")),
+          LoggableValue(ValueKey("k"), PlainString("2"), JsonString("2")),
         )
       }
 
@@ -92,8 +92,23 @@ class LoggingLogbackJsonSpec extends AnyWordSpec with Matchers:
 
     "attach values from withContext alongside call-site values" in:
       val json = captureJson("LoggingLogbackJsonSpec-context") { logging =>
-        logging.withContext(LoggableValue("session", "abc", "\"abc\"")).info("Hello", LoggableValue("user", "John", "\"John\""))
+        logging
+          .withContextValues(LoggableValue(ValueKey("session"), PlainString("abc"), JsonString("\"abc\"")))
+          .info("Hello", LoggableValue(ValueKey("user"), PlainString("John"), JsonString("\"John\"")))
       }
 
       json.get("session").asText() shouldEqual "abc"
       json.get("user").asText() shouldEqual "John"
+
+    "encode a redacted value as a masked JSON string, never the real value" in:
+      val password = Loggable[String].redacted()
+      val secret   = "hunter2"
+      val value    = LoggableValue(ValueKey("password"), password.plain(secret), password.json(secret))
+
+      val json = captureJson("LoggingLogbackJsonSpec-redacted") { logging =>
+        logging.info("Login", value)
+      }
+
+      json.get("password").isTextual shouldEqual true
+      json.get("password").asText() shouldEqual "***"
+      json.toString should not include secret

@@ -6,16 +6,10 @@ import logging4s.core.Loggable
 
 trait DataInstances:
 
-  private given Loggable[Unit] = new:
-    override def key: String            = "value"
-    override def plain(u: Unit): String = ""
-    override def json(u: Unit): String  = ""
+  given MaybeLoggable: [T: Loggable] => Loggable[Maybe[T]] =
+    Loggable[Option[T]].contramap(_.toOption)
 
-  given [T: Loggable as L] => Loggable[Maybe[T]] =
-    Loggable[Either[Unit, T]].contramap(_.toRight(()), L.key)
-
-  given Loggable[Text] =
-    val L = Loggable[String]
-    L.contramap(_.show, L.key)
+  given TextLoggable: Loggable[Text] =
+    Loggable[String].contramap(_.show)
 
 object DataInstances extends DataInstances

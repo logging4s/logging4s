@@ -2,9 +2,9 @@ package logging4s.json.circe
 
 import io.circe.Encoder
 
-import logging4s.core.JsonEncoder
+import logging4s.core.{JsonEncoder, JsonString}
 
 trait EncoderInstance:
 
-  given [A](using E: Encoder[A]): JsonEncoder[A] =
-    a => E(a).noSpaces
+  given CirceJsonEncoder[A](using E: Encoder[A]): JsonEncoder[A] =
+    a => JsonString(E(a).noSpaces)

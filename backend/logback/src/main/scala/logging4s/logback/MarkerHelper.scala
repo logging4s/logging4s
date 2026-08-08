@@ -10,7 +10,7 @@ import logging4s.core.LoggableValue
 object MarkerHelper:
 
   def fromLoggable(value: LoggableValue): LogstashMarker =
-    appendRaw(value.key, value.json)
+    appendRaw(value.key.value, value.json.value)
 
   def fromLoggable(values: Seq[LoggableValue]): LogstashMarker =
     val deduplicated = LoggableValue.deduplicateKeys(values)

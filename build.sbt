@@ -4,8 +4,8 @@ lazy val commonSettings = Seq(
   organization           := "org.logging4s",
   organizationName       := "Logging4s",
   homepage               := Some(uri("https://logging4s.org/")),
-  description            := "Structural logging for Scala 3 via slf4j and logback",
-  version                := "1.0.1",
+  description            := "Structural logging for Scala 3 for any backend, runtime and json library",
+  version                := "2.0.0",
   versionScheme          := Some("semver-spec"),
   scalaVersion           := Versions.scalaLTS,
   parallelExecution      := true,
@@ -71,8 +71,10 @@ lazy val slf4j = project
     name := "logging4s-slf4j",
     libraryDependencies ++= Dependencies.Slf4j.all,
   )
-  .dependsOn(core)
-  .dependsOn(logback % Test)
+  .dependsOn(
+    core,
+    logback % Test,
+  )
 
 lazy val backend = project
   .in(file("backend"))
@@ -86,51 +88,19 @@ lazy val backend = project
     slf4j,
   )
 
-lazy val `cats-core` = project
-  .in(file("runtime/cats/core"))
+lazy val cats = project
+  .in(file("runtime/cats"))
   .settings(commonSettings)
   .settings(
-    name := "logging4s-cats-core",
-    libraryDependencies += Dependencies.Cats.catsCore,
-  )
-  .dependsOn(core)
-
-lazy val `cats-effect-2` = project
-  .in(file("runtime/cats/ce-2"))
-  .settings(commonSettings)
-  .settings(
-    name := "logging4s-ce-2",
-    libraryDependencies ++= Seq(
-      Dependencies.Cats.catsEffect2,
-      Dependencies.Cats.catsEffect2Testing,
-    )
-  )
-  .dependsOn(`cats-core`)
-  .dependsOn(logback % Test)
-
-lazy val `cats-effect-3` = project
-  .in(file("runtime/cats/ce-3"))
-  .settings(commonSettings)
-  .settings(
-    name := "logging4s-ce-3",
+    name := "logging4s-cats",
     libraryDependencies ++= Seq(
       Dependencies.Cats.catsEffect3Kernel,
       Dependencies.Cats.catsEffect3Testing,
     )
   )
-  .dependsOn(`cats-core`)
-  .dependsOn(logback % Test)
-
-lazy val cats = project
-  .in(file("runtime/cats"))
-  .settings(commonSettings)
-  .settings(
-    publish / skip := true
-  )
-  .aggregate(
-    `cats-core`,
-    `cats-effect-2`,
-    `cats-effect-3`,
+  .dependsOn(
+    core,
+    logback % Test,
   )
 
 lazy val zio = project
@@ -140,8 +110,10 @@ lazy val zio = project
     name := "logging4s-zio",
     libraryDependencies ++= Dependencies.Zio.all,
   )
-  .dependsOn(core)
-  .dependsOn(logback % Test)
+  .dependsOn(
+    core,
+    logback % Test
+  )
 
 lazy val kyo = project
   .in(file("runtime/kyo"))
@@ -151,8 +123,10 @@ lazy val kyo = project
     scalaVersion := Versions.scalaLast,
     libraryDependencies ++= Dependencies.Kyo.all,
   )
-  .dependsOn(core)
-  .dependsOn(logback % Test)
+  .dependsOn(
+    core,
+    logback % Test,
+  )
 
 lazy val rapid = project
   .in(file("runtime/rapid"))
@@ -162,8 +136,10 @@ lazy val rapid = project
     scalaVersion := Versions.scalaLast,
     libraryDependencies ++= Dependencies.Rapid.all,
   )
-  .dependsOn(core)
-  .dependsOn(logback % Test)
+  .dependsOn(
+    core,
+    logback % Test,
+  )
 
 lazy val circe = project
   .in(file("json/circe"))
@@ -271,9 +247,9 @@ val runtime = project
     publish / skip := true
   )
   .aggregate(
-    cats,
     zio,
     kyo,
+    cats,
     rapid,
   )
 
@@ -285,16 +261,16 @@ lazy val json = project
   )
   .aggregate(
     circe,
-    jsoniter,
-    `play-json`,
-    `spray-json`,
     json4s,
-    argonaut,
     borer,
+    fabric,
     upickle,
+    jsoniter,
+    argonaut,
     weepickle,
     `zio-json`,
-    fabric,
+    `play-json`,
+    `spray-json`,
   )
 
 lazy val examples = project
@@ -305,10 +281,12 @@ lazy val examples = project
     publish / skip := true,
     libraryDependencies += Dependencies.Cats.catsEffect3,
   )
-  .dependsOn(circe)
-  .dependsOn(`cats-effect-3`)
-  .dependsOn(zio)
-  .dependsOn(logback)
+  .dependsOn(
+    zio,
+    cats,
+    circe,
+    logback,
+  )
 
 lazy val logging4s = project
   .in(file("."))
@@ -319,7 +297,7 @@ lazy val logging4s = project
   )
   .aggregate(
     core,
+    json,
     backend,
     runtime,
-    json,
   )

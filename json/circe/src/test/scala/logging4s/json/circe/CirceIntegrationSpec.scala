@@ -1,20 +1,20 @@
 package logging4s.json.circe
 
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.should.Matchers
 
 import io.circe.Encoder
 import io.circe.generic.semiauto.deriveEncoder
 
-import logging4s.core.{Loggable, PlainEncoder}
+import logging4s.core.{Loggable, PlainEncoder, PlainString}
 
 import CirceInstances.given
 
-class CirceIntegrationSpec extends AnyWordSpec with Matchers:
+class CirceIntegrationSpec extends AnyWordSpec, Matchers:
 
   final case class User(name: String, age: Int)
 
-  given PlainEncoder[User] = user => s"name=${user.name}, age=${user.age}"
+  given PlainEncoder[User] = user => PlainString(s"name=${user.name}, age=${user.age}")
   given Encoder[User]      = deriveEncoder
 
   "Circe integration" must:

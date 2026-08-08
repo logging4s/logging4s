@@ -1,19 +1,19 @@
 package logging4s.json.json4s
 
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.should.Matchers
 
 import org.json4s.{DefaultFormats, Formats}
 
-import logging4s.core.{Loggable, PlainEncoder}
+import logging4s.core.{Loggable, PlainEncoder, PlainString}
 
 import Json4sInstances.given
 
-class Json4sIntegrationSpec extends AnyWordSpec with Matchers:
+class Json4sIntegrationSpec extends AnyWordSpec, Matchers:
 
   final case class User(name: String, age: Int)
 
-  given PlainEncoder[User] = user => s"name=${user.name}, age=${user.age}"
+  given PlainEncoder[User] = user => PlainString(s"name=${user.name}, age=${user.age}")
   given Formats            = DefaultFormats
 
   "Json4s integration" must:

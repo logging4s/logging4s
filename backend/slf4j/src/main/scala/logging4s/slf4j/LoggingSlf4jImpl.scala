@@ -3,7 +3,7 @@ package logging4s.slf4j
 import org.slf4j.Logger
 
 import logging4s.core.{Delay, Logging, LoggingContext, LoggableValue}
-import logging4s.core.LoggableValue.extensions.plain
+import logging4s.core.syntax.plain
 
 class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: LoggingContext = LoggingContext(Seq.empty)) extends Logging[F]:
 
@@ -18,7 +18,7 @@ class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: LoggingContext = Lo
     val deduplicated  = LoggableValue.deduplicateKeys(values)
     val base          = builder(logger)
     val withCause     = cause.fold(base)(base.setCause)
-    val withKeyValues = deduplicated.foldLeft(withCause) { (b, v) => b.addKeyValue(v.key, v.json) }
+    val withKeyValues = deduplicated.foldLeft(withCause) { (b, v) => b.addKeyValue(v.key.value, v.json.value) }
 
     withKeyValues.log(message(deduplicated))
 

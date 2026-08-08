@@ -11,7 +11,7 @@ import org.apache.logging.log4j.message.{Message, MapMessage}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-import logging4s.core.{Logging, LoggableValue}
+import logging4s.core.{JsonString, Logging, LoggableValue, PlainString, ValueKey}
 
 import Log4j2Instances.given
 
@@ -68,7 +68,7 @@ class LoggingLog4j2MessageSpec extends AnyWordSpec with Matchers:
   "Logging backed by log4j2" must:
     "pass structured values directly as a MapMessage argument, not via ThreadContext" in:
       val message = captureMessage("LoggingLog4j2MessageSpec-object") { logging =>
-        logging.info("User created", LoggableValue("user", "John", "\"John\""))
+        logging.info("User created", LoggableValue(ValueKey("user"), PlainString("John"), JsonString("\"John\"")))
       }
 
       message shouldBe a[MapMessage[?, ?]]
@@ -81,8 +81,8 @@ class LoggingLog4j2MessageSpec extends AnyWordSpec with Matchers:
       val message = captureMessage("LoggingLog4j2MessageSpec-duplicates") { logging =>
         logging.info(
           "duplicate keys",
-          LoggableValue("k", "1", "1"),
-          LoggableValue("k", "2", "2"),
+          LoggableValue(ValueKey("k"), PlainString("1"), JsonString("1")),
+          LoggableValue(ValueKey("k"), PlainString("2"), JsonString("2")),
         )
       }
 
@@ -93,8 +93,8 @@ class LoggingLog4j2MessageSpec extends AnyWordSpec with Matchers:
     "attach values from withContext alongside call-site values" in:
       val message = captureMessage("LoggingLog4j2MessageSpec-withcontext") { logging =>
         logging
-          .withContext(LoggableValue("session", "abc", "\"abc\""))
-          .info("Hello", LoggableValue("user", "John", "\"John\""))
+          .withContextValues(LoggableValue(ValueKey("session"), PlainString("abc"), JsonString("\"abc\"")))
+          .info("Hello", LoggableValue(ValueKey("user"), PlainString("John"), JsonString("\"John\"")))
       }
 
       val mapMessage = message.asInstanceOf[MapMessage[?, String]]
@@ -103,7 +103,7 @@ class LoggingLog4j2MessageSpec extends AnyWordSpec with Matchers:
 
     "leave ThreadContext untouched" in:
       captureMessage("LoggingLog4j2MessageSpec-no-mdc") { logging =>
-        logging.info("hello", LoggableValue("user", "John", "\"John\""))
+        logging.info("hello", LoggableValue(ValueKey("user"), PlainString("John"), JsonString("\"John\"")))
       }
 
       ThreadContext.get("user") shouldEqual null

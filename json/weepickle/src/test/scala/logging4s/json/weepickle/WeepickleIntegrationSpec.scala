@@ -1,19 +1,19 @@
 package logging4s.json.weepickle
 
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.should.Matchers
 
 import com.rallyhealth.weepickle.v1.WeePickle.{From, macroFrom}
 
-import logging4s.core.{Loggable, PlainEncoder}
+import logging4s.core.{Loggable, PlainEncoder, PlainString}
 
 import WeepickleInstances.given
 
-class WeepickleIntegrationSpec extends AnyWordSpec with Matchers:
+class WeepickleIntegrationSpec extends AnyWordSpec, Matchers:
 
   final case class User(name: String, age: Int)
 
-  given PlainEncoder[User] = user => s"name=${user.name}, age=${user.age}"
+  given PlainEncoder[User] = user => PlainString(s"name=${user.name}, age=${user.age}")
   given From[User]         = macroFrom
 
   "Weepickle integration" must:

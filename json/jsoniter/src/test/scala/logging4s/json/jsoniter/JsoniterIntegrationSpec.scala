@@ -1,20 +1,20 @@
 package logging4s.json.jsoniter
 
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.should.Matchers
 
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 
-import logging4s.core.{Loggable, PlainEncoder}
+import logging4s.core.{Loggable, PlainEncoder, PlainString}
 
 import JsoniterInstances.given
 
-class JsoniterIntegrationSpec extends AnyWordSpec with Matchers:
+class JsoniterIntegrationSpec extends AnyWordSpec, Matchers:
 
   final case class User(name: String, age: Int)
 
-  given PlainEncoder[User]   = user => s"name=${user.name}, age=${user.age}"
+  given PlainEncoder[User]   = user => PlainString(s"name=${user.name}, age=${user.age}")
   given JsonValueCodec[User] = JsonCodecMaker.make
 
   "Jsoniter integration" must:

@@ -1,19 +1,19 @@
 package logging4s.json.upickle
 
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.should.Matchers
 
 import upickle.default.{Writer, macroW}
 
-import logging4s.core.{Loggable, PlainEncoder}
+import logging4s.core.{Loggable, PlainEncoder, PlainString}
 
 import UpickleInstances.given
 
-class UpickleIntegrationSpec extends AnyWordSpec with Matchers:
+class UpickleIntegrationSpec extends AnyWordSpec, Matchers:
 
   final case class User(name: String, age: Int)
 
-  given PlainEncoder[User] = user => s"name=${user.name}, age=${user.age}"
+  given PlainEncoder[User] = user => PlainString(s"name=${user.name}, age=${user.age}")
   given Writer[User]       = macroW
 
   "Upickle integration" must:

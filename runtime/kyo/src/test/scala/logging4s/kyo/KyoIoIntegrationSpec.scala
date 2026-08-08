@@ -2,20 +2,20 @@ package logging4s.kyo
 
 import scala.concurrent.{ExecutionContext, Future}
 
+import org.scalatest.Assertion
 import org.scalatest.wordspec.AsyncWordSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatest.Assertion
 
 import kyo.*
 import kyo.kernel.Platform
 
 import logging4s.core.{Delay, Logging}
-import logging4s.logback.LogbackInstances.given
 
-import KyoInstances.given
 import AllowUnsafe.embrace.given
+import logging4s.logback.LogbackInstances.given
+import KyoInstances.given
 
-class KyoIoIntegrationSpec extends AsyncWordSpec with Matchers:
+class KyoIoIntegrationSpec extends AsyncWordSpec, Matchers:
 
   override val executionContext: ExecutionContext = Platform.executionContext
   given ExecutionContext                          = executionContext

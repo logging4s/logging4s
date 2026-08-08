@@ -7,7 +7,7 @@ import logging4s.core.Logging
 
 import LogbackInstances.given
 
-class LoggingLogbackSpec extends AnyWordSpec with Matchers:
+class LoggingLogbackSpec extends AnyWordSpec, Matchers:
 
   LogbackWarmup.touch()
 

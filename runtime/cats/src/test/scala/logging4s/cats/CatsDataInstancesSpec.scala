@@ -1,15 +1,15 @@
 package logging4s.cats
 
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.should.Matchers
 
-import cats.data.{Chain, Ior, NonEmptyList, NonEmptyMap, NonEmptySet, NonEmptyVector}
+import cats.data.*
 
 import logging4s.core.Loggable
 
 import DataInstances.given
 
-class CatsDataInstancesSpec extends AnyWordSpec with Matchers:
+class CatsDataInstancesSpec extends AnyWordSpec, Matchers:
 
   "DataInstances" must:
     "right summon NonEmptyList instances" in:

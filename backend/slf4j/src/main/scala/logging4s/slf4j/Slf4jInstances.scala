@@ -6,7 +6,7 @@ import logging4s.core.{Delay, Logging, LoggingFactory, LoggingContext}
 
 trait Slf4jInstances:
 
-  given LoggingFactory with
+  given Slf4jLoggingFactory: LoggingFactory with
     def create[F[*]: Delay](name: String, context: LoggingContext): F[Logging[F]] =
       Delay[F].delay(LoggingSlf4jImpl(LoggerFactory.getLogger(name), context))
 

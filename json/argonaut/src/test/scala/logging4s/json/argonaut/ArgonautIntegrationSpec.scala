@@ -1,19 +1,19 @@
 package logging4s.json.argonaut
 
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.should.Matchers
 
 import argonaut.{EncodeJson, Argonaut}
 
-import logging4s.core.{Loggable, PlainEncoder}
+import logging4s.core.{Loggable, PlainEncoder, PlainString}
 
 import ArgonautInstances.given
 
-class ArgonautIntegrationSpec extends AnyWordSpec with Matchers:
+class ArgonautIntegrationSpec extends AnyWordSpec, Matchers:
 
   final case class User(name: String, age: Int)
 
-  given PlainEncoder[User] = user => s"name=${user.name}, age=${user.age}"
+  given PlainEncoder[User] = user => PlainString(s"name=${user.name}, age=${user.age}")
   given EncodeJson[User]   = Argonaut.jencode2L((u: User) => (u.name, u.age))("name", "age")
 
   "Argonaut integration" must:

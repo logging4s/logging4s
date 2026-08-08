@@ -1,20 +1,20 @@
 package logging4s.json.spray
 
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.should.Matchers
 
 import spray.json.*
 import DefaultJsonProtocol.*
 
-import logging4s.core.{Loggable, PlainEncoder}
+import logging4s.core.{Loggable, PlainEncoder, PlainString}
 
 import SprayJsonInstances.given
 
-class SprayJsonIntegrationSpec extends AnyWordSpec with Matchers:
+class SprayJsonIntegrationSpec extends AnyWordSpec, Matchers:
 
   final case class User(name: String, age: Int)
 
-  given PlainEncoder[User] = user => s"name=${user.name}, age=${user.age}"
+  given PlainEncoder[User] = user => PlainString(s"name=${user.name}, age=${user.age}")
   given JsonWriter[User]   = jsonFormat2(User.apply)
 
   "Spray-json integration" must:

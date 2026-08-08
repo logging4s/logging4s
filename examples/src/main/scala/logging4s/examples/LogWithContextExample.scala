@@ -6,8 +6,8 @@ import logging4s.core.{Logging, LoggingContext}
 import logging4s.core.syntax.withKey
 
 import logging4s.cats.CatsInstances.given
-import logging4s.json.circe.CirceInstances.given
 import logging4s.logback.LogbackInstances.given
+import logging4s.json.circe.CirceInstances.given
 
 object LogWithContextExample extends IOApp:
 

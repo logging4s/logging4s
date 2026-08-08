@@ -2,9 +2,9 @@ package logging4s.json.argonaut
 
 import argonaut.EncodeJson
 
-import logging4s.core.JsonEncoder
+import logging4s.core.{JsonEncoder, JsonString}
 
 trait EncoderInstance:
 
-  given [A](using E: EncodeJson[A]): JsonEncoder[A] =
-    a => E(a).nospaces
+  given ArgonautJsonEncoder[A](using E: EncodeJson[A]): JsonEncoder[A] =
+    a => JsonString(E(a).nospaces)

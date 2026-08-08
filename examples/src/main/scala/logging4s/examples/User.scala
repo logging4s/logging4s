@@ -1,10 +1,13 @@
 package logging4s.examples
 
 import java.util.UUID
+
 import cats.Show
 import io.circe.Encoder
 import io.circe.generic.semiauto.deriveEncoder
+
 import logging4s.core.Loggable
+
 import logging4s.cats.CatsInstances.given
 import logging4s.json.circe.CirceInstances.given
 

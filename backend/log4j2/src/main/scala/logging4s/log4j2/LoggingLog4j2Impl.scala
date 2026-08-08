@@ -3,7 +3,7 @@ package logging4s.log4j2
 import org.apache.logging.log4j.Logger
 
 import logging4s.core.{Delay, Logging, LoggingContext, LoggableValue}
-import logging4s.core.LoggableValue.extensions.plain
+import logging4s.core.syntax.plain
 
 class LoggingLog4j2Impl[F[*]: Delay](logger: Logger, context: LoggingContext = LoggingContext.empty) extends Logging[F]:
 
@@ -11,7 +11,7 @@ class LoggingLog4j2Impl[F[*]: Delay](logger: Logger, context: LoggingContext = L
 
   private def buildMessage(message: String, values: Seq[LoggableValue]): LoggableMapMessage =
     val deduplicated = LoggableValue.deduplicateKeys(values)
-    val entries      = deduplicated.map(v => v.key -> v.json).toMap
+    val entries      = deduplicated.map(v => v.key.value -> v.json.value).toMap
     LoggableMapMessage(entries, s"$message: ${deduplicated.plain}")
 
   override def error(message: String): F[Unit] =

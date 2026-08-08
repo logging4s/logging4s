@@ -3,11 +3,11 @@ package logging4s.slf4j
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-import logging4s.core.{Logging, LoggableValue}
+import logging4s.core.{JsonString, Logging, LoggableValue, PlainString, ValueKey}
 
 import Slf4jInstances.given
 
-class LoggingSlf4jSpec extends AnyWordSpec with Matchers:
+class LoggingSlf4jSpec extends AnyWordSpec, Matchers:
 
   "Logging backed by bare slf4j" must:
     "right create for default Delay implementations" in:
@@ -23,7 +23,7 @@ class LoggingSlf4jSpec extends AnyWordSpec with Matchers:
       val resultTry =
         for
           logging <- Logging.createTry("LoggingSlf4jSpec")
-          _       <- logging.info("Test log with values", LoggableValue("user", "John", "\"John\""))
+          _       <- logging.info("Test log with values", LoggableValue(ValueKey("user"), PlainString("John"), JsonString("\"John\"")))
         yield ()
 
       assert(resultTry.isSuccess)
@@ -35,8 +35,8 @@ class LoggingSlf4jSpec extends AnyWordSpec with Matchers:
           _       <- logging.error(
                        "Test log with error and duplicated keys",
                        new RuntimeException("boom"),
-                       LoggableValue("k", "1", "\"1\""),
-                       LoggableValue("k", "2", "\"2\""),
+                       LoggableValue(ValueKey("k"), PlainString("1"), JsonString("\"1\"")),
+                       LoggableValue(ValueKey("k"), PlainString("2"), JsonString("\"2\"")),
                      )
         yield ()
 

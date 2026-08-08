@@ -1,16 +1,17 @@
 package logging4s.cats
 
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import logging4s.core.{JsonEncoder, Loggable}
+import org.scalatest.matchers.should.Matchers
 
-import logging4s.cats.ShowToPlainEncoderInstance.given
+import logging4s.core.{JsonEncoder, JsonString, Loggable}
 
-class CatsShowIntegrationSpec extends AnyWordSpec with Matchers:
+import ShowToPlainEncoderInstance.given
+
+class CatsShowIntegrationSpec extends AnyWordSpec, Matchers:
 
   "Cats core integration" must:
     "use given instance with Show implementation for PlainEncoder" in:
-      given JsonEncoder[String] = s => s"\"$s\""
+      given JsonEncoder[String] = s => JsonString.quoted(s)
 
       val expected = "test_value"
       Loggable.make[String]("value").plain(expected) shouldEqual expected

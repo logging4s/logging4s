@@ -8,13 +8,13 @@ import logging4s.logback.LogbackInstances.given
 
 object WithoutEffectsExample extends App:
 
-  val unsafeLogging = Logging.createUnsafe("UnsafeExampleLogging")
-  val tryLogging    = Logging.createTry("TryExampleLogging")
-  val eitherLogging = Logging.createEither("EitherExampleLogging")
+  private val unsafeLogging = Logging.createUnsafe("UnsafeExampleLogging")
+  private val tryLogging    = Logging.createTry("TryExampleLogging")
+  private val eitherLogging = Logging.createEither("EitherExampleLogging")
 
-  val johnSnow     = User(UUID.randomUUID(), "John Show", 22)
-  val daenerys     = User(UUID.randomUUID(), "Daenerys Targaryen", 22)
-  val createdUsers = Seq(johnSnow, daenerys)
+  private val johnSnow     = User(UUID.randomUUID(), "John Show", 22)
+  private val daenerys     = User(UUID.randomUUID(), "Daenerys Targaryen", 22)
+  private val createdUsers = Seq(johnSnow, daenerys)
 
   unsafeLogging.info("User created", johnSnow)
   unsafeLogging.info("User created", daenerys)

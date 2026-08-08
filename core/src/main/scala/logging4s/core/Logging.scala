@@ -6,7 +6,7 @@ import scala.reflect.ClassTag
 trait Logging[F[*]]:
 
   def withContext(context: LoggingContext): Logging[F]
-  def withContext(values: LoggableValue*): Logging[F] = withContext(LoggingContext(values))
+  def withContextValues(values: LoggableValue*): Logging[F] = withContext(LoggingContext(values))
 
   def error(message: String): F[Unit]
   def error(message: String, error: Throwable): F[Unit]

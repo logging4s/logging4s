@@ -1,20 +1,20 @@
 package logging4s.json.borer
 
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.should.Matchers
 
 import io.bullet.borer.Encoder
 import io.bullet.borer.derivation.CompactMapBasedCodecs.deriveEncoder
 
-import logging4s.core.{Loggable, PlainEncoder}
+import logging4s.core.{Loggable, PlainEncoder, PlainString}
 
 import BorerInstances.given
 
-class BorerIntegrationSpec extends AnyWordSpec with Matchers:
+class BorerIntegrationSpec extends AnyWordSpec, Matchers:
 
   final case class User(name: String, age: Int)
 
-  given PlainEncoder[User] = user => s"name=${user.name}, age=${user.age}"
+  given PlainEncoder[User] = user => PlainString(s"name=${user.name}, age=${user.age}")
   given Encoder[User]      = deriveEncoder
 
   "Borer integration" must:

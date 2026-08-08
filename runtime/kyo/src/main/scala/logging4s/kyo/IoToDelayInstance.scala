@@ -6,7 +6,7 @@ import logging4s.core.Delay
 
 trait IoToDelayInstance:
 
-  given Delay[KIO] = new:
+  given KioDelay: Delay[KIO] = new:
     override def delay[A](a: => A): KIO[A] =
       IO(a)
 
