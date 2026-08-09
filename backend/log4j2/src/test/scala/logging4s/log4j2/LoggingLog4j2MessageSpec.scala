@@ -24,8 +24,6 @@ final class MessageCapturingAppender extends AbstractAppender("message-capturing
   def lastMessage: Message = lastCapturedMessage.getOrElse(throw new IllegalStateException("no message captured"))
 
 object LoggingLog4j2MessageSpec:
-  // Log4j2's LoggerContext/Configuration are process-wide singletons; addLogger/updateLoggers here race against any
-  // other test doing the same dynamic reconfiguration concurrently, so serialize access to it.
   private val configurationLock = new Object
 
 class LoggingLog4j2MessageSpec extends AnyWordSpec with Matchers:

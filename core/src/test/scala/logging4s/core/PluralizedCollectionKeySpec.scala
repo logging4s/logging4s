@@ -10,18 +10,17 @@ class PluralizedCollectionKeySpec extends AnyWordSpec, Matchers:
   final case class Entry(text: String)
 
   private given Loggable[User]  = Loggable.make[User]("user")(u => s"\"${u.name}\"", _.name)
-  // Element keys ending in "s" and in a consonant + "y" — the tricky cases for pluralization.
   private given Loggable[Bus]   = Loggable.make[Bus]("bus")(b => b.id.toString, _.id.toString)
   private given Loggable[Entry] = Loggable.make[Entry]("entry")(e => s"\"${e.text}\"", _.text)
 
   "A collection Loggable key" must:
     "pluralize the element key so the single (object) and collection (array) forms never collide" in:
-      Loggable[String].key shouldEqual "value"
+      Loggable[String].key shouldEqual "string"
 
-      Loggable[List[String]].key shouldEqual "values"
-      Loggable[Vector[String]].key shouldEqual "values"
-      Loggable[Set[String]].key shouldEqual "values"
-      Loggable[Seq[String]].key shouldEqual "values"
+      Loggable[List[String]].key shouldEqual "strings"
+      Loggable[Vector[String]].key shouldEqual "strings"
+      Loggable[Set[String]].key shouldEqual "strings"
+      Loggable[Seq[String]].key shouldEqual "strings"
 
     "pluralize a custom element key (user -> users)" in:
       Loggable[User].key shouldEqual "user"
@@ -38,8 +37,8 @@ class PluralizedCollectionKeySpec extends AnyWordSpec, Matchers:
       Loggable[Seq[Entry]].key shouldEqual "entries"
 
     "pluralize the Map key derived from the tuple key" in:
-      Loggable[Map[String, Int]].key shouldEqual "values"
+      Loggable[Map[String, Int]].key shouldEqual "string_ints"
 
     "keep every nesting level distinct so array-of-array never collides with array" in:
-      Loggable[Seq[Seq[String]]].key shouldEqual "valueses"
+      Loggable[Seq[Seq[String]]].key shouldEqual "stringses"
       Loggable[List[Set[User]]].key shouldEqual "userses"

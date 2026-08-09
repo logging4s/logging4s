@@ -8,7 +8,7 @@ import scala.concurrent.duration.FiniteDuration
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers
 
-import logging4s.core.syntax.*
+import logging4s.core.syntax.all.*
 
 import scala.concurrent.duration.given
 
@@ -16,7 +16,7 @@ class LoggableSpec extends AnyWordSpec, Matchers:
 
   "Loggable" must:
     "auto summon Seq and List instances" in:
-      Loggable[Seq[String]].key shouldEqual "values"
+      Loggable[Seq[String]].key shouldEqual "strings"
       Loggable[Seq[String]].plain(Seq("a", "b", "c")) shouldEqual "[a,b,c]"
       Loggable[Seq[String]].json(Seq("a", "b", "c")) shouldEqual """["a","b","c"]"""
 
@@ -71,7 +71,7 @@ class LoggableSpec extends AnyWordSpec, Matchers:
     "right summon Set instances regardless of element order" in:
       val loggable = Loggable[Set[Int]]
 
-      loggable.key shouldEqual "values"
+      loggable.key shouldEqual "ints"
       loggable.plain(Set(1)) shouldEqual "[1]"
       loggable.json(Set(1)) shouldEqual "[1]"
 
@@ -84,8 +84,8 @@ class LoggableSpec extends AnyWordSpec, Matchers:
       Loggable[Char].json('a') shouldEqual "\"a\""
 
     "combine tuple keys, keeping a shared key and joining distinct ones with '_'" in:
-      Loggable[(Int, Int)].key shouldEqual "value"
-      Loggable[(Int, FiniteDuration)].key shouldEqual "value_time_ms"
+      Loggable[(Int, Int)].key shouldEqual "int"
+      Loggable[(Int, FiniteDuration)].key shouldEqual "int_time_ms"
 
     "right summon BigDecimal instances" in:
       Loggable[BigDecimal].plain(BigDecimal("10.50")) shouldEqual "10.50"

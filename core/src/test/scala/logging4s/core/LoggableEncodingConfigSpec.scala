@@ -6,7 +6,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers
 
 import logging4s.core.config.{KeyNameStyle, LoggableEncodingConfig, PlainTupleStyle, PlainValuesStyle}
-import logging4s.core.syntax.plain
+import logging4s.core.syntax.all.plain
 
 import scala.concurrent.duration.given
 
@@ -29,7 +29,7 @@ class LoggableEncodingConfigSpec extends AnyWordSpec, Matchers:
     "switch tuple JSON from an array to an object keyed by the element keys" in:
       given LoggableEncodingConfig = LoggableEncodingConfig(jsonTupleAsArray = false)
 
-      Loggable[(Int, FiniteDuration)].json((1, 5.seconds)) shouldEqual """{"value":1,"time_ms":5000}"""
+      Loggable[(Int, FiniteDuration)].json((1, 5.seconds)) shouldEqual """{"int":1,"time_ms":5000}"""
 
     "propagate into Map, which renders as an array of tuples" in:
       given LoggableEncodingConfig = LoggableEncodingConfig(plainTupleStyle = PlainTupleStyle.Braces)

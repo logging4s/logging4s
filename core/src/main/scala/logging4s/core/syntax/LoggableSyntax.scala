@@ -1,8 +1,9 @@
-package logging4s.core
+package logging4s.core.syntax
 
+import logging4s.core.{JsonEncoder, Loggable, LoggableValue, PlainEncoder, PlainString, ValueKey}
 import logging4s.core.config.LoggableEncodingConfig
 
-object syntax:
+trait LoggableSyntax:
 
   extension [A](a: A)(using L: Loggable[A])
     def asLogValue: LoggableValue                    = LoggableValue(L.key, L.plain(a), L.json(a))

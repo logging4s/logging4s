@@ -1,146 +1,276 @@
-## Logging4s
+<img width="200" height="200" align="right" src="logos/logging4s_icon.png" alt="Logging4s logo"/>
 
-<img width="256px" height="256px" src="logos/logging4s_icon.png" alt="Logging4s logo - Beaver logging"/>
+# Logging4s
 
-`Logging4s` is small logging library for structured (json) logs. The `core` module is backend-agnostic (just type classes
-and the `Logging` interface) - the concrete implementation lives in a separate backend module. Pick one:
+**Structured logging for Scala 3 — for any backend, any effect, any JSON library.**
 
-* `logging4s-logback` - `Logging` on top of `slf4j` via `logback` and `logstash-encoder`. Structured values are attached as
-  real JSON fields via logstash's raw-JSON markers - the only backend that gives nested objects/arrays as genuine JSON
-  rather than an escaped string.
-* `logging4s-log4j2` - `Logging` directly on Log4j2's own API (not via slf4j). Structured values are passed as a
-  `MapMessage` argument to the log call itself (like logback passes a `Marker`) - no `ThreadContext`/MDC involved, so
-  no thread-locality concerns and no risk of clobbering a pre-existing MDC entry with the same key. Even with
-  `JsonTemplateLayout` configured in your `log4j2.xml`, values are still plain `String` entries in the map, so a
-  `Loggable` that renders a nested object or array will come out double-encoded unless your layout knows how to treat
-  a specific field as raw JSON.
-* `logging4s-slf4j` - `Logging` on bare `slf4j-api` 2.x, using its native fluent `addKeyValue` builder. No backend is
-  bundled - bring your own slf4j binding. **Weakest guarantee**: `addKeyValue`'s value is serialized like any other
-  object, so structured values are escaped as JSON strings too (confirmed even against a modern logstash-encoder), and
-  whether they show up at all depends on the slf4j provider/version you plug in.
+[![Maven Central](https://img.shields.io/maven-central/v/org.logging4s/logging4s-core_3?color=blue)](https://central.sonatype.com/search?q=logging4s)
+[![Scala 3](https://img.shields.io/badge/Scala-3-red)](https://www.scala-lang.org/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
-All three backends expose the same `Logging.create`/`createTry`/`createEither`/`createUnsafe` from `logging4s.core.Logging` -
-you just bring a `given LoggingFactory` into scope by importing `logging4s.<backend>.<Backend>Instances.given` for
-whichever backend module you depend on. No per-backend helper object to remember.
+`Logging4s` turns your domain objects into **real, structured JSON logs** with almost no boilerplate. The `core` is a
+tiny, backend-agnostic set of type classes; everything else — the logging backend, the effect runtime, the JSON
+codec — is a small module you pick and mix. Bring what you already use, wire it with one import, and log typed values
+instead of stringly-typed messages.
 
-Every integration module (backends, runtime effect modules, JSON modules) exposes its `given`s as a named trait with a
-matching companion object - `LogbackInstances`, `CatsInstances`, `CirceInstances`, and so on. Import
-`logging4s.<module>.<Module>Instances.given` directly for just that one module, or mix several traits into your own
-combined object if you'd rather have a single import in your app:
 ```scala
-package com.example.logging
+final case class User(id: Int, name: String) derives Loggable
 
-object instances extends LogbackInstances with CatsInstances with CirceInstances
+logging.info("user created", User(1, "John"))
+// {"message":"user created: user -> (id -> (1), name -> (John))",
+//  "user":{"id":1,"name":"John"}}   ← a real nested object, not an escaped string
 ```
 
-### Quick start
+---
 
-#### Modules
+## Table of contents
 
-* `logging4s-core` - type classes for abstract encoding and the `Logging` interface itself, independent of any concrete backend.
-* `logging4s-logback` - backend implementation: `Logging` on top of `slf4j` via `logback` and `logstash-encoder`, with support for Try, Either and unsafe variants.
-* `logging4s-log4j2` - backend implementation: `Logging` on top of Log4j2's own API, structured values via a `MapMessage` argument.
-* `logging4s-slf4j` - backend implementation: `Logging` on bare `slf4j-api` using its native `addKeyValue` fluent API.
-* `logging4s-cats` - implementation for `cats` and `cats-effect`
-    * `logging4s-cats-core` - implementation for `PlainEncoder` via `cats.Show`
-    * `logging4s-ce-2` - implementation for `cats-effect 2` `Sync`
-    * `logging4s-ce-3` - implementation for `cats-effect 3` `Sync`
-* `logging4s-zio` - implementation on top of `zio.Task` for runtime and `zio.prelude.Debug` for plain logs.
-* `logging4s-kyo` - implementation `kyo.IO` for effect and `kyo.Render` for plain logs.
-* `logging4s-json` - implementation json logs for different libs
-    * `logging4s-circe` - implementation for `circe.Encoder`
-    * `logging4s-jsoniter` - implementation for `jsoneter-scala JsonValueCodec`
-    * `logging4s-argonaut` - implementation for `argonaut EncodeJson`
-    * `logging4s-borer` - implementation for `borer Encoder`
-    * `logging4s-play-json` - implementation for `play-json Writes`
-    * `logging4s-json4s` - implementation for `json4s Formats`
-    * `logging4s-spray-json` - implementation for `spray-json JsonWriter`
-    * `logging4s-upickle` - implementation for `upickle Writer`
-    * `logging4s-weepickle` - implementation for `weepickle From`
-    * `logging4s-zio-json` - implementation for `zio-json JsonEncoder`
+* [Overview](#overview)
+* [Getting started](#getting-started)
+* [Defining `Loggable`](#defining-loggable)
+* [Logging](#logging)
+* [Configuration](#configuration)
+* [Modules](#modules)
+* [Adopters](#adopters)
+* [Motivation](#motivation)
 
-#### Example
+---
 
-Let's say you are using `cats-effect 3` and `circe`.
+## Overview
 
-Plug the library in for sbt
+Why Logging4s:
+
+* **Structured-first.** On the `logback` backend, values are attached as genuine nested JSON (via logstash raw-JSON
+  markers) — objects and arrays, not double-encoded strings.
+* **Bring your own everything.** 3 backends × 4 effect runtimes × 11 JSON libraries, mix-and-match through imports —
+  no lock-in, reuse the encoders and effects your app already has.
+* **Zero-boilerplate or reuse your codecs.** `derives Loggable` renders any `case class`/`enum` out of the box, or
+  `Loggable.fromEncoders` reuses your existing circe/jsoniter/… codec so the log JSON matches your wire JSON exactly.
+* **Field-level control, no annotations.** Hide, mask, rename or unembed fields with **type-safe selectors**
+  (`.hide(_.password)`) — works even on classes you don't own.
+* **One app-wide output config.** Tune key naming and JSON/plain shapes once (`LoggableEncodingConfig`).
+* **Scala 3 native.** `given`-based, opaque-typed, macro-derived — small surface, no runtime reflection.
+
+## Getting started
+
+Pick a **backend**, an **effect runtime**, and (optionally) a **JSON library**. For a plain `cats-effect` app on
+`logback`:
+
 ```scala
 libraryDependencies ++= Seq(
-  "org.logging4s" %% "logging4s-ce-3" % version,
-  "org.logging4s" %% "logging4s-circe" % version,
-  "org.logging4s" %% "logging4s-logback" % version
+  "org.logging4s" %% "logging4s-cats"    % "2.0.0",
+  "org.logging4s" %% "logging4s-logback" % "2.0.0"
 )
 ```
 
-Create `Loggable` implementation for your domain objects, create `Logging` instance and log your objects.
+```scala
+import cats.effect.{IO, IOApp}
+
+import logging4s.core.{Loggable, Logging}
+import logging4s.cats.CatsInstances.given        // Delay[IO] + cats.Show/data bridges
+import logging4s.logback.LogbackInstances.given  // the backend's LoggingFactory
+
+final case class User(id: Int, name: String) derives Loggable
+
+object Main extends IOApp.Simple:
+  def run: IO[Unit] =
+    for
+      logging <- Logging.create[IO]("Main")
+      _       <- logging.info("user created", User(1, "John"))
+    yield ()
+```
+
+That's it — `derives Loggable` gives you the JSON and the plain rendering for free, `logback.xml` controls the output
+format as usual. See [`./examples`](examples) for ZIO, Kyo and more.
+
+## Defining `Loggable`
+
+`Loggable[A]` is the single type class the whole library revolves around — it knows a value's **key**, its **JSON**
+form and its **plain** (human) form. There are four ways to get one, from most to least automatic:
+
+**1. Derive it structurally** — no JSON library required, we render the JSON ourselves:
 
 ```scala
-// Your domain
-import java.util.UUID
-import cats.Show
+final case class Point(x: Int, y: Int) derives Loggable
+enum Color derives Loggable:
+  case Red, Green, Blue
+```
+
+**2. Reuse an existing JSON codec** with `Loggable.fromEncoders` — the JSON comes **verbatim** from your codec (correct
+escaping, your field names, untouched by our config), the plain form falls back to `cats.Show`/`zio.Debug`/… or a
+structural rendering:
+
+```scala
 import io.circe.Encoder
 import io.circe.generic.semiauto.deriveEncoder
 import logging4s.core.Loggable
-
-import logging4s.cats.CatsInstances.given
 import logging4s.json.circe.CirceInstances.given
 
-final case class User(id: UUID, name: String, age: Int)
-
+final case class User(id: Int, name: String)
 object User:
-  given Show[User]     = user => s"id=${user.id}, name=${user.name}, age=${user.age}"
   given Encoder[User]  = deriveEncoder
-  given Loggable[User] = Loggable.make("user")
-
-
-// Your program
-import java.util.UUID
-import cats.effect.std.UUIDGen
-import cats.effect.{ExitCode, IO, IOApp}
-import logging4s.core.Logging
-
-import logging4s.core.LoggingContext
-import logging4s.core.syntax.withKey
-
-import logging4s.cats.CatsInstances.given
-import logging4s.json.circe.CirceInstances.given
-import logging4s.logback.LogbackInstances.given // pick your backend by importing its `given LoggingFactory`
-
-object CatsEffect3Example extends IOApp:
-
-  private def createUser(name: String, age: Int): IO[User] =
-    for id <- UUIDGen.randomUUID[IO]
-    yield User(id, name, age)
-
-  override def run(args: List[String]): IO[ExitCode] =
-    for
-      context <- IO.randomUUID.map(uuid => LoggingContext(uuid.withKey("session_id")))
-      logging <- Logging.create[IO]("CatsEffect3Example", context)
-
-      johnShow <- createUser("John Show", 22)
-      _        <- logging.info("User created", johnShow)
-    
-      daenerys <- createUser("Daenerys Targaryen", 22)
-      _        <- logging.info("User created", daenerys)
-    
-      _ <- logging.info("All users created", Seq(johnShow, daenerys))
-    yield ExitCode.Success
-    
+  given Loggable[User] = Loggable.fromEncoders   // JSON = circe, key = "user"
 ```
 
-This will output:
-```json
-{"@timestamp":"2023-01-30T13:42:13.249+03:00","message":"User created: session_id -> (9602ed80-e54b-4e0a-8b9c-64762d28d05e), user -> (id=5db8c5e2-6275-437a-bca8-1ad8cd84fbd8, name=John Show, age=22)","name":"CatsEffect3Example","level":"INFO","user":{"id":"5db8c5e2-6275-437a-bca8-1ad8cd84fbd8","name":"John Show","age":22}}
-{"@timestamp":"2023-01-30T13:42:13.249+03:00","message":"User created: session_id -> (9602ed80-e54b-4e0a-8b9c-64762d28d05e), user -> (id=c5e4bd53-abd8-4922-bcd2-5e40322e6b9b, name=Daenerys Targaryen, age=22)","name":"CatsEffect3Example","level":"INFO","user":{"id":"c5e4bd53-abd8-4922-bcd2-5e40322e6b9b","name":"Daenerys Targaryen","age":22}}
-{"@timestamp":"2023-01-30T13:42:13.249+03:00","message":"All users created: session_id -> (9602ed80-e54b-4e0a-8b9c-64762d28d05e), users -> ([id=5db8c5e2-6275-437a-bca8-1ad8cd84fbd8, name=John Show, age=22,id=c5e4bd53-abd8-4922-bcd2-5e40322e6b9b, name=Daenerys Targaryen, age=22])","name":"CatsEffect3Example","level":"INFO","users":[{"id":"5db8c5e2-6275-437a-bca8-1ad8cd84fbd8","name":"John Show","age":22},{"id":"c5e4bd53-abd8-4922-bcd2-5e40322e6b9b","name":"Daenerys Targaryen","age":22}]}
+**3. Build one by hand** with an explicit key:
 
+```scala
+given Loggable[Money] = Loggable.make("money")(m => m.cents.toString, m => s"$$${m.cents / 100.0}")
 ```
 
-In the `logback.xml` file, you can configure the output of logs as you need.
+**4. Adapt an existing instance** with `contramap` / `rename` / `redacted`:
 
-See `./examples` for more examples.
+```scala
+given Loggable[UserId] = Loggable[Int].contramap(_.value, "user_id")
+val secret             = Loggable[String].redacted()   // always logs "***"
+```
 
-### Motivation
+### Hiding, masking and renaming fields
 
-Have a library for structured logging that supports `Scala 3` and various implementations of `effects` and `json` libraries
-cause `izumi logstage` and `tofu-logging` still not ported for new scala.
+For derived case classes you often want per-field control — do it with a builder and **type-safe selectors** (no
+annotations, works on third-party types):
+
+```scala
+import logging4s.core.Loggable
+import logging4s.core.deriving.MaskMode
+
+final case class Account(id: Int, email: String, password: String, address: Address)
+object Account:
+  given Loggable[Account] =
+    Loggable.deriving[Account]
+      .hide(_.password)                    // drop it entirely
+      .mask(_.email)(MaskMode.KeepLast(4)) // ****...@x.com
+      .rename(_.id, "account_id")          // custom key
+      .unembed(_.address)                  // splice its fields into the parent object
+      .derived
+```
+
+## Logging
+
+Obtain a `Logging[F]` from `Logging.create` (or `createTry` / `createEither` / `createUnsafe` for non-effect code), then
+log a message with any number of typed values:
+
+```scala
+for
+  logging <- Logging.create[IO]("OrderService")
+  _       <- logging.info("service started")
+  _       <- logging.info("order placed", user, order)          // many values
+  _       <- logging.error("payment failed", throwable, order)  // + a cause
+  scoped   = logging.withContextValues(requestId.asLogValue("request_id"))
+  _       <- scoped.info("handled")                             // context on every line
+yield ()
+```
+
+Prefer an interpolator? Import the log syntax and bring a `given Logging[F]` into scope — keys are taken from the
+variable names:
+
+```scala
+import logging4s.core.syntax.logging.*
+
+info"order placed: $order"     // → logging.info("order placed", order.asLogValue("order"))
+```
+
+Value-building helpers (`asLogValue`, `mapPlain`, `withKey`) live in `logging4s.core.syntax.loggable.*`, and
+`logging4s.core.syntax.all.*` brings both.
+
+## Configuration
+
+How values are rendered is controlled by a single `LoggableEncodingConfig` (package `logging4s.core.config`). It works
+out of the box; to change the house style, put **one** `given` at the top of your application:
+
+```scala
+import logging4s.core.config.*
+
+given LoggableEncodingConfig =
+  LoggableEncodingConfig(
+    keyNameStyle     = KeyNameStyle.CamelCase,
+    plainValuesStyle = PlainValuesStyle.Logfmt
+  )
+```
+
+| Knob | Default | Options → effect |
+| --- | --- | --- |
+| `jsonTupleAsArray` | `true` | `true` → `[1,"a"]`; `false` → `{"int":1,"string":"a"}` (object, e.g. for Elasticsearch) |
+| `keyNameStyle` | `SnakeCase` | `AsIs` / `SnakeCase` / `KebabCase` / `CamelCase` / `PascalCase` — applied to **every** key |
+| `plainTupleStyle` | `AsScala` | `(1, a)` / `[1, a]` / `1, a` / `{1, a}` |
+| `plainValuesStyle` | `Arrow` | `Arrow` `k -> (v)`, `Logfmt` `k=v`, `Colon` `k: v`, `CurlyMap` `{k=v}`, … |
+
+> `keyNameStyle` and `plainValuesStyle` are applied by the backend when it aggregates the log line; `jsonTupleAsArray`
+> and `plainTupleStyle` are baked into compound `Loggable`s when they are summoned. One top-level `given` covers both.
+
+**Default keys.** Built-in scalars key by their type name (`Loggable[Int]` → `int`, `Loggable[String]` → `string`);
+date/time types use `time`, `FiniteDuration` uses `time_ms`; collections append a plural suffix
+(`List[Int]` → `ints`); a derived case class keys by its decapitalized name (`User` → `user`).
+
+## Modules
+
+All modules are published for **Scala 3** under the `org.logging4s` group:
+
+```scala
+"org.logging4s" %% "logging4s-<module>" % "2.0.0"
+```
+
+**Core**
+
+| Module | Description |
+| --- | --- |
+| `logging4s-core` | Type classes (`Loggable`, `JsonEncoder`, `PlainEncoder`) and the `Logging` interface. Backend-agnostic. |
+
+**Backends** — pick one; import `logging4s.<backend>.<Backend>Instances.given`.
+
+| Module | Notes |
+| --- | --- |
+| `logging4s-logback` | `slf4j` + `logback` + `logstash-encoder`. **Real nested JSON** via raw-JSON markers. |
+| `logging4s-log4j2` | Log4j2's own API; values passed as a `MapMessage` argument (no MDC). |
+| `logging4s-slf4j` | Bare `slf4j-api` 2.x fluent `addKeyValue`. Bring your own binding. |
+
+**Effect runtimes** — pick one; import `logging4s.<runtime>.<Runtime>Instances.given`.
+
+| Module | Effect | Plain rendering |
+| --- | --- | --- |
+| `logging4s-cats` | `cats-effect 3` `Sync` | `cats.Show` |
+| `logging4s-zio` | `zio.Task` | `zio.prelude.Debug` |
+| `logging4s-kyo` | `kyo.IO` | `kyo.Render` |
+| `logging4s-rapid` | `rapid.Task` | built-in |
+
+**JSON libraries** — optional; import `logging4s.json.<lib>.<Lib>Instances.given` to bridge a codec into `fromEncoders`/`make`.
+
+| Module | Codec | | Module | Codec |
+| --- | --- | --- | --- | --- |
+| `logging4s-circe` | `io.circe.Encoder` | | `logging4s-upickle` | `upickle Writer` |
+| `logging4s-jsoniter` | `jsoniter JsonValueCodec` | | `logging4s-weepickle` | `weepickle From` |
+| `logging4s-play-json` | `play-json Writes` | | `logging4s-zio-json` | `zio-json JsonEncoder` |
+| `logging4s-spray-json` | `spray-json JsonWriter` | | `logging4s-argonaut` | `argonaut EncodeJson` |
+| `logging4s-json4s` | `json4s Formats` | | `logging4s-borer` | `borer Encoder` |
+| `logging4s-fabric` | `fabric Json` | | | |
+
+Every integration module exposes its `given`s as a named trait + companion object, so you can also mix several into a
+single import for your app:
+
+```scala
+object instances extends LogbackInstances with CatsInstances with CirceInstances
+```
+
+## Adopters
+
+Logging4s is used in production at:
+
+<a href="https://betby.com">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="logos/betby.svg"/>
+    <img src="logos/betby-dark.svg" alt="Betby" height="56"/>
+  </picture>
+</a>
+
+Using Logging4s? Open a PR to add your logo here.
+
+## Motivation
+
+A structured-logging library that targets **Scala 3** and plays nicely with the whole ecosystem of effect systems and
+JSON libraries, rather than a single opinionated stack. Compared to the alternatives, Logging4s leans on the encoders
+and effects you already have, sits on top of a real logging backend you already operate, and keeps its own surface
+small.
+
+## License
+
+Apache 2.0 — see [LICENSE](LICENSE).

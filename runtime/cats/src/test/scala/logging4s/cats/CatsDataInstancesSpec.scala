@@ -15,7 +15,7 @@ class CatsDataInstancesSpec extends AnyWordSpec, Matchers:
     "right summon NonEmptyList instances" in:
       val nel = NonEmptyList.of(1, 2, 3)
 
-      Loggable[NonEmptyList[Int]].key shouldEqual "values"
+      Loggable[NonEmptyList[Int]].key shouldEqual "ints"
       Loggable[NonEmptyList[Int]].plain(nel) shouldEqual "[1,2,3]"
       Loggable[NonEmptyList[Int]].json(nel) shouldEqual "[1,2,3]"
 

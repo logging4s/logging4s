@@ -3,9 +3,11 @@ package logging4s.core
 import java.util.UUID
 import java.time.{Instant, LocalDateTime, ZonedDateTime}
 
+import scala.deriving.Mirror
 import scala.concurrent.duration.FiniteDuration
 
 import logging4s.core.config.LoggableEncodingConfig
+import logging4s.core.deriving.{macros, LoggableBuilder}
 
 trait Loggable[A]:
   self: Loggable[A] =>
@@ -14,7 +16,7 @@ trait Loggable[A]:
   def json(a: A): JsonString
   def plain(a: A): PlainString
 
-  def rename(updatedKey: String): Loggable[A] =
+  final def rename(updatedKey: String): Loggable[A] =
     new:
       override val key: ValueKey            = ValueKey(updatedKey)
       override def json(a: A): JsonString   = self.json(a)
@@ -35,6 +37,12 @@ trait Loggable[A]:
 object Loggable:
   inline def apply[A](using instance: Loggable[A]): Loggable[A] = instance
 
+  inline def derived[A](using Mirror.Of[A]): Loggable[A] = macros.derived[A]
+
+  def deriving[A]: LoggableBuilder[A] = LoggableBuilder(Map.empty)
+
+  inline def fromEncoders[A](using JsonEncoder[A]): Loggable[A] = macros.fromEncoders[A]
+
   def make[A: JsonEncoder: PlainEncoder](keyName: String): Loggable[A] =
     new:
       override val key: ValueKey            = ValueKey(keyName)
@@ -49,51 +57,51 @@ object Loggable:
     override def json(a: A): JsonString   = JsonString(encode(a))
     override def plain(a: A): PlainString = PlainString(show(a))
 
-  private def fromAnyVal[A <: AnyVal]: Loggable[A] = new:
-    override val key: ValueKey            = ValueKey("value")
+  private def fromAnyVal[A <: AnyVal](keyName: String): Loggable[A] = new:
+    override val key: ValueKey            = ValueKey(keyName)
     override def json(a: A): JsonString   = JsonString(a.toString)
     override def plain(a: A): PlainString = PlainString(a.toString)
 
   given LoggableString: Loggable[String] = new:
-    override val key: ValueKey                 = ValueKey("value")
+    override val key: ValueKey                 = ValueKey("string")
     override def plain(a: String): PlainString = PlainString(a)
     override def json(a: String): JsonString   = JsonString.quoted(a)
 
-  given LoggableByte: Loggable[Byte]   = LoggableInt.contramap(_.toInt)
-  given LoggableShort: Loggable[Short] = LoggableInt.contramap(_.toInt)
+  given LoggableByte: Loggable[Byte]   = LoggableInt.contramap(_.toInt, "byte")
+  given LoggableShort: Loggable[Short] = LoggableInt.contramap(_.toInt, "short")
 
-  given LoggableChar: Loggable[Char] = LoggableString.contramap(_.toString)
+  given LoggableChar: Loggable[Char] = LoggableString.contramap(_.toString, "char")
 
-  given LoggableBoolean: Loggable[Boolean] = fromAnyVal
-  given LoggableInt: Loggable[Int]         = fromAnyVal
-  given LoggableLong: Loggable[Long]       = fromAnyVal
-  given LoggableFloat: Loggable[Float]     = fromAnyVal
-  given LoggableDouble: Loggable[Double]   = fromAnyVal
+  given LoggableBoolean: Loggable[Boolean] = fromAnyVal("boolean")
+  given LoggableInt: Loggable[Int]         = fromAnyVal("int")
+  given LoggableLong: Loggable[Long]       = fromAnyVal("long")
+  given LoggableFloat: Loggable[Float]     = fromAnyVal("float")
+  given LoggableDouble: Loggable[Double]   = fromAnyVal("double")
 
   given LoggableBigDecimal: Loggable[BigDecimal] = new:
-    override val key: ValueKey                     = ValueKey("value")
+    override val key: ValueKey                     = ValueKey("bigdecimal")
     override def plain(a: BigDecimal): PlainString = PlainString(a.toString)
     override def json(a: BigDecimal): JsonString   = JsonString(a.toString)
 
   given LoggableBigInt: Loggable[BigInt] = new:
-    override val key: ValueKey                 = ValueKey("value")
+    override val key: ValueKey                 = ValueKey("bigint")
     override def plain(a: BigInt): PlainString = PlainString(a.toString)
     override def json(a: BigInt): JsonString   = JsonString(a.toString)
 
-  given LoggableUUID: Loggable[UUID] = LoggableString.contramap(_.toString)
+  given LoggableUUID: Loggable[UUID] = LoggableString.contramap(_.toString, "uuid")
 
   given LoggableInstant: Loggable[Instant] = new:
-    override val key: ValueKey                  = ValueKey("value")
+    override val key: ValueKey                  = ValueKey("time")
     override def plain(a: Instant): PlainString = PlainString(a.toString)
     override def json(a: Instant): JsonString   = JsonString.quoted(a.toString)
 
   given LoggableLocalDateTime: Loggable[LocalDateTime] = new:
-    override val key: ValueKey                        = ValueKey("value")
+    override val key: ValueKey                        = ValueKey("time")
     override def plain(a: LocalDateTime): PlainString = PlainString(a.toString)
     override def json(a: LocalDateTime): JsonString   = JsonString.quoted(a.toString)
 
   given LoggableZonedDateTime: Loggable[ZonedDateTime] = new:
-    override val key: ValueKey                        = ValueKey("value")
+    override val key: ValueKey                        = ValueKey("time")
     override def plain(a: ZonedDateTime): PlainString = PlainString(a.toString)
     override def json(a: ZonedDateTime): JsonString   = JsonString.quoted(a.toString)
 
@@ -101,7 +109,7 @@ object Loggable:
 
   given LoggableUnit: Loggable[Unit] =
     new:
-      override val key: ValueKey               = ValueKey("value")
+      override val key: ValueKey               = ValueKey("unit")
       override def plain(u: Unit): PlainString = PlainString("")
       override def json(u: Unit): JsonString   = JsonString("")
 

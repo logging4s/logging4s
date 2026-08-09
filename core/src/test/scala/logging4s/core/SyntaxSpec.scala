@@ -3,7 +3,7 @@ package logging4s.core
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers
 
-import logging4s.core.syntax.*
+import logging4s.core.syntax.all.*
 
 class SyntaxSpec extends AnyWordSpec, Matchers:
 
@@ -11,7 +11,7 @@ class SyntaxSpec extends AnyWordSpec, Matchers:
     "build a LoggableValue via asLogValue using the summoned key" in:
       val lv = 5.asLogValue
 
-      lv.key shouldEqual "value"
+      lv.key shouldEqual "int"
       lv.plain shouldEqual "5"
       lv.json shouldEqual "5"
 
@@ -25,7 +25,7 @@ class SyntaxSpec extends AnyWordSpec, Matchers:
     "build a LoggableValue via mapPlain transforming only the plain rendering" in:
       val lv = "hello world".mapPlain(_.take(5))
 
-      lv.key shouldEqual "value"
+      lv.key shouldEqual "string"
       lv.plain shouldEqual "hello"
       lv.json shouldEqual "\"hello world\""
 

@@ -3,7 +3,7 @@ package logging4s.examples
 import cats.effect.{ExitCode, IO, IOApp}
 import logging4s.core.{Logging, LoggingContext}
 
-import logging4s.core.syntax.withKey
+import logging4s.core.syntax.all.withKey
 
 import logging4s.cats.CatsInstances.given
 import logging4s.logback.LogbackInstances.given

@@ -288,6 +288,17 @@ lazy val examples = project
     logback,
   )
 
+lazy val benchmarks = project
+  .in(file("benchmarks"))
+  .enablePlugins(JmhPlugin)
+  .settings(commonSettings)
+  .settings(
+    name           := "logging4s-benchmarks",
+    publish / skip := true,
+    libraryDependencies ++= Dependencies.Json.jsoniter,
+  )
+  .dependsOn(core, jsoniter)
+
 lazy val logging4s = project
   .in(file("."))
   .settings(commonSettings)

@@ -7,7 +7,7 @@ import net.logstash.logback.marker.LogstashMarker
 
 import logging4s.core.LoggableValue
 
-object MarkerHelper:
+private[logback] object MarkerHelper:
 
   def fromLoggable(value: LoggableValue): LogstashMarker =
     appendRaw(value.key.value, value.json.value)

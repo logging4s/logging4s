@@ -4,13 +4,12 @@ import org.slf4j.Logger
 
 import logging4s.core.{Delay, Logging, LoggableValue, LoggingContext}
 import logging4s.core.config.LoggableEncodingConfig
-import logging4s.core.syntax.plain
+import logging4s.core.syntax.all.plain
 
-class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: LoggingContext = LoggingContext.empty)(using
+private[slf4j] class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: LoggingContext = LoggingContext.empty)(using
     cfg: LoggableEncodingConfig
 ) extends Logging[F]:
 
-  // Context is stable for the logger's lifetime, so its keys are normalized once here instead of on every call.
   private val ctxValues = LoggableValue.normalizeKeys(context.values)
 
   private def merge(values: Seq[LoggableValue]): Seq[LoggableValue] =

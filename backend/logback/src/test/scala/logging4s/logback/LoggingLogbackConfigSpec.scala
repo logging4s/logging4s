@@ -23,8 +23,6 @@ class LoggingLogbackConfigSpec extends AnyWordSpec, Matchers:
 
   LogbackWarmup.touch()
 
-  // A user-declared config in scope. The factory captures it when the logger is created, proving the
-  // aggregation-side styles (keyNameStyle, plainValuesStyle) reach the real backend output.
   private given LoggableEncodingConfig =
     LoggableEncodingConfig(keyNameStyle = KeyNameStyle.KebabCase, plainValuesStyle = PlainValuesStyle.Logfmt)
 

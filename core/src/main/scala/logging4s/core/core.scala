@@ -19,10 +19,6 @@ object ValueKey:
     inline def value: String           = v
     def suffixed(index: Int): ValueKey = s"${v}_$index"
 
-    // Collections derive their key from the element key; pluralizing keeps the singular (object) and
-    // plural (array) forms distinct so a JSON sink like Elasticsearch never sees both shapes under one
-    // field. Must ALWAYS change the key (incl. keys already ending in "s" like "bus" -> "buses", and
-    // nested collections "values" -> "valueses"), otherwise the forms collide again.
     def pluralized: ValueKey =
       if v.length > 1 && v.endsWith("y") && !"aeiou".contains(v.charAt(v.length - 2)) then s"${v.dropRight(1)}ies"
       else if v.endsWith("s") || v.endsWith("x") || v.endsWith("z") || v.endsWith("ch") || v.endsWith("sh") then s"${v}es"
@@ -30,8 +26,33 @@ object ValueKey:
 
 opaque type JsonString = String
 object JsonString:
-  inline def apply(src: String): JsonString  = src
-  inline def quoted(raw: String): JsonString = s"\"$raw\""
+  inline def apply(src: String): JsonString = src
+  def quoted(raw: String): JsonString       = s"\"${escape(raw)}\""
+
+  private def needsEscape(c: Char): Boolean =
+    c == '"' || c == '\\' || c < 0x20
+
+  private def escape(raw: String): String =
+    val n = raw.length
+    var i = 0
+    while i < n && !needsEscape(raw.charAt(i)) do i += 1
+    if i == n then raw
+    else
+      val sb = new java.lang.StringBuilder(n + 8)
+      sb.append(raw, 0, i)
+      while i < n do
+        val c = raw.charAt(i)
+        c match
+          case '"'  => sb.append("\\\"")
+          case '\\' => sb.append("\\\\")
+          case '\n' => sb.append("\\n")
+          case '\r' => sb.append("\\r")
+          case '\t' => sb.append("\\t")
+          case '\b' => sb.append("\\b")
+          case '\f' => sb.append("\\f")
+          case _    => if c < 0x20 then sb.append("\\u%04x".format(c.toInt)) else sb.append(c)
+        i += 1
+      sb.toString
 
   def array(elements: JsonString*): JsonString = elements.mkString("[", ",", "]")
 

@@ -15,12 +15,11 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 import logging4s.core.{JsonString, Loggable, Logging, LoggableValue, PlainString, ValueKey}
+import logging4s.core.syntax.all.*
 
 import LogbackInstances.given
 
 object LoggingLogbackJsonSpec:
-  // logback's Logger/LoggerContext are process-wide singletons shared across every project's tests in the same
-  // sbt test JVM; serialize access to the dynamic appender-attach/detach sequence below.
   private[logback] val appenderLock = new Object
 
 class LoggingLogbackJsonSpec extends AnyWordSpec with Matchers:
@@ -78,6 +77,15 @@ class LoggingLogbackJsonSpec extends AnyWordSpec with Matchers:
       json.get("tags").get(0).asText() shouldEqual "a"
       json.get("tags").get(1).asText() shouldEqual "b"
 
+    "encode a summoned tuple value as a JSON array by default" in:
+      val json = captureJson("LoggingLogbackJsonSpec-tuple") { logging =>
+        logging.info("Paired", (1, "a").asLogValue("pair"))
+      }
+
+      json.get("pair").isArray shouldEqual true
+      json.get("pair").get(0).asInt() shouldEqual 1
+      json.get("pair").get(1).asText() shouldEqual "a"
+
     "suffix duplicated keys instead of overwriting them" in:
       val json = captureJson("LoggingLogbackJsonSpec-duplicates") { logging =>
         logging.info(
@@ -99,6 +107,15 @@ class LoggingLogbackJsonSpec extends AnyWordSpec with Matchers:
 
       json.get("session").asText() shouldEqual "abc"
       json.get("user").asText() shouldEqual "John"
+
+    "escape special characters so the structured JSON stays valid and round-trips" in:
+      val nasty = "line1\nline2 \"q\" path C:\\x\ttab"
+
+      val json = captureJson("LoggingLogbackJsonSpec-escaping") { logging =>
+        logging.info("x", nasty.asLogValue("text"))
+      }
+
+      json.get("text").asText() shouldEqual nasty
 
     "encode a redacted value as a masked JSON string, never the real value" in:
       val password = Loggable[String].redacted()
