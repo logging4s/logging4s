@@ -3,10 +3,11 @@ package logging4s.log4j2
 import org.apache.logging.log4j.LogManager
 
 import logging4s.core.{Delay, Logging, LoggingFactory, LoggingContext}
+import logging4s.core.config.LoggableEncodingConfig
 
 trait Log4j2Instances:
 
-  given Log4j2LoggingFactory: LoggingFactory with
+  given Log4j2LoggingFactory(using LoggableEncodingConfig): LoggingFactory with
     def create[F[*]: Delay](name: String, context: LoggingContext): F[Logging[F]] =
       Delay[F].delay(LoggingLog4j2Impl(LogManager.getLogger(name), context))
 

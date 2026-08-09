@@ -21,7 +21,7 @@ import LogbackInstances.given
 object LoggingLogbackJsonSpec:
   // logback's Logger/LoggerContext are process-wide singletons shared across every project's tests in the same
   // sbt test JVM; serialize access to the dynamic appender-attach/detach sequence below.
-  private val appenderLock = new Object
+  private[logback] val appenderLock = new Object
 
 class LoggingLogbackJsonSpec extends AnyWordSpec with Matchers:
 

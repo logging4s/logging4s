@@ -3,6 +3,7 @@ package logging4s.cats
 import cats.data.{Chain, Ior, NonEmptyList, NonEmptyMap, NonEmptySet, NonEmptyVector}
 
 import logging4s.core.{JsonString, Loggable, PlainString, ValueKey}
+import logging4s.core.config.LoggableEncodingConfig
 
 trait DataInstances:
 
@@ -21,16 +22,22 @@ trait DataInstances:
   given ChainLoggable[T: Loggable]: Loggable[Chain[T]] =
     Loggable[List[T]].contramap(_.toList)
 
-  given IorLoggable[A, B](using AL: Loggable[A], BL: Loggable[B]): Loggable[Ior[A, B]] =
+  given IorLoggable[A, B](using AL: Loggable[A], BL: Loggable[B], cfg: LoggableEncodingConfig): Loggable[Ior[A, B]] =
     new:
-      override def key: ValueKey =
+      override val key: ValueKey =
         ValueKey.combine(AL.key, BL.key)
 
       override def plain(ior: Ior[A, B]): PlainString =
-        ior.fold(AL.plain, BL.plain, (a, b) => PlainString.tuple(AL.plain(a), BL.plain(b)))
+        ior.fold(AL.plain, BL.plain, (a, b) => cfg.plainTupleStyle.render(Seq(AL.plain(a), BL.plain(b))))
 
       override def json(ior: Ior[A, B]): JsonString =
-        ior.fold(AL.json, BL.json, (a, b) => JsonString.array(AL.json(a), BL.json(b)))
+        ior.fold(
+          AL.json,
+          BL.json,
+          (a, b) =>
+            if cfg.jsonTupleAsArray then JsonString.array(AL.json(a), BL.json(b))
+            else JsonString.obj(AL.key.value -> AL.json(a), BL.key.value -> BL.json(b)),
+        )
   end IorLoggable
 
 object DataInstances extends DataInstances

@@ -1,5 +1,7 @@
 package logging4s.core.config
 
+import java.util.regex.Pattern
+
 import logging4s.core.{LoggableValue, PlainString}
 
 enum KeyNameStyle:
@@ -16,11 +18,15 @@ enum KeyNameStyle:
           case Nil          => ""
           case head :: tail => (head.toLowerCase +: tail.map(capitalize)).mkString
 
+private val AcronymBoundary = Pattern.compile("([A-Z]+)([A-Z][a-z])")
+private val CamelBoundary   = Pattern.compile("([a-z0-9])([A-Z])")
+private val WordSeparator   = Pattern.compile("[_\\s-]+")
+
 private[config] def words(name: String): List[String] =
-  name
-    .replaceAll("([A-Z]+)([A-Z][a-z])", "$1_$2")
-    .replaceAll("([a-z0-9])([A-Z])", "$1_$2")
-    .split("[_\\s-]+")
+  val withAcronymBoundary = AcronymBoundary.matcher(name).replaceAll("$1_$2")
+  val withCamelBoundary   = CamelBoundary.matcher(withAcronymBoundary).replaceAll("$1_$2")
+  WordSeparator
+    .split(withCamelBoundary)
     .iterator
     .filter(_.nonEmpty)
     .toList
@@ -61,3 +67,5 @@ final case class LoggableEncodingConfig(
 
 object LoggableEncodingConfig:
   val Default: LoggableEncodingConfig = LoggableEncodingConfig()
+
+  given default: LoggableEncodingConfig = Default

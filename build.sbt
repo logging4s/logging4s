@@ -35,7 +35,7 @@ lazy val commonSettings = Seq(
     "-source:future",
     "-Wunused:all"
   ),
-  credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials"),
+  credentials += Credentials(Path.userHome / "Documents" / "sources" / "logging4s" / "sonatype_credentials"),
 )
 
 lazy val core = project

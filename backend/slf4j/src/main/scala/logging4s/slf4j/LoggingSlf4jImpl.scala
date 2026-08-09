@@ -2,10 +2,19 @@ package logging4s.slf4j
 
 import org.slf4j.Logger
 
-import logging4s.core.{Delay, Logging, LoggingContext, LoggableValue}
+import logging4s.core.{Delay, Logging, LoggableValue, LoggingContext}
+import logging4s.core.config.LoggableEncodingConfig
 import logging4s.core.syntax.plain
 
-class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: LoggingContext = LoggingContext(Seq.empty)) extends Logging[F]:
+class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: LoggingContext = LoggingContext.empty)(using
+    cfg: LoggableEncodingConfig
+) extends Logging[F]:
+
+  // Context is stable for the logger's lifetime, so its keys are normalized once here instead of on every call.
+  private val ctxValues = LoggableValue.normalizeKeys(context.values)
+
+  private def merge(values: Seq[LoggableValue]): Seq[LoggableValue] =
+    ctxValues ++ LoggableValue.normalizeKeys(values)
 
   override def withContext(moreContext: LoggingContext): Logging[F] = LoggingSlf4jImpl(logger, context + moreContext)
 
@@ -30,19 +39,18 @@ class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: LoggingContext = Lo
 
   override def error(message: String, values: LoggableValue*): F[Unit] =
     Delay[F].delay {
-      val valuesWithContext = context.values ++ values
-      logWithValues(valuesWithContext, None, vs => s"$message: ${vs.plain}", _.atError())
+      if logger.isErrorEnabled then logWithValues(merge(values), None, vs => s"$message: ${vs.plain}", _.atError())
     }
 
   override def error(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
     Delay[F].delay {
-      val valuesWithContext = context.values ++ values
-      logWithValues(
-        valuesWithContext,
-        Some(error),
-        vs => s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${vs.plain}",
-        _.atError(),
-      )
+      if logger.isErrorEnabled then
+        logWithValues(
+          merge(values),
+          Some(error),
+          vs => s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${vs.plain}",
+          _.atError(),
+        )
     }
 
   override def warn(message: String): F[Unit] =
@@ -53,19 +61,18 @@ class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: LoggingContext = Lo
 
   override def warn(message: String, values: LoggableValue*): F[Unit] =
     Delay[F].delay {
-      val valuesWithContext = context.values ++ values
-      logWithValues(valuesWithContext, None, vs => s"$message: ${vs.plain}", _.atWarn())
+      if logger.isWarnEnabled then logWithValues(merge(values), None, vs => s"$message: ${vs.plain}", _.atWarn())
     }
 
   override def warn(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
     Delay[F].delay {
-      val valuesWithContext = context.values ++ values
-      logWithValues(
-        valuesWithContext,
-        Some(error),
-        vs => s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${vs.plain}",
-        _.atWarn(),
-      )
+      if logger.isWarnEnabled then
+        logWithValues(
+          merge(values),
+          Some(error),
+          vs => s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${vs.plain}",
+          _.atWarn(),
+        )
     }
 
   override def info(message: String): F[Unit] =
@@ -76,19 +83,18 @@ class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: LoggingContext = Lo
 
   override def info(message: String, values: LoggableValue*): F[Unit] =
     Delay[F].delay {
-      val valuesWithContext = context.values ++ values
-      logWithValues(valuesWithContext, None, vs => s"$message: ${vs.plain}", _.atInfo())
+      if logger.isInfoEnabled then logWithValues(merge(values), None, vs => s"$message: ${vs.plain}", _.atInfo())
     }
 
   override def info(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
     Delay[F].delay {
-      val valuesWithContext = context.values ++ values
-      logWithValues(
-        valuesWithContext,
-        Some(error),
-        vs => s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${vs.plain}",
-        _.atInfo(),
-      )
+      if logger.isInfoEnabled then
+        logWithValues(
+          merge(values),
+          Some(error),
+          vs => s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${vs.plain}",
+          _.atInfo(),
+        )
     }
 
   override def debug(message: String): F[Unit] =
@@ -99,19 +105,18 @@ class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: LoggingContext = Lo
 
   override def debug(message: String, values: LoggableValue*): F[Unit] =
     Delay[F].delay {
-      val valuesWithContext = context.values ++ values
-      logWithValues(valuesWithContext, None, vs => s"$message: ${vs.plain}", _.atDebug())
+      if logger.isDebugEnabled then logWithValues(merge(values), None, vs => s"$message: ${vs.plain}", _.atDebug())
     }
 
   override def debug(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
     Delay[F].delay {
-      val valuesWithContext = context.values ++ values
-      logWithValues(
-        valuesWithContext,
-        Some(error),
-        vs => s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${vs.plain}",
-        _.atDebug(),
-      )
+      if logger.isDebugEnabled then
+        logWithValues(
+          merge(values),
+          Some(error),
+          vs => s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${vs.plain}",
+          _.atDebug(),
+        )
     }
 
   override def trace(message: String): F[Unit] =
@@ -122,17 +127,16 @@ class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: LoggingContext = Lo
 
   override def trace(message: String, values: LoggableValue*): F[Unit] =
     Delay[F].delay {
-      val valuesWithContext = context.values ++ values
-      logWithValues(valuesWithContext, None, vs => s"$message: ${vs.plain}", _.atTrace())
+      if logger.isTraceEnabled then logWithValues(merge(values), None, vs => s"$message: ${vs.plain}", _.atTrace())
     }
 
   override def trace(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
     Delay[F].delay {
-      val valuesWithContext = context.values ++ values
-      logWithValues(
-        valuesWithContext,
-        Some(error),
-        vs => s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${vs.plain}",
-        _.atTrace(),
-      )
+      if logger.isTraceEnabled then
+        logWithValues(
+          merge(values),
+          Some(error),
+          vs => s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${vs.plain}",
+          _.atTrace(),
+        )
     }

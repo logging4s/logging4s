@@ -1,8 +1,15 @@
 package logging4s.core
 
+import logging4s.core.config.{KeyNameStyle, LoggableEncodingConfig}
+
 final case class LoggableValue(key: ValueKey, plain: PlainString, json: JsonString)
 
 object LoggableValue:
+
+  def normalizeKeys(values: Seq[LoggableValue])(using cfg: LoggableEncodingConfig): Seq[LoggableValue] =
+    if cfg.keyNameStyle == KeyNameStyle.AsIs
+    then values
+    else values.map(value => value.copy(key = ValueKey(cfg.keyNameStyle.format(value.key.value))))
 
   given [T](using L: Loggable[T]): Conversion[T, LoggableValue] = v =>
     LoggableValue(
