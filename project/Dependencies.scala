@@ -11,6 +11,7 @@ object Dependencies {
     val logbackEncoder  = "9.0"
     val log4j           = "2.26.1"
     val slf4j           = "2.0.18"
+    val typesafeConfig  = "1.4.9"
     val jacksonDatabind = "2.22.1"
 
     val cats              = "2.13.0"
@@ -51,13 +52,21 @@ object Dependencies {
     val log4jApi  = "org.apache.logging.log4j" % "log4j-api"  % Versions.log4j
     val log4jCore = "org.apache.logging.log4j" % "log4j-core" % Versions.log4j
 
-    val all: Seq[ModuleID] = Seq(log4jApi, log4jCore)
+    val log4jLayoutJsonTemplate = "org.apache.logging.log4j" % "log4j-layout-template-json" % Versions.log4j
+
+    val all: Seq[ModuleID] = Seq(log4jApi, log4jCore, log4jLayoutJsonTemplate % Test)
   }
 
   object Slf4j {
     val slf4jApi = "org.slf4j" % "slf4j-api" % Versions.slf4j
 
     val all: Seq[ModuleID] = Seq(slf4jApi)
+  }
+
+  object Console {
+    val config = "com.typesafe" % "config" % Versions.typesafeConfig
+
+    val all: Seq[ModuleID] = Seq(config)
   }
 
   object Cats {

@@ -14,4 +14,4 @@ class ZioDebugIntegrationSpec extends AnyWordSpec, Matchers:
       given JsonEncoder[String] = s => JsonString.quoted(s)
 
       val expected = "test_value"
-      Loggable.make[String]("value").plain(expected) shouldEqual expected
+      Loggable.fromEncoders[String]("value").plain(expected) shouldEqual expected

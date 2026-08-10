@@ -9,9 +9,9 @@ class PluralizedCollectionKeySpec extends AnyWordSpec, Matchers:
   final case class Bus(id: Int)
   final case class Entry(text: String)
 
-  private given Loggable[User]  = Loggable.make[User]("user")(u => s"\"${u.name}\"", _.name)
-  private given Loggable[Bus]   = Loggable.make[Bus]("bus")(b => b.id.toString, _.id.toString)
-  private given Loggable[Entry] = Loggable.make[Entry]("entry")(e => s"\"${e.text}\"", _.text)
+  private given Loggable[User]  = Loggable.make[User]("user")(u => JsonString.quoted(u.name), u => PlainString(u.name))
+  private given Loggable[Bus]   = Loggable.make[Bus]("bus")(b => JsonString(b.id.toString), b => PlainString(b.id.toString))
+  private given Loggable[Entry] = Loggable.make[Entry]("entry")(e => JsonString.quoted(e.text), e => PlainString(e.text))
 
   "A collection Loggable key" must:
     "pluralize the element key so the single (object) and collection (array) forms never collide" in:

@@ -39,23 +39,27 @@ object Loggable:
 
   inline def derived[A](using Mirror.Of[A]): Loggable[A] = macros.derived[A]
 
-  def deriving[A]: LoggableBuilder[A] = LoggableBuilder(Map.empty)
+  inline def derived[A](key: String)(using Mirror.Of[A]): Loggable[A] = macros.derived[A].rename(key)
+
+  def deriving[A]: LoggableBuilder[A] = LoggableBuilder(Map.empty, None)
+
+  def deriving[A](key: String): LoggableBuilder[A] = LoggableBuilder(Map.empty, Some(key))
 
   inline def fromEncoders[A](using JsonEncoder[A]): Loggable[A] = macros.fromEncoders[A]
 
-  def make[A: JsonEncoder: PlainEncoder](keyName: String): Loggable[A] =
+  inline def fromEncoders[A](key: String)(using JsonEncoder[A]): Loggable[A] = macros.fromEncoders[A](key)
+
+  inline def make[A](json: A => JsonString, plain: A => PlainString): Loggable[A] =
+    makeWith(macros.typeName[A])(json, plain)
+
+  def make[A](key: String)(json: A => JsonString, plain: A => PlainString): Loggable[A] =
+    makeWith(key)(json, plain)
+
+  private def makeWith[A](keyName: String)(encode: A => JsonString, show: A => PlainString): Loggable[A] =
     new:
       override val key: ValueKey            = ValueKey(keyName)
-      override def json(a: A): JsonString   = JsonEncoder[A].encode(a)
-      override def plain(a: A): PlainString = PlainEncoder[A].encode(a)
-
-  def make[A](keyName: String)(
-      encode: A => String,
-      show: A => String
-  ): Loggable[A] = new:
-    override val key: ValueKey            = ValueKey(keyName)
-    override def json(a: A): JsonString   = JsonString(encode(a))
-    override def plain(a: A): PlainString = PlainString(show(a))
+      override def json(a: A): JsonString   = encode(a)
+      override def plain(a: A): PlainString = show(a)
 
   private def fromAnyVal[A <: AnyVal](keyName: String): Loggable[A] = new:
     override val key: ValueKey            = ValueKey(keyName)

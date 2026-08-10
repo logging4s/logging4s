@@ -18,7 +18,9 @@ private[core] object macros:
       case p: Mirror.ProductOf[A] => deriveProduct[A](using p, summonInline[LoggableEncodingConfig])
       case s: Mirror.SumOf[A]     => deriveSum[A](using s)
 
-  inline def fromEncoders[A](using enc: JsonEncoder[A]): Loggable[A] =
+  inline def fromEncoders[A](using enc: JsonEncoder[A]): Loggable[A] = fromEncoders[A](typeName[A])
+
+  inline def fromEncoders[A](key: String)(using enc: JsonEncoder[A]): Loggable[A] =
     val plainEnc: PlainEncoder[A] =
       summonFrom {
         case pe: PlainEncoder[A] => pe
@@ -26,7 +28,7 @@ private[core] object macros:
         case _                   => (a: A) => PlainString(enc.encode(a).value)
       }
 
-    EncodersLoggable[A](typeName[A], enc, plainEnc)
+    EncodersLoggable[A](key, enc, plainEnc)
 
   inline def deriveProduct[A](using p: Mirror.ProductOf[A], cfg: LoggableEncodingConfig): Loggable[A] =
     deriveProductWith[A](Map.empty)
@@ -84,5 +86,5 @@ private[core] object macros:
       case Lambda(List(param), body) =>
         unwrap(body) match
           case Select(Ident(name), field) if name == param.name => Expr(field)
-          case other => report.errorAndAbort(s"Expected a direct field selector like _.field, but got: ${other.show}")
-      case other => report.errorAndAbort(s"Expected a lambda field selector like _.field, but got: ${other.show}")
+          case other                                            => report.errorAndAbort(s"Expected a direct field selector like _.field, but got: ${other.show}")
+      case other                     => report.errorAndAbort(s"Expected a lambda field selector like _.field, but got: ${other.show}")

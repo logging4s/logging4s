@@ -17,4 +17,4 @@ object User:
 
   given Show[User]     = user => s"id=${user.id}, name=${user.name}, age=${user.age}"
   given Encoder[User]  = deriveEncoder
-  given Loggable[User] = Loggable.make("user")
+  given Loggable[User] = Loggable.fromEncoders

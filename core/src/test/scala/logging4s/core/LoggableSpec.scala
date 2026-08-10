@@ -39,7 +39,7 @@ class LoggableSpec extends AnyWordSpec, Matchers:
     "right build via the encode/show overload of make" in:
       final case class Money(cents: Int)
 
-      val loggable = Loggable.make[Money]("money")(m => (m.cents / 100.0).toString, m => s"$$${m.cents / 100.0}")
+      val loggable = Loggable.make[Money]("money")(m => JsonString((m.cents / 100.0).toString), m => PlainString(s"$$${m.cents / 100.0}"))
 
       loggable.key shouldEqual "money"
       loggable.json(Money(1050)) shouldEqual "10.5"

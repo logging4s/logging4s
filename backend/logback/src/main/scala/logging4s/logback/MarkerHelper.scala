@@ -15,6 +15,8 @@ private[logback] object MarkerHelper:
   def fromLoggable(values: Seq[LoggableValue]): LogstashMarker =
     val deduplicated = LoggableValue.deduplicateKeys(values)
 
-    deduplicated.tail.foldLeft(fromLoggable(deduplicated.head)) { (marker, value) =>
+    val logstash = deduplicated.tail.foldLeft(fromLoggable(deduplicated.head)) { (marker, value) =>
       marker.and[LogstashMarker](fromLoggable(value))
     }
+
+    logstash.and[LogstashMarker](LoggableValuesMarker(deduplicated))

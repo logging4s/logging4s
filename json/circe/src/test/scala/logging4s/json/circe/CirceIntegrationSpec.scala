@@ -22,4 +22,4 @@ class CirceIntegrationSpec extends AnyWordSpec, Matchers:
       val user     = User("John", 18)
       val expected = """{"name":"John","age":18}"""
 
-      Loggable.make[User]("user").json(user) shouldEqual expected
+      Loggable.fromEncoders[User]("user").json(user) shouldEqual expected

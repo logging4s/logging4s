@@ -15,7 +15,7 @@ class KyoInstancesSpec extends AnyWordSpec, Matchers:
 
   given Render[User]      = a => s"name=${a.name}, age=${a.age}"
   given JsonEncoder[User] = a => JsonString(s"""{"name": "${a.name}", "age": ${a.age}}""")
-  given Loggable[User]    = Loggable.make[User]("user")
+  given Loggable[User]    = Loggable.fromEncoders[User]("user")
 
   "Kyo data and render instances" should:
     "right work Loggable for custom types for Render" in:

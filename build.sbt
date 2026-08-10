@@ -35,7 +35,7 @@ lazy val commonSettings = Seq(
     "-source:future",
     "-Wunused:all"
   ),
-  credentials += Credentials(Path.userHome / "Documents" / "sources" / "logging4s" / "sonatype_credentials"),
+  credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials"),
 )
 
 lazy val core = project
@@ -76,6 +76,15 @@ lazy val slf4j = project
     logback % Test,
   )
 
+lazy val console = project
+  .in(file("backend/console"))
+  .settings(commonSettings)
+  .settings(
+    name := "logging4s-console",
+    libraryDependencies ++= Dependencies.Console.all,
+  )
+  .dependsOn(core)
+
 lazy val backend = project
   .in(file("backend"))
   .settings(commonSettings)
@@ -86,6 +95,7 @@ lazy val backend = project
     logback,
     log4j2,
     slf4j,
+    console,
   )
 
 lazy val cats = project
@@ -286,6 +296,7 @@ lazy val examples = project
     cats,
     circe,
     logback,
+    console,
   )
 
 lazy val benchmarks = project
@@ -296,8 +307,15 @@ lazy val benchmarks = project
     name           := "logging4s-benchmarks",
     publish / skip := true,
     libraryDependencies ++= Dependencies.Json.jsoniter,
+    libraryDependencies += Dependencies.Log4j2.log4jLayoutJsonTemplate,
   )
-  .dependsOn(core, jsoniter)
+  .dependsOn(
+    core,
+    jsoniter,
+    logback,
+    log4j2,
+    console,
+  )
 
 lazy val logging4s = project
   .in(file("."))

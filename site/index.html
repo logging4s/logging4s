@@ -1,105 +1,398 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>logging4s - Structured Logging for Scala</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <style>
-        body {
-          background-image: url('https://www.example.com/forest-texture.jpg');
-          background-size: cover;
-          background-attachment: fixed;
-        }
-        .card {
-          background: rgba(255, 255, 255, 0.9);
-          border-radius: 12px;
-          padding: 20px;
-          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-    </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>logging4s — structured logging for Scala 3</title>
+<meta name="description" content="Structured logging for Scala 3 — for any backend, any effect, and any JSON library."/>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A6%AB%3C/text%3E%3C/svg%3E"/>
+<style>
+  :root {
+    --bg: #ffffff;
+    --fg: #1f2328;
+    --muted: #57606a;
+    --accent: #bc4c00;
+    --code-bg: #f6f8fa;
+    --border: #d0d7de;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d1117;
+      --fg: #e6edf3;
+      --muted: #9198a1;
+      --accent: #ec8e2c;
+      --code-bg: #161b22;
+      --border: #30363d;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.65;
+    font-size: 17px;
+  }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 0 24px 96px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  header.hero { text-align: center; padding: 64px 0 24px; }
+  header.hero img { width: 92px; height: 92px; }
+  h1 { font-size: 2.6rem; margin: 16px 0 4px; letter-spacing: -0.02em; }
+  .tagline { color: var(--muted); font-size: 1.15rem; margin: 0 auto; max-width: 560px; }
+  nav.links { text-align: center; margin: 22px 0 8px; }
+  nav.links a { display: inline-block; margin: 0 10px; font-weight: 600; }
+  nav.jump {
+    text-align: center; font-size: 0.92rem; padding: 16px 0;
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    margin: 24px 0 40px; color: var(--muted);
+  }
+  nav.jump a { margin: 0 8px; white-space: nowrap; }
+  h2 { font-size: 1.6rem; margin: 56px 0 12px; padding-top: 8px; letter-spacing: -0.01em; }
+  h3 { font-size: 1.15rem; margin: 28px 0 8px; }
+  p { margin: 12px 0; }
+  code {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 5px;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    line-height: 1.5;
+  }
+  pre code { background: none; padding: 0; font-size: 0.86rem; }
+  .muted { color: var(--muted); }
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 0.92rem; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--border); padding: 7px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--code-bg); font-weight: 600; }
+  td code, th code { background: none; padding: 0; }
+  .lead { font-size: 1.1rem; }
+  ul { padding-left: 22px; }
+  li { margin: 6px 0; }
+  footer { text-align: center; color: var(--muted); font-size: 0.9rem; margin-top: 72px; padding-top: 24px; border-top: 1px solid var(--border); }
+  .adopters { text-align: center; margin: 4px 0 20px; }
+  .adopters-label { display: block; font-size: 0.72rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+  .adopters a { display: inline-block; margin: 0 14px; color: var(--fg); opacity: 0.7; transition: opacity 0.15s; }
+  .adopters a:hover { opacity: 1; text-decoration: none; }
+  .adopters svg { vertical-align: middle; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  @media (max-width: 600px) {
+    body { font-size: 16px; }
+    h1 { font-size: 2.1rem; }
+    .wrap { padding: 0 16px 64px; }
+  }
+</style>
 </head>
-<body class="text-gray-900">
-<!-- Hero Section -->
-<header class="bg-green-700 text-white py-10 text-center">
-    <img src="https://github.com/logging4s/logging4s/raw/main/logos/logging4s_icon.png" alt="logging4s logo"
-         class="mx-auto w-24 h-24">
-    <h1 class="text-4xl font-bold mt-4">logging4s</h1>
-    <p class="mt-2 text-lg">Transforming raw data into structured logs – like beavers building a dam!</p>
-</header>
+<body>
+<div class="wrap">
 
-<!-- Quick Start Section -->
-<section id="start" class="container mx-auto my-12 px-4 text-center">
-    <h2 class="text-3xl font-semibold">Quick Start</h2>
-    <p class="text-gray-600 mt-4">Get up and running with logging4s in just a few minutes.</p>
-    <pre class="bg-gray-100 p-4 rounded mt-4 text-left overflow-x-auto">
-      <code>
-        libraryDependencies += "org.logging4s" %% "logging4s-core" % "latest-version"
-      </code>
-    </pre>
-</section>
+  <header class="hero">
+    <img src="https://raw.githubusercontent.com/logging4s/logging4s/main/logos/logging4s_icon.png" alt="logging4s logo"/>
+    <h1>logging4s</h1>
+    <p class="tagline">Structured logging for Scala 3 — for any backend, any effect, and any JSON library.</p>
+    <nav class="links">
+      <a href="https://github.com/logging4s/logging4s">GitHub</a>
+      <a href="https://mvnrepository.com/search?q=logging4s">Maven Central</a>
+      <a href="https://github.com/logging4s/logging4s/blob/main/LICENSE">Apache 2.0</a>
+    </nav>
+  </header>
 
-<!-- About Section -->
-<section class="container mx-auto my-12 px-4 text-center">
-    <h2 class="text-3xl font-semibold">Why logging4s?</h2>
-    <p class="text-gray-600 mt-4">Just like beavers efficiently process wood into strong structures, logging4s processes
-        data into structured logs.</p>
-    <p class="text-gray-600 mt-2">Seamlessly integrates with <strong>Cats Effect</strong> and <strong>ZIO</strong>,
-        supporting major JSON libraries like <strong>Circe</strong>, <strong>Jsoniter</strong>, <strong>Json4s</strong>,
-        and <strong>uPickle</strong>.</p>
-    <p class="text-gray-600 mt-2">Effortless JSON logging makes it simple to send logs to <strong>Kibana</strong> and
-        other analytics platforms.</p>
-</section>
+  <nav class="jump">
+    <a href="#start">Quick start</a> ·
+    <a href="#loggable">Loggable</a> ·
+    <a href="#logging">Logging</a> ·
+    <a href="#backends">Backends</a> ·
+    <a href="#config">Config</a> ·
+    <a href="#modules">Modules</a> ·
+    <a href="#benchmarks">Benchmarks</a> ·
+    <a href="#migration">Migration</a>
+  </nav>
 
-<!-- Features Section -->
-<section class="py-12 bg-green-100">
-    <div class="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
-        <div class="card text-center">
-            <i class="ph ph-tree text-4xl text-green-700"></i>
-            <h3 class="text-xl font-bold mt-4">Simple and Safe</h3>
-            <p class="mt-2 text-gray-600">Like a beaver’s ecosystem, our logs are well-structured and efficient.</p>
-        </div>
-        <div class="card text-center">
-            <i class="ph ph-gear-six text-4xl text-green-700"></i>
-            <h3 class="text-xl font-bold mt-4">Functional Integration</h3>
-            <p class="mt-2 text-gray-600">Works seamlessly with Cats Effect and ZIO.</p>
-        </div>
-        <div class="card text-center">
-            <i class="ph ph-database text-4xl text-green-700"></i>
-            <h3 class="text-xl font-bold mt-4">JSON-First Approach</h3>
-            <p class="mt-2 text-gray-600">Logs are structured for modern observability tools.</p>
-        </div>
+  <p class="lead">
+    You describe how your types render with a <code>Loggable[A]</code> type class, get a <code>Logging[F[_]]</code> for
+    your effect type, and log values directly. Each value is rendered to JSON and attached to the log event as
+    structured data; the message string carries a human-readable rendering of the same values.
+  </p>
+
+  <p>
+    The library is a backend-agnostic <code>core</code> plus thin integration modules. The logging backend
+    (logback / log4j2 / slf4j / console), the effect type (cats-effect / ZIO / Kyo / rapid), and the JSON codec
+    (circe / jsoniter / …) are independent modules, each wired in through a <code>given</code> import. <code>core</code>
+    has no dependency on any of them.
+  </p>
+
+  <h2 id="start">Quick start</h2>
+  <p>Pick a backend and an effect runtime (a JSON library is optional — <code>derives Loggable</code> needs none):</p>
+  <pre><code>libraryDependencies ++= Seq(
+  "org.logging4s" %% "logging4s-cats"    % "2.0.0",
+  "org.logging4s" %% "logging4s-logback" % "2.0.0"
+)</code></pre>
+  <pre><code>import cats.effect.{IO, IOApp}
+
+import logging4s.core.{Loggable, Logging}
+import logging4s.cats.CatsInstances.given        // Delay[IO], cats.Show / data bridges
+import logging4s.logback.LogbackInstances.given  // the LoggingFactory
+
+final case class User(id: Int, name: String) derives Loggable
+
+object Main extends IOApp.Simple:
+  def run: IO[Unit] =
+    for
+      log <- Logging.create[IO]("Main")
+      _   <- log.info("user created", User(1, "John"))
+    yield ()</code></pre>
+  <p>The <code>logback</code> backend attaches <code>User</code> as a nested JSON object; the message keeps its plain rendering:</p>
+  <pre><code>{"message":"user created: user -> (id -> (1), name -> (John))","user":{"id":1,"name":"John"},"level":"INFO"}</code></pre>
+
+  <h2 id="loggable">The <code>Loggable</code> type class</h2>
+  <p>Everything centers on one type class. A <code>Loggable[A]</code> is required for any value you log:</p>
+  <pre><code>trait Loggable[A]:
+  val key: ValueKey            // the field name the value logs under
+  def json(a: A): JsonString   // structured form
+  def plain(a: A): PlainString // human-readable form, appended to the message</code></pre>
+  <p>
+    There are four ways to obtain an instance — <code>derived</code>, <code>fromEncoders</code>, <code>make</code>, and
+    the field-policy builder <code>deriving</code>. Each infers the top-level key from the type name by default, or takes
+    an explicit key as its first argument, consistently across all four:
+  </p>
+  <pre><code>Loggable.derived[User]        // key "user"     Loggable.derived[User]("account")
+Loggable.fromEncoders[User]   // key "user"     Loggable.fromEncoders[User]("account")
+Loggable.make[User](…)        // key "user"     Loggable.make[User]("account")(…)
+Loggable.deriving[User]       // key "user"     Loggable.deriving[User]("account")</code></pre>
+
+  <h3>Derivation</h3>
+  <p>
+    <code>derives Loggable</code> builds both renderings structurally from the fields — the JSON object is assembled by
+    the macro, no JSON library involved. Products key by field name; sum types delegate to the selected variant.
+  </p>
+  <pre><code>final case class Point(x: Int, y: Int) derives Loggable
+
+enum Color derives Loggable:
+  case Red, Green, Blue</code></pre>
+
+  <h3>From an existing codec</h3>
+  <p>
+    If you already have a JSON codec for <code>A</code>, <code>Loggable.fromEncoders</code> delegates <code>json</code>
+    to it — the log JSON is exactly your codec's output (its field names, its escaping), and <code>plain</code> comes
+    from a <code>PlainEncoder</code> (e.g. bridged from <code>cats.Show</code>) or a structural fallback. Prefer this
+    when a codec exists.
+  </p>
+  <pre><code>given io.circe.Encoder[User] = io.circe.generic.semiauto.deriveEncoder
+given Loggable[User]         = Loggable.fromEncoders</code></pre>
+
+  <h3>By hand, or by adapting another instance</h3>
+  <p>
+    <code>make</code> takes the two renderings directly — <code>json</code> returns a <code>JsonString</code>
+    (<code>JsonString.quoted</code> escapes a string, <code>JsonString(…)</code> is raw), <code>plain</code> a
+    <code>PlainString</code>:
+  </p>
+  <pre><code>given Loggable[Money]  = Loggable.make(m => JsonString(m.cents.toString), m => PlainString(s"$$${m.cents / 100.0}"))
+given Loggable[UserId] = Loggable[Int].contramap(_.value, "user_id")
+val secret             = Loggable[String].redacted()   // always renders "***"</code></pre>
+
+  <h3>Per-field policies</h3>
+  <p>
+    For derived products, override individual fields with a builder. Selectors are macro-checked field references — not
+    strings, not annotations — so they survive refactors and work on types you don't own:
+  </p>
+  <pre><code>given Loggable[Account] =
+  Loggable.deriving[Account]
+    .hide(_.password)                    // omit
+    .mask(_.email)(MaskMode.KeepLast(4)) // partial mask
+    .rename(_.id, "account_id")          // custom key
+    .unembed(_.address)                  // splice its fields into the parent object
+    .derived</code></pre>
+
+  <h2 id="logging">Logging</h2>
+  <p>
+    <code>Logging.create</code> returns <code>F[Logging[F]]</code>; the log methods return <code>F[Unit]</code>. There
+    are <code>createTry</code> / <code>createEither</code> / <code>createUnsafe</code> variants for non-effect code.
+  </p>
+  <pre><code>for
+  log <- Logging.create[IO]("OrderService")
+  _   <- log.info("order placed", user, order)          // any number of values
+  _   <- log.error("payment failed", throwable, order)  // with a cause
+  scoped = log.withContextValues(requestId.asLogValue("request_id"))
+  _   <- scoped.info("handled")                         // context attached to every line
+yield ()</code></pre>
+  <p>
+    An interpolator is available for terser call sites — import <code>logging4s.core.syntax.logging.*</code>, have a
+    <code>given Logging[F]</code> in scope, and the key is taken from the interpolated identifier:
+  </p>
+  <pre><code>info"order placed: $order"   // == log.info("order placed", order.asLogValue("order"))</code></pre>
+
+  <h2 id="backends">Backends</h2>
+  <p>
+    <code>Loggable.json</code> produces a JSON string, but how it reaches the output depends on the backend — the one
+    choice that materially affects the result:
+  </p>
+  <table>
+    <tr><th>Backend</th><th>How structured values are emitted</th><th>Nested JSON?</th></tr>
+    <tr><td><code>logback</code></td><td>logstash raw-JSON markers</td><td><strong>Yes</strong> — genuine nested objects/arrays</td></tr>
+    <tr><td><code>log4j2</code></td><td>a <code>MapMessage</code> argument (no MDC)</td><td><strong>Yes</strong> with <code>JsonTemplateLayout</code> in object mode</td></tr>
+    <tr><td><code>slf4j</code></td><td>slf4j 2.x fluent <code>addKeyValue</code></td><td>Provider-dependent; typically strings</td></tr>
+    <tr><td><code>console</code></td><td>writes the JSON itself to stdout/stderr</td><td><strong>Yes</strong> — no framework needed</td></tr>
+  </table>
+  <p>The same call comes out as a nested object under <code>logback</code> / <code>log4j2</code> / <code>console</code>, and as an escaped string under bare <code>slf4j</code>:</p>
+  <pre><code>{"message":"user created: …","user":{"id":1,"name":"John"}}     // logback / log4j2 / console
+{"message":"user created: …","user":"{\"id\":1,\"name\":\"John\"}"} // slf4j — stringly-typed</code></pre>
+  <p>
+    We never touch your <code>logback.xml</code> / <code>log4j2.xml</code>: values are only attached to the event and
+    your encoder/layout decides what to render. <code>logging4s-logback</code> also ships an opt-in
+    <code>Logging4sEncoder</code> that writes the JSON itself (no logstash round-trip, no Jackson):
+  </p>
+  <pre><code>&lt;encoder class="logging4s.logback.Logging4sEncoder"/&gt;</code></pre>
+  <p>
+    <code>logging4s-console</code> needs no logging framework at all — structured JSON (or colored plain) straight to
+    stdout, ideal for containers. It's configured via HOCON under <code>logging4s.console</code>
+    (override in <code>application.conf</code> or with <code>LOGGING4S_CONSOLE_*</code> env vars):
+  </p>
+  <pre><code>logging4s.console {
+  level  = "info"    # error | warn | info | debug | trace
+  format = "json"    # json | plain
+  color  = "auto"    # auto (TTY only) | on | off
+  stream = "stdout"  # stdout | stderr
+  max-stack-trace-lines = -1
+}</code></pre>
+
+  <h2 id="config">Configuration</h2>
+  <p>
+    Rendering is controlled by a single <code>LoggableEncodingConfig</code> (<code>logging4s.core.config</code>). A
+    default <code>given</code> is provided; override it once, application-wide.
+  </p>
+  <table>
+    <tr><th>Field</th><th>Default</th><th>Effect</th></tr>
+    <tr><td><code>jsonTupleAsArray</code></td><td><code>true</code></td><td>tuple/Map/Ior JSON: <code>[1,"a"]</code> vs <code>{"int":1,"string":"a"}</code></td></tr>
+    <tr><td><code>keyNameStyle</code></td><td><code>SnakeCase</code></td><td>applied to every key: AsIs / Snake / Kebab / Camel / Pascal</td></tr>
+    <tr><td><code>plainTupleStyle</code></td><td><code>AsScala</code></td><td>tuple plain form: <code>(1, a)</code> / <code>[1, a]</code> / <code>1, a</code> / <code>{1, a}</code></td></tr>
+    <tr><td><code>plainValuesStyle</code></td><td><code>Arrow</code></td><td>value join: <code>k -> (v)</code> / <code>k=v</code> / <code>k: v</code> / <code>{k=v}</code></td></tr>
+  </table>
+  <p class="muted">
+    Default keys: scalars key by type name (<code>Loggable[Int]</code> → <code>int</code>), date/time use
+    <code>time</code>, <code>FiniteDuration</code> uses <code>time_ms</code>, collections pluralize
+    (<code>List[Int]</code> → <code>ints</code>), a derived case class keys by its decapitalized name.
+  </p>
+
+  <h2 id="modules">Modules</h2>
+  <p>Published for Scala 3 under <code>org.logging4s</code>:</p>
+  <pre><code>"org.logging4s" %% "logging4s-&lt;module&gt;" % "2.0.0"</code></pre>
+  <table>
+    <tr><th>Kind</th><th>Module</th><th>Notes</th></tr>
+    <tr><td>core</td><td><code>logging4s-core</code></td><td>type classes + <code>Logging</code>; no backend dependency</td></tr>
+    <tr><td rowspan="4">backend</td><td><code>logging4s-logback</code></td><td>logback + logstash-encoder; real nested JSON</td></tr>
+    <tr><td><code>logging4s-log4j2</code></td><td>Log4j2 API; values as a <code>MapMessage</code></td></tr>
+    <tr><td><code>logging4s-slf4j</code></td><td>bare slf4j-api 2.x; bring your own binding</td></tr>
+    <tr><td><code>logging4s-console</code></td><td>standalone JSON/plain to stdout; HOCON-configured</td></tr>
+    <tr><td rowspan="4">runtime</td><td><code>logging4s-cats</code></td><td>cats-effect 3; plain via <code>cats.Show</code></td></tr>
+    <tr><td><code>logging4s-zio</code></td><td>zio.Task; plain via <code>zio.prelude.Debug</code></td></tr>
+    <tr><td><code>logging4s-kyo</code></td><td>kyo.IO; plain via <code>kyo.Render</code></td></tr>
+    <tr><td><code>logging4s-rapid</code></td><td>rapid.Task</td></tr>
+    <tr><td rowspan="11">json</td><td><code>logging4s-circe</code></td><td>io.circe.Encoder</td></tr>
+    <tr><td><code>logging4s-jsoniter</code></td><td>jsoniter-scala JsonValueCodec</td></tr>
+    <tr><td><code>logging4s-zio-json</code></td><td>zio-json JsonEncoder</td></tr>
+    <tr><td><code>logging4s-play-json</code></td><td>play-json Writes</td></tr>
+    <tr><td><code>logging4s-spray-json</code></td><td>spray-json JsonWriter</td></tr>
+    <tr><td><code>logging4s-json4s</code></td><td>json4s Formats</td></tr>
+    <tr><td><code>logging4s-argonaut</code></td><td>argonaut EncodeJson</td></tr>
+    <tr><td><code>logging4s-borer</code></td><td>borer Encoder</td></tr>
+    <tr><td><code>logging4s-upickle</code></td><td>upickle Writer</td></tr>
+    <tr><td><code>logging4s-weepickle</code></td><td>weepickle From</td></tr>
+    <tr><td><code>logging4s-fabric</code></td><td>fabric Json</td></tr>
+  </table>
+  <p class="muted">
+    Each integration module exposes its <code>given</code>s as a named trait plus companion object, so you can also mix
+    several into one import: <code>object instances extends LogbackInstances with CatsInstances with CirceInstances</code>.
+  </p>
+
+  <h2 id="benchmarks">Benchmarks</h2>
+  <p>
+    A JMH harness logs the same mid-size event through every backend into a discarding sink. Every row is logging4s
+    itself on a different backend/encoder — this compares <em>our own backend choices against each other</em>, not
+    logging4s against other logging libraries. Measured as <strong>throughput — operations per second, higher is
+    better</strong> (single fork, one machine — rough ballpark, run it on your own hardware):
+  </p>
+  <table>
+    <tr><th>Config</th><th class="num">ops/s</th></tr>
+    <tr><td><code>log4j2</code> + JsonTemplateLayout (nested)</td><td class="num">~330k</td></tr>
+    <tr><td><code>log4j2</code> (stringified)</td><td class="num">~210k</td></tr>
+    <tr><td><code>console</code> + fromEncoders (jsoniter)</td><td class="num">~200k</td></tr>
+    <tr><td><code>logback</code> + Logging4sEncoder</td><td class="num">~170k</td></tr>
+    <tr><td><code>logback</code> + LogstashEncoder</td><td class="num">~140k</td></tr>
+    <tr><td><code>console</code> + derives</td><td class="num">~120k</td></tr>
+  </table>
+  <p class="muted">
+    Rough numbers — single fork on a loaded laptop, wide error bars, read them as orders of magnitude. The encoding path
+    matters as much as the backend: on the same <code>console</code>, <code>fromEncoders</code> with a codec is ~1.7× the
+    throughput of <code>derives</code>. The opt-in <code>Logging4sEncoder</code> edges past the standard
+    <code>LogstashEncoder</code> — it builds the JSON in one pass with no Jackson round-trip.
+  </p>
+
+  <h2 id="migration">Migration from 1.x</h2>
+  <p>
+    2.0.0 is a breaking release, but most call sites need only small edits — <code>Logging.create</code>, the
+    <code>*Instances.given</code> imports, <code>LoggingContext</code>, and the per-level methods are all
+    source-compatible.
+  </p>
+  <p><strong>1. Bump the version.</strong> Coordinates are otherwise identical:</p>
+  <pre><code>- "org.logging4s" %% "logging4s-cats" % "1.0.1"
++ "org.logging4s" %% "logging4s-cats" % "2.0.0"</code></pre>
+  <p>
+    <strong>2. <code>syntax</code> is now a package — add <code>.all</code>.</strong> The extension methods
+    (<code>asLogValue</code>, <code>withKey</code>, <code>Seq.plain</code>) sit behind an aggregator object:
+  </p>
+  <pre><code>- import logging4s.core.syntax.*
++ import logging4s.core.syntax.all.*</code></pre>
+  <p>
+    <strong>3. The single <code>make</code> split into four purpose-specific constructors.</strong> In 1.x every
+    instance was built with <code>Loggable.make</code>. 2.0 replaces it with four constructors — pick by where the two
+    renderings come from:
+  </p>
+  <table>
+    <tr><th>1.x</th><th>2.0</th><th>Use when</th></tr>
+    <tr><td><code>make[A: JsonEncoder: PlainEncoder]("k")</code></td><td><code>Loggable.fromEncoders[A]</code></td><td>You have a JSON codec — <code>json</code> is the codec's own output.</td></tr>
+    <tr><td><em>n/a</em></td><td><code>derives Loggable</code> / <code>Loggable.derived[A]</code></td><td>No codec — JSON assembled structurally by the macro.</td></tr>
+    <tr><td><em>n/a</em></td><td><code>Loggable.deriving[A]….derived</code></td><td>Derived, plus per-field policies (hide / mask / rename / unembed).</td></tr>
+    <tr><td><code>make[A]("k")(encode, show)</code></td><td><code>Loggable.make[A](json, plain)</code></td><td>Fully manual — you write both renderings by hand.</td></tr>
+  </table>
+  <pre><code>// 1.x — codec-backed make
+given Loggable[User] = Loggable.make("user")
+// 2.0 — that is exactly fromEncoders (key "user" from the type name; or fromEncoders("user"))
+given Loggable[User] = Loggable.fromEncoders
+
+// 1.x — manual make, functions returned String
+given Loggable[Money] = Loggable.make("money")(m => m.cents.toString, m => s"$$${m.cents / 100.0}")
+// 2.0 — same shape, functions now return the opaque JsonString / PlainString
+given Loggable[Money] = Loggable.make(m => JsonString(m.cents.toString), m => PlainString(s"$$${m.cents / 100.0}"))</code></pre>
+  <p>Every constructor takes the key as an optional first argument, or infers it from the type name.</p>
+  <p>
+    <strong>4. Hand-written instances return opaque types.</strong> If you implement <code>Loggable</code> (or
+    <code>JsonEncoder</code> / <code>PlainEncoder</code>) by hand, <code>key</code> / <code>json</code> / <code>plain</code>
+    return <code>ValueKey</code> / <code>JsonString</code> / <code>PlainString</code> instead of raw <code>String</code> —
+    wrap the values. Also <code>rename</code> / <code>contramap</code> / <code>redacted</code> are now <code>final</code>.
+  </p>
+
+  <footer>
+    <div class="adopters">
+      <span class="adopters-label">Adopters</span>
+      <a href="https://betby.com" title="Betby" aria-label="Betby">
+        <svg viewBox="0 0 51 29" width="48" height="27" fill="currentColor" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Betby"><path fill-rule="evenodd" clip-rule="evenodd" d="M31.456 0H39.4218C45.1408 0 49.43 2.65478 49.43 7.55591C49.43 10.52 47.3247 13.1491 44.5276 13.7554V14.3737C48.8149 14.8798 50.6556 17.705 50.6556 21.0322C50.6556 26.3417 47.3876 28.9965 38.6048 28.9965H36.3565V29H0V0.00167859H31.456V0ZM24.1915 5.06585C24.3009 4.91475 24.5031 4.85995 24.6752 4.93589C24.8465 5.01183 24.9416 5.19659 24.9004 5.37822L23.6803 11.9457L29.4112 11.9456C29.5595 11.9456 29.6959 12.027 29.7641 12.1585C29.8315 12.2892 29.8204 12.4466 29.734 12.5648L21.9455 23.5251C21.8377 23.6754 21.6331 23.7326 21.4618 23.6551C21.2897 23.5791 21.1953 23.3936 21.2366 23.212L22.4117 16.6802L16.7239 16.6428C16.5748 16.6428 16.4384 16.5598 16.371 16.4307C16.3028 16.2991 16.3155 16.1426 16.4011 16.0236L24.1915 5.06585Z"/></svg>
+      </a>
     </div>
-</section>
+    <p>
+      <a href="https://github.com/logging4s/logging4s">Source</a> ·
+      <a href="https://github.com/logging4s/logging4s/blob/main/README.md">README</a> ·
+      Apache 2.0
+    </p>
+  </footer>
 
-<!-- Adapters Section -->
-<section class="container mx-auto my-12 px-4 text-center">
-    <h2 class="text-3xl font-semibold">Library Adapters</h2>
-    <div class="flex justify-center space-x-12 mt-6">
-        <div class="flex flex-col items-center">
-            <img src="https://avatars.mds.yandex.net/i?id=838757fde6c7a6562aade90eabf7f16cfa3d0287-4888343-images-thumbs&n=13"
-                 alt="Betby" class="w-32">
-            <a href="https://www.betby.com/" class="text-blue-500 mt-2 hover:underline">Betby</a>
-        </div>
-        <div class="flex flex-col items-center">
-            <img src="https://yt3.googleusercontent.com/ytc/AIdro_mJS2qzwMzAd2SnTc8r8gcIeC0p3TnL3fgIrRjAJx138A=s900-c-k-c0x00ffffff-no-rj"
-                 alt="Onlinetours" class="w-32">
-            <a href="https://www.onlinetours.ru/" class="text-blue-500 mt-2 hover:underline">Onlinetours</a>
-        </div>
-    </div>
-</section>
-
-<!-- Footer -->
-<footer class="bg-green-800 text-white py-6 text-center">
-    <p>© 2025 logging4s. All rights reserved.</p>
-    <div class="mt-2 space-x-4 flex justify-center items-center">
-        <a href="https://github.com/logging4s/logging4s"
-           class="text-yellow-400  flex items-center space-x-1">
-            <i class="ph ph-github-logo text-2xl"></i>
-            <span class="hover:underline">GitHub</span>
-        </a>
-    </div>
-</footer>
+</div>
 </body>
 </html>

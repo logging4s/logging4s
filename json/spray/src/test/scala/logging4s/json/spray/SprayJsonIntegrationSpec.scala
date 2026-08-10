@@ -22,4 +22,4 @@ class SprayJsonIntegrationSpec extends AnyWordSpec, Matchers:
       val user     = User("John", 18)
       val expected = """{"age":18,"name":"John"}"""
 
-      Loggable.make[User]("user").json(user) shouldEqual expected
+      Loggable.fromEncoders[User]("user").json(user) shouldEqual expected

@@ -66,7 +66,7 @@ final class ProductLoggable[A](
                 sb.append(inner)
                 first = false
             else entry(fieldKey, raw)
-          case _ => entry(fieldKey, l.json(v).value)
+          case _                            => entry(fieldKey, l.json(v).value)
       }
 
       JsonString(sb.append('}').toString)
@@ -82,13 +82,12 @@ final class ProductLoggable[A](
           case Some(FieldPolicy.Mask(mode)) =>
             val masked = mode(l.plain(v).value)
             List(LoggableValue(ValueKey(fieldKey), PlainString(masked), JsonString.quoted(masked)))
-          case _ =>
+          case _                            =>
             List(LoggableValue(ValueKey(fieldKey), l.plain(v), l.json(v)))
       }
       PlainString(cfg.plainValuesStyle.render(values))
 
-final class SumLoggable[A](typeName: String, loggables: List[Loggable[Any]], mirror: Mirror.SumOf[A])
-    extends Loggable[A]:
+final class SumLoggable[A](typeName: String, loggables: List[Loggable[Any]], mirror: Mirror.SumOf[A]) extends Loggable[A]:
   override val key: ValueKey            = ValueKey(decapitalize(typeName))
   override def json(a: A): JsonString   = loggables(mirror.ordinal(a)).json(a)
   override def plain(a: A): PlainString = loggables(mirror.ordinal(a)).plain(a)

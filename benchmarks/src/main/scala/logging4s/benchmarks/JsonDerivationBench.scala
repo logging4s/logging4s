@@ -20,7 +20,7 @@ object JsonDerivationBench:
   given PlainEncoder[Bench]   = (b: Bench) => PlainString(b.toString)
 
   val derivedLoggable: Loggable[Bench]      = Loggable.derived
-  val makeLoggable: Loggable[Bench]         = Loggable.make[Bench]("bench")
+  val makeLoggable: Loggable[Bench]         = Loggable.fromEncoders[Bench]("bench")
   val fromEncodersLoggable: Loggable[Bench] = Loggable.fromEncoders
 
 @State(Scope.Benchmark)
