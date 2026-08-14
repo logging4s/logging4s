@@ -1,11 +1,14 @@
-<img width="200" height="200" align="right" src="logos/logging4s_icon.png" alt="Logging4s logo"/>
+<p align="center">
+  <img src="logos/logging4s.png" alt="logging4s logo" width="240">
+</p>
 
-# Logging4s
+# logging4s
 
 Structured logging for Scala 3. You describe how your types render with a `Loggable[A]` type class, get a
 `Logging[F[_]]` for your effect type, and log values directly. Each value is rendered to JSON and attached to the log
 event as structured data; the message string carries a human-readable rendering of the same values.
 
+[![CI](https://github.com/logging4s/logging4s/actions/workflows/ci.yml/badge.svg)](https://github.com/logging4s/logging4s/actions/workflows/ci.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/org.logging4s/logging4s-core_3?color=blue)](https://central.sonatype.com/search?q=logging4s)
 [![Scala 3](https://img.shields.io/badge/Scala-3-blue)](https://www.scala-lang.org/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
@@ -38,6 +41,7 @@ flowchart LR
 * [Migration from 1.x](#migration-from-1x)
 * [Adopters](#adopters)
 * [Design notes](#design-notes)
+* [Contributing](#contributing)
 
 ## Quick start
 
@@ -464,7 +468,7 @@ values (`ValueKey(...)`, `JsonString.quoted(...)`, `PlainString(...)`). Also `re
   </picture>
 </a>
 
-Using Logging4s? Open a PR to add your logo.
+Using logging4s? Open a PR to add your logo.
 
 ## Design notes
 
@@ -473,6 +477,13 @@ Using Logging4s? Open a PR to add your logo.
   `fromEncoders` delegates to your codec (faster, and the log JSON matches your wire JSON). Both coexist per type.
 * **Custom backends.** `LoggingFactory`, `Delay`, `LoggableValue.normalizeKeys`/`deduplicateKeys`, and the `syntax`
   aggregation helpers are the public SPI if you want to target a backend that isn't shipped here.
+
+## Contributing
+
+Bug reports and PRs are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for how to build the project,
+run its tests, and where to make changes for common kinds of contributions. This project follows the
+[Contributor Covenant](CODE_OF_CONDUCT.md); please report security issues per [SECURITY.md](SECURITY.md)
+rather than in a public issue.
 
 ## License
 

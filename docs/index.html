@@ -39,9 +39,11 @@
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
   header.hero { text-align: center; padding: 64px 0 24px; }
-  header.hero img { width: 92px; height: 92px; }
+  header.hero .logo { width: 160px; height: auto; display: block; margin: 0 auto; }
   h1 { font-size: 2.6rem; margin: 16px 0 4px; letter-spacing: -0.02em; }
   .tagline { color: var(--muted); font-size: 1.15rem; margin: 0 auto; max-width: 560px; }
+  .badges { text-align: center; margin: 16px 0 0; }
+  .badges img { height: 20px; margin: 2px 4px; vertical-align: middle; }
   nav.links { text-align: center; margin: 22px 0 8px; }
   nav.links a { display: inline-block; margin: 0 10px; font-weight: 600; }
   nav.jump {
@@ -95,12 +97,18 @@
 <div class="wrap">
 
   <header class="hero">
-    <img src="https://raw.githubusercontent.com/logging4s/logging4s/main/logos/logging4s_icon.png" alt="logging4s logo"/>
+    <img class="logo" src="logging4s.png" alt="logging4s logo"/>
     <h1>logging4s</h1>
     <p class="tagline">Structured logging for Scala 3 — for any backend, any effect, and any JSON library.</p>
+    <p class="badges">
+      <a href="https://github.com/logging4s/logging4s/actions/workflows/ci.yml"><img src="https://github.com/logging4s/logging4s/actions/workflows/ci.yml/badge.svg" alt="CI status" height="20"/></a>
+      <a href="https://central.sonatype.com/search?q=logging4s"><img src="https://img.shields.io/maven-central/v/org.logging4s/logging4s-core_3?color=blue" alt="Maven Central version" height="20"/></a>
+      <a href="https://www.scala-lang.org/"><img src="https://img.shields.io/badge/Scala-3-blue" alt="Scala 3" height="20"/></a>
+      <a href="https://github.com/logging4s/logging4s/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="Apache 2.0 license" height="20"/></a>
+    </p>
     <nav class="links">
       <a href="https://github.com/logging4s/logging4s">GitHub</a>
-      <a href="https://mvnrepository.com/search?q=logging4s">Maven Central</a>
+      <a href="https://central.sonatype.com/search?q=logging4s">Maven Central</a>
       <a href="https://github.com/logging4s/logging4s/blob/main/LICENSE">Apache 2.0</a>
     </nav>
   </header>

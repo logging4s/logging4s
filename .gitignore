@@ -2,6 +2,10 @@
 .bloop
 .metals
 project/boot
+project/project
+project/.sbtboot
+project/.ivy
+project/.boot
 target
 .ensime
 .ensime_lucene
