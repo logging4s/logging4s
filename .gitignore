@@ -22,7 +22,8 @@ TAGS
 .idea_modules
 .DS_Store
 .vscode
-.claude/
+.claude/*
+!.claude/CLAUDE.md
 .sbtrc
 .semanticdb
 metals.sbt
