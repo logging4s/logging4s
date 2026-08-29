@@ -4,6 +4,7 @@ import scala.util.Try
 import scala.reflect.ClassTag
 
 trait Logging[F[*]]:
+  self: Logging[F] =>
 
   def withContext(context: LoggingContext): Logging[F]
   def withContextValues(values: LoggableValue*): Logging[F] = withContext(LoggingContext(values))
@@ -13,6 +14,15 @@ trait Logging[F[*]]:
   def enabled(level: Level): Boolean
 
   def unit: F[Unit]
+
+  final def mapK[G[*]](f: [A] => F[A] => G[A]): Logging[G] =
+    new:
+      override def withContext(context: LoggingContext): Logging[G] = self.withContext(context).mapK(f)
+      override def enabled(level: Level): Boolean                   = self.enabled(level)
+      override def unit: G[Unit]                                    = f(self.unit)
+
+      override def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue]): G[Unit] =
+        f(self.emit(level, message, cause, values))
 
   final def error(message: String): F[Unit]                                           = emit(Level.Error, message, None, Nil)
   final def error(message: String, error: Throwable): F[Unit]                         = emit(Level.Error, message, Some(error), Nil)
@@ -44,13 +54,13 @@ object Logging:
   def apply[F[*]](using instance: Logging[F]): Logging[F] = instance
 
   def create[F[*]: Delay, S](using factory: LoggingFactory, S: ClassTag[S]): F[Logging[F]] =
-    factory.create(S.runtimeClass.getName, LoggingContext.empty)
+    factory.create(S.runtimeClass.getName.stripSuffix("$"), LoggingContext.empty)
 
   def create[F[*]: Delay](name: String)(using factory: LoggingFactory): F[Logging[F]] =
     factory.create(name, LoggingContext.empty)
 
   def create[F[*]: Delay, S](context: LoggingContext)(using factory: LoggingFactory, S: ClassTag[S]): F[Logging[F]] =
-    factory.create(S.runtimeClass.getName, context)
+    factory.create(S.runtimeClass.getName.stripSuffix("$"), context)
 
   def create[F[*]: Delay](name: String, context: LoggingContext)(using factory: LoggingFactory): F[Logging[F]] =
     factory.create(name, context)

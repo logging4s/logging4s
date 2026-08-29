@@ -28,6 +28,12 @@ trait Loggable[A]:
       override def json(b: B): JsonString   = self.json(f(b))
       override def plain(b: B): PlainString = self.plain(f(b))
 
+  final def mapPlain(f: String => String): Loggable[A] =
+    new:
+      override val key: ValueKey            = self.key
+      override def json(a: A): JsonString   = self.json(a)
+      override def plain(a: A): PlainString = PlainString(f(self.plain(a).value))
+
   final def redacted(mask: String = "***"): Loggable[A] =
     new:
       override val key: ValueKey            = self.key
@@ -196,8 +202,8 @@ object Loggable extends LoggableLowPriority:
   given LoggableSet[T](using L: Loggable[T]): Loggable[Set[T]] =
     new:
       override val key: ValueKey                 = L.key.pluralized
-      override def plain(a: Set[T]): PlainString = PlainString.array(a.map(L.plain).toSeq*)
-      override def json(a: Set[T]): JsonString   = JsonString.array(a.map(L.json).toSeq*)
+      override def plain(a: Set[T]): PlainString = PlainString.array(a.toSeq.map(L.plain).sortBy(_.value)*)
+      override def json(a: Set[T]): JsonString   = JsonString.array(a.toSeq.map(L.json).sortBy(_.value)*)
 
   given LoggableArray[T](using L: Loggable[T]): Loggable[Array[T]] =
     new:
@@ -219,12 +225,12 @@ object Loggable extends LoggableLowPriority:
       override def plain(a: Map[K, V]): PlainString = PlainString.array(a.toSeq.map(entry.plain)*)
       override def json(a: Map[K, V]): JsonString   = JsonString.array(a.toSeq.map(entry.json)*)
 
+private[core] trait LoggableLowPriority:
+
+  given LoggableThrowable[E <: Throwable]: Loggable[E] = Loggable.anyThrowable.asInstanceOf[Loggable[E]]
+
   given LoggableContainer[T, C[*]](using L: Loggable[T], ev: C[T] => Iterable[T]): Loggable[C[T]] =
     new:
       override val key: ValueKey               = L.key.pluralized
       override def plain(a: C[T]): PlainString = PlainString.array(ev(a).toSeq.map(L.plain)*)
       override def json(a: C[T]): JsonString   = JsonString.array(ev(a).toSeq.map(L.json)*)
-
-private[core] trait LoggableLowPriority:
-
-  given LoggableThrowable[E <: Throwable]: Loggable[E] = Loggable.anyThrowable.asInstanceOf[Loggable[E]]
