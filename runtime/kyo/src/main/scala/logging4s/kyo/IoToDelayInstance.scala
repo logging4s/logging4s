@@ -10,4 +10,6 @@ trait IoToDelayInstance:
     override def delay[A](a: => A): KIO[A] =
       IO(a)
 
+    override val unit: KIO[Unit] = ()
+
 object IoToDelayInstance extends IoToDelayInstance
