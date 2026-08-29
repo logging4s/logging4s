@@ -2,7 +2,7 @@ package logging4s.core.interpolation
 
 import scala.quoted.*
 
-import logging4s.core.{Loggable, LoggableValue, Logging, ValueKey}
+import logging4s.core.{Level, Loggable, LoggableValue, Logging, ValueKey}
 
 private[core] object LoggingInterpolator:
 
@@ -49,14 +49,19 @@ private[core] object LoggingInterpolator:
       case Varargs(exprs) => exprs
       case _              => report.errorAndAbort("the logging interpolator requires inline arguments")
 
-    val values = Varargs(argExprs.map(toLoggableValue))
+    val values = Expr.ofSeq(argExprs.map(toLoggableValue))
 
-    level match
-      case "info"  => '{ $logging.info($message, $values*) }
-      case "warn"  => '{ $logging.warn($message, $values*) }
-      case "error" => '{ $logging.error($message, $values*) }
-      case "debug" => '{ $logging.debug($message, $values*) }
-      case _       => '{ $logging.trace($message, $values*) }
+    val levelExpr = level match
+      case "info"  => '{ Level.Info }
+      case "warn"  => '{ Level.Warn }
+      case "error" => '{ Level.Error }
+      case "debug" => '{ Level.Debug }
+      case _       => '{ Level.Trace }
+
+    '{
+      val logger = $logging
+      if logger.enabled($levelExpr) then logger.emit($levelExpr, $message, None, $values) else logger.unit
+    }
 
   private def toLoggableValue(argExpr: Expr[Any])(using Quotes): Expr[LoggableValue] =
     import quotes.reflect.*

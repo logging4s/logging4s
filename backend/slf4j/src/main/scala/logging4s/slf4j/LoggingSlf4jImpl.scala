@@ -26,7 +26,9 @@ private[slf4j] class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: Logg
         withKeyValues.log(LogMessage.render(message, cause, deduplicated))
     }
 
-  private def enabled(level: Level): Boolean =
+  override def unit: F[Unit] = Delay[F].unit
+
+  override def enabled(level: Level): Boolean =
     level match
       case Level.Error => logger.isErrorEnabled
       case Level.Warn  => logger.isWarnEnabled

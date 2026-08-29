@@ -6,8 +6,8 @@ import logging4s.core.config.LoggableEncodingConfig
 trait LoggableSyntax:
 
   extension [A](a: A)(using L: Loggable[A])
-    def asLogValue: LoggableValue                    = LoggableValue(L.key, L.plain(a), L.json(a))
-    def asLogValue(key: String): LoggableValue       = LoggableValue(ValueKey(key), L.plain(a), L.json(a))
+    def asLogValue: LoggableValue                    = LoggableValue.deferred(L.key, a, L)
+    def asLogValue(key: String): LoggableValue       = LoggableValue.deferred(ValueKey(key), a, L)
     def mapPlain(f: String => String): LoggableValue = LoggableValue(L.key, PlainString(f(L.plain(a).value)), L.json(a))
 
   extension [A](a: A)(using JE: JsonEncoder[A], PE: PlainEncoder[A])

@@ -10,6 +10,10 @@ trait Logging[F[*]]:
 
   def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue]): F[Unit]
 
+  def enabled(level: Level): Boolean
+
+  def unit: F[Unit]
+
   final def error(message: String): F[Unit]                                           = emit(Level.Error, message, None, Nil)
   final def error(message: String, error: Throwable): F[Unit]                         = emit(Level.Error, message, Some(error), Nil)
   final def error(message: String, values: LoggableValue*): F[Unit]                   = emit(Level.Error, message, None, values)

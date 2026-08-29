@@ -9,10 +9,15 @@ class LoggingInterpolatorSpec extends AnyWordSpec, Matchers:
 
   final class Capturing extends Logging[Identity]:
     var level: Level               = Level.Info
+    var enabledLevels: Set[Level]  = Level.values.toSet
     var message: String            = ""
     var values: Seq[LoggableValue] = Seq.empty
 
     def withContext(context: LoggingContext): Logging[Identity] = this
+
+    def enabled(level: Level): Boolean = enabledLevels.contains(level)
+
+    def unit: Unit = ()
 
     def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue]): Unit =
       this.level = level
@@ -83,6 +88,35 @@ class LoggingInterpolatorSpec extends AnyWordSpec, Matchers:
 
       evaluations shouldEqual 1
       log.values.head.plain shouldEqual "1"
+
+    "skip emit entirely when the level is disabled" in:
+      val log                 = new Capturing
+      given Logging[Identity] = log
+
+      log.enabledLevels = Set.empty
+
+      var evaluations    = 0
+      def counted(): Int =
+        evaluations += 1
+        evaluations
+
+      debug"value ${counted()}"
+
+      log.message shouldEqual ""
+      log.values shouldEqual Seq.empty
+      evaluations shouldEqual 0
+
+    "still emit when the level is enabled" in:
+      val log                 = new Capturing
+      given Logging[Identity] = log
+
+      log.enabledLevels = Set(Level.Debug)
+
+      val count = 5
+      debug"value $count"
+
+      log.level shouldEqual Level.Debug
+      log.message shouldEqual "value"
 
     "route the level to the matching Logging method" in:
       val log                 = new Capturing

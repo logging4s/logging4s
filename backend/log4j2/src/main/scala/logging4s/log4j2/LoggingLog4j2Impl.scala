@@ -24,7 +24,9 @@ private[log4j2] class LoggingLog4j2Impl[F[*]: Delay](logger: Logger, context: Lo
         write(level, payload, cause.orNull)
     }
 
-  private def enabled(level: Level): Boolean =
+  override def unit: F[Unit] = Delay[F].unit
+
+  override def enabled(level: Level): Boolean =
     level match
       case Level.Error => logger.isErrorEnabled
       case Level.Warn  => logger.isWarnEnabled

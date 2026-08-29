@@ -14,13 +14,17 @@ private[console] class LoggingConsoleImpl[F[*]: Delay](name: String, context: Lo
 
   override def withContext(moreContext: LoggingContext): Logging[F] = LoggingConsoleImpl(name, context + moreContext)
 
+  override def unit: F[Unit] = Delay[F].unit
+
+  override def enabled(level: Level): Boolean = level.enabledAt(console.level)
+
   private def target: PrintStream =
     console.stream match
       case Stream.Stdout => System.out
       case Stream.Stderr => System.err
 
   override def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue]): F[Unit] =
-    if !level.enabledAt(console.level) then Delay[F].unit
+    if !enabled(level) then unit
     else
       Delay[F].delay {
         val all = LoggableValue.deduplicateKeys(ctxValues ++ LoggableValue.normalizeKeys(values))
