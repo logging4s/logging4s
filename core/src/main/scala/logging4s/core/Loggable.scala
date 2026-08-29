@@ -187,9 +187,11 @@ object Loggable:
 
   given LoggableMap[K, V](using KL: Loggable[K], VL: Loggable[V], cfg: LoggableEncodingConfig): Loggable[Map[K, V]] =
     new:
-      override val key: ValueKey                    = Loggable[(K, V)].key.pluralized
-      override def plain(a: Map[K, V]): PlainString = PlainString.array(a.toSeq.map(Loggable[(K, V)].plain)*)
-      override def json(a: Map[K, V]): JsonString   = JsonString.array(a.toSeq.map(Loggable[(K, V)].json)*)
+      private val entry: Loggable[(K, V)] = Loggable[(K, V)]
+
+      override val key: ValueKey                    = entry.key.pluralized
+      override def plain(a: Map[K, V]): PlainString = PlainString.array(a.toSeq.map(entry.plain)*)
+      override def json(a: Map[K, V]): JsonString   = JsonString.array(a.toSeq.map(entry.json)*)
 
   given LoggableContainer[T, C[*]](using L: Loggable[T], ev: C[T] => Iterable[T]): Loggable[C[T]] =
     new:

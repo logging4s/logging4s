@@ -28,7 +28,7 @@ class LoggableMapMessageJsonTemplateSpec extends AnyWordSpec, Matchers:
 
   "LoggableMapMessage under a JsonTemplateLayout message resolver" must:
     "emit structured values as raw nested JSON, not escaped strings" in:
-      val json = render(LoggableMapMessage(Map("user" -> """{"id":1,"name":"John"}"""), "user created"))
+      val json = render(LoggableMapMessage(Seq("user" -> """{"id":1,"name":"John"}"""), "user created"))
 
       json should include(""""user":{"id":1,"name":"John"}""")
       json should not include "\\\"id\\\""

@@ -18,7 +18,7 @@ private[log4j2] class LoggingLog4j2Impl[F[*]: Delay](logger: Logger, context: Lo
       if enabled(level) then
         val all          = ctxValues ++ LoggableValue.normalizeKeys(values)
         val deduplicated = LoggableValue.deduplicateKeys(all)
-        val entries      = deduplicated.map(v => v.key.value -> v.json.value).toMap
+        val entries      = deduplicated.map(v => v.key.value -> v.json.value)
         val payload      = LoggableMapMessage(entries, LogMessage.render(message, cause, deduplicated))
 
         write(level, payload, cause.orNull)

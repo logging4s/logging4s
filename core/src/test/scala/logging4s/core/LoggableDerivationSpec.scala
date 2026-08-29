@@ -23,6 +23,20 @@ final case class Wrapper(owner: Account) derives Loggable
 final case class Line(start: Point, points: List[Point]) derives Loggable
 final case class Nickname(id: Int, nick: Option[String]) derives Loggable
 
+final case class Counted(value: String)
+object Counted:
+  var jsonCalls: Int = 0
+
+  given Loggable[Counted] = Loggable.make[Counted]("counted")(
+    c =>
+      jsonCalls += 1
+      JsonString.quoted(c.value)
+    ,
+    c => PlainString(c.value),
+  )
+
+final case class Boxed(counted: Counted) derives Loggable
+
 class LoggableDerivationSpec extends AnyWordSpec, Matchers:
 
   "Loggable.derived for a product" must:
@@ -76,6 +90,13 @@ class LoggableDerivationSpec extends AnyWordSpec, Matchers:
 
     "render absent elements of a collection as null, keeping the array valid JSON" in:
       Loggable[List[Option[Int]]].json(List(Some(1), None, Some(3))) shouldEqual "[1,null,3]"
+
+    "not encode json while rendering plain" in:
+      Counted.jsonCalls = 0
+
+      Loggable[Boxed].plain(Boxed(Counted("x"))) shouldEqual "counted -> (x)"
+
+      Counted.jsonCalls shouldEqual 0
 
     "use a derived enum as a product field" in:
       Loggable[Shirt].json(Shirt(42, Color.Red)) shouldEqual """{"size":42,"color":"Red"}"""

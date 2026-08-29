@@ -20,7 +20,7 @@ private[console] class LoggingConsoleImpl[F[*]: Delay](name: String, context: Lo
       case Stream.Stderr => System.err
 
   override def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue]): F[Unit] =
-    if !level.enabledAt(console.level) then Delay[F].delay(())
+    if !level.enabledAt(console.level) then Delay[F].unit
     else
       Delay[F].delay {
         val all = LoggableValue.deduplicateKeys(ctxValues ++ LoggableValue.normalizeKeys(values))

@@ -124,3 +124,19 @@ class LoggingLog4j2MessageSpec extends AnyWordSpec with Matchers:
 
       val mapMessage = message.asInstanceOf[MapMessage[?, String]]
       mapMessage.get("session") shouldEqual "\"abc\""
+
+    "keep the values in call-site order, not hash order" in:
+      val message = captureMessage("LoggingLog4j2MessageSpec-order") { logging =>
+        logging.info(
+          "ordered",
+          LoggableValue(ValueKey("zulu"), PlainString("1"), JsonString("1")),
+          LoggableValue(ValueKey("alpha"), PlainString("2"), JsonString("2")),
+          LoggableValue(ValueKey("mike"), PlainString("3"), JsonString("3")),
+          LoggableValue(ValueKey("bravo"), PlainString("4"), JsonString("4")),
+          LoggableValue(ValueKey("yankee"), PlainString("5"), JsonString("5")),
+          LoggableValue(ValueKey("delta"), PlainString("6"), JsonString("6")),
+        )
+      }
+
+      message.asInstanceOf[LoggableMapMessage].getFormattedMessage(Array("JSON")) shouldEqual
+        """{"zulu":1,"alpha":2,"mike":3,"bravo":4,"yankee":5,"delta":6}"""

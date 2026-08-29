@@ -14,12 +14,13 @@ final class TupleLoggable[T <: Tuple](loggables: List[Loggable[Any]], cfg: Logga
   override val key: ValueKey = ValueKey.combine(loggables.map(_.key)*)
 
   override def plain(t: T): PlainString =
-    cfg.plainTupleStyle.render(loggables.zip(t.productIterator.toList).map((l, a) => l.plain(a)))
+    val elements = t.productIterator
+    cfg.plainTupleStyle.render(loggables.map(_.plain(elements.next())))
 
   override def json(t: T): JsonString =
-    val elements = loggables.zip(t.productIterator.toList)
-    if cfg.jsonTupleAsArray then JsonString.array(elements.map((l, a) => l.json(a))*)
-    else JsonString.obj(elements.map((l, a) => l.key.value -> l.json(a))*)
+    val elements = t.productIterator
+    if cfg.jsonTupleAsArray then JsonString.array(loggables.map(_.json(elements.next()))*)
+    else JsonString.obj(loggables.map(l => l.key.value -> l.json(elements.next()))*)
 
 final class ProductLoggable[A](
     typeName: String,
@@ -74,23 +75,25 @@ final class ProductLoggable[A](
   override def plain(a: A): PlainString =
     if specs.isEmpty then PlainString(typeName)
     else
-      val fields = a.asInstanceOf[Product].productIterator.toList
-      val values = specs.lazyZip(fields).flatMap { (spec, v) =>
-        val (l, fieldKey, policy) = spec
+      val fields   = a.asInstanceOf[Product].productIterator
+      val rendered = List.newBuilder[(String, String)]
+
+      specs.foreach { (l, fieldKey, policy) =>
+        val v = fields.next()
         policy match
-          case Some(FieldPolicy.Hide)       => Nil
-          case Some(FieldPolicy.Mask(mode)) =>
-            val masked = mode(l.plain(v).value)
-            List(LoggableValue(ValueKey(fieldKey), PlainString(masked), JsonString.quoted(masked)))
-          case _                            =>
-            List(LoggableValue(ValueKey(fieldKey), l.plain(v), l.json(v)))
+          case Some(FieldPolicy.Hide)       => ()
+          case Some(FieldPolicy.Mask(mode)) => rendered += fieldKey -> mode(l.plain(v).value)
+          case _                            => rendered += fieldKey -> l.plain(v).value
       }
-      PlainString(cfg.plainValuesStyle.render(values))
+
+      PlainString(cfg.plainValuesStyle.renderFields(rendered.result()))
 
 final class SumLoggable[A](typeName: String, loggables: List[Loggable[Any]], mirror: Mirror.SumOf[A]) extends Loggable[A]:
+  private val variants: Vector[Loggable[Any]] = loggables.toVector
+
   override val key: ValueKey            = ValueKey(decapitalize(typeName))
-  override def json(a: A): JsonString   = loggables(mirror.ordinal(a)).json(a)
-  override def plain(a: A): PlainString = loggables(mirror.ordinal(a)).plain(a)
+  override def json(a: A): JsonString   = variants(mirror.ordinal(a)).json(a)
+  override def plain(a: A): PlainString = variants(mirror.ordinal(a)).plain(a)
 
 final class EncodersLoggable[A](typeName: String, enc: JsonEncoder[A], plainEnc: PlainEncoder[A]) extends Loggable[A]:
   override val key: ValueKey            = ValueKey(typeName)
