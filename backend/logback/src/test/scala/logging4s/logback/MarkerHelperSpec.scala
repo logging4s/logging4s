@@ -18,3 +18,6 @@ class MarkerHelperSpec extends AnyWordSpec, Matchers:
       )
 
       noException should be thrownBy MarkerHelper.fromLoggable(values)
+
+    "build a marker for an empty sequence instead of throwing" in:
+      noException should be thrownBy MarkerHelper.fromLoggable(Seq.empty[LoggableValue])

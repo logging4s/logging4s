@@ -1,9 +1,12 @@
 package logging4s.logback
 
+import scala.util.Try
+
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-import logging4s.core.Logging
+import logging4s.core.{LoggableValue, Logging}
+import logging4s.core.syntax.all.*
 
 import LogbackInstances.given
 
@@ -20,3 +23,19 @@ class LoggingLogbackSpec extends AnyWordSpec, Matchers:
         yield ()
 
       assert(resultTry.isSuccess)
+
+    "not fail when a call site passes no values" in:
+      val noValues = Seq.empty[LoggableValue]
+
+      val resultTry =
+        for
+          logging <- Logging.createTry("LoggingLogbackSpec-no-values")
+          _       <- logging.info("Test log", noValues*)
+        yield ()
+
+      assert(resultTry.isSuccess)
+
+    "not fail for an interpolated message without interpolated values" in:
+      given Logging[Try] = Logging.createTry("LoggingLogbackSpec-interpolated").get
+
+      assert(info"application started".isSuccess)

@@ -11,10 +11,10 @@ object Dependencies {
     val log4j           = "2.26.1"
     val slf4j           = "2.0.18"
     val typesafeConfig  = "1.4.9"
-    val jacksonDatabind = "2.22.1"
+    val jacksonDatabind = "2.22.2"
 
     val cats              = "2.13.0"
-    val catsEffect        = "3.7.0"
+    val catsEffect        = "3.7.1"
     val catsEffectTesting = "1.8.0"
 
     val zio        = "2.1.26"

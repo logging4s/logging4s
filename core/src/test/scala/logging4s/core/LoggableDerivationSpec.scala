@@ -21,6 +21,7 @@ object Event:
 final case class Shirt(size: Int, color: Color) derives Loggable
 final case class Wrapper(owner: Account) derives Loggable
 final case class Line(start: Point, points: List[Point]) derives Loggable
+final case class Nickname(id: Int, nick: Option[String]) derives Loggable
 
 class LoggableDerivationSpec extends AnyWordSpec, Matchers:
 
@@ -67,7 +68,14 @@ class LoggableDerivationSpec extends AnyWordSpec, Matchers:
 
     "embed a derived product inside Option" in:
       Loggable[Option[Point]].json(Some(Point(1, 2))) shouldEqual """{"x":1,"y":2}"""
-      Loggable[Option[Point]].json(None) shouldEqual ""
+      Loggable[Option[Point]].json(None) shouldEqual "null"
+
+    "render an absent optional field as null, keeping the object valid JSON" in:
+      Loggable[Nickname].json(Nickname(1, Some("jane"))) shouldEqual """{"id":1,"nick":"jane"}"""
+      Loggable[Nickname].json(Nickname(1, None)) shouldEqual """{"id":1,"nick":null}"""
+
+    "render absent elements of a collection as null, keeping the array valid JSON" in:
+      Loggable[List[Option[Int]]].json(List(Some(1), None, Some(3))) shouldEqual "[1,null,3]"
 
     "use a derived enum as a product field" in:
       Loggable[Shirt].json(Shirt(42, Color.Red)) shouldEqual """{"size":42,"color":"Red"}"""

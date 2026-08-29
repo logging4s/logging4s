@@ -82,8 +82,8 @@ private[core] object LoggingInterpolator:
               nameOf(term) match
                 case Some(name) =>
                   val key = Expr(name)
-                  '{ val l = $loggable; LoggableValue(ValueKey($key), l.plain($arg), l.json($arg)) }
+                  '{ val a = $arg; val l = $loggable; LoggableValue(ValueKey($key), l.plain(a), l.json(a)) }
                 case None       =>
-                  '{ val l = $loggable; LoggableValue(l.key, l.plain($arg), l.json($arg)) }
+                  '{ val a = $arg; val l = $loggable; LoggableValue(l.key, l.plain(a), l.json(a)) }
             case None           =>
               report.errorAndAbort(s"no given Loggable[${tpe.show}] for the interpolated value")

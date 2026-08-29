@@ -12,6 +12,13 @@ private[slf4j] class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: Logg
 
   private val ctxValues = LoggableValue.normalizeKeys(context.values)
 
+  private def fullMessage(message: String, values: Seq[LoggableValue]): String =
+    if values.isEmpty then message else s"$message: ${values.plain}"
+
+  private def fullMessage(message: String, error: Throwable, values: Seq[LoggableValue]): String =
+    val base = s"$message: class=${error.getClass.getName}, message=${error.getMessage}"
+    if values.isEmpty then base else s"$base, ${values.plain}"
+
   private def merge(values: Seq[LoggableValue]): Seq[LoggableValue] =
     ctxValues ++ LoggableValue.normalizeKeys(values)
 
@@ -38,7 +45,7 @@ private[slf4j] class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: Logg
 
   override def error(message: String, values: LoggableValue*): F[Unit] =
     Delay[F].delay {
-      if logger.isErrorEnabled then logWithValues(merge(values), None, vs => s"$message: ${vs.plain}", _.atError())
+      if logger.isErrorEnabled then logWithValues(merge(values), None, vs => fullMessage(message, vs), _.atError())
     }
 
   override def error(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
@@ -47,7 +54,7 @@ private[slf4j] class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: Logg
         logWithValues(
           merge(values),
           Some(error),
-          vs => s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${vs.plain}",
+          vs => fullMessage(message, error, vs),
           _.atError(),
         )
     }
@@ -60,7 +67,7 @@ private[slf4j] class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: Logg
 
   override def warn(message: String, values: LoggableValue*): F[Unit] =
     Delay[F].delay {
-      if logger.isWarnEnabled then logWithValues(merge(values), None, vs => s"$message: ${vs.plain}", _.atWarn())
+      if logger.isWarnEnabled then logWithValues(merge(values), None, vs => fullMessage(message, vs), _.atWarn())
     }
 
   override def warn(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
@@ -69,7 +76,7 @@ private[slf4j] class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: Logg
         logWithValues(
           merge(values),
           Some(error),
-          vs => s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${vs.plain}",
+          vs => fullMessage(message, error, vs),
           _.atWarn(),
         )
     }
@@ -82,7 +89,7 @@ private[slf4j] class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: Logg
 
   override def info(message: String, values: LoggableValue*): F[Unit] =
     Delay[F].delay {
-      if logger.isInfoEnabled then logWithValues(merge(values), None, vs => s"$message: ${vs.plain}", _.atInfo())
+      if logger.isInfoEnabled then logWithValues(merge(values), None, vs => fullMessage(message, vs), _.atInfo())
     }
 
   override def info(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
@@ -91,7 +98,7 @@ private[slf4j] class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: Logg
         logWithValues(
           merge(values),
           Some(error),
-          vs => s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${vs.plain}",
+          vs => fullMessage(message, error, vs),
           _.atInfo(),
         )
     }
@@ -104,7 +111,7 @@ private[slf4j] class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: Logg
 
   override def debug(message: String, values: LoggableValue*): F[Unit] =
     Delay[F].delay {
-      if logger.isDebugEnabled then logWithValues(merge(values), None, vs => s"$message: ${vs.plain}", _.atDebug())
+      if logger.isDebugEnabled then logWithValues(merge(values), None, vs => fullMessage(message, vs), _.atDebug())
     }
 
   override def debug(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
@@ -113,7 +120,7 @@ private[slf4j] class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: Logg
         logWithValues(
           merge(values),
           Some(error),
-          vs => s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${vs.plain}",
+          vs => fullMessage(message, error, vs),
           _.atDebug(),
         )
     }
@@ -126,7 +133,7 @@ private[slf4j] class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: Logg
 
   override def trace(message: String, values: LoggableValue*): F[Unit] =
     Delay[F].delay {
-      if logger.isTraceEnabled then logWithValues(merge(values), None, vs => s"$message: ${vs.plain}", _.atTrace())
+      if logger.isTraceEnabled then logWithValues(merge(values), None, vs => fullMessage(message, vs), _.atTrace())
     }
 
   override def trace(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
@@ -135,7 +142,7 @@ private[slf4j] class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: Logg
         logWithValues(
           merge(values),
           Some(error),
-          vs => s"$message: class=${error.getClass.getName}, message=${error.getMessage}, ${vs.plain}",
+          vs => fullMessage(message, error, vs),
           _.atTrace(),
         )
     }

@@ -41,3 +41,14 @@ class LoggingSlf4jSpec extends AnyWordSpec, Matchers:
         yield ()
 
       assert(resultTry.isSuccess)
+
+    "keep the message clean when the call site passes no values" in:
+      val noValues = Seq.empty[LoggableValue]
+
+      val resultTry =
+        for
+          logging <- Logging.createTry("LoggingSlf4jSpec")
+          _       <- logging.info("nothing to add", noValues*)
+        yield ()
+
+      assert(resultTry.isSuccess)

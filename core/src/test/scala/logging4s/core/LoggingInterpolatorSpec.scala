@@ -93,6 +93,20 @@ class LoggingInterpolatorSpec extends AnyWordSpec, Matchers:
 
       log.values.map(_.key) shouldEqual Seq(ValueKey("retries"))
 
+    "evaluate each interpolated expression exactly once" in:
+      val log                 = new Capturing
+      given Logging[Identity] = log
+
+      var evaluations    = 0
+      def counted(): Int =
+        evaluations += 1
+        evaluations
+
+      info"value ${counted()}"
+
+      evaluations shouldEqual 1
+      log.values.head.plain shouldEqual "1"
+
     "route the level to the matching Logging method" in:
       val log                 = new Capturing
       given Logging[Identity] = log

@@ -10,10 +10,13 @@ opaque type ValueKey = String
 object ValueKey:
   inline def apply(src: String): ValueKey = src
 
+  val empty: ValueKey = ""
+
   def combine(keys: ValueKey*): ValueKey =
-    if keys.forall(_ == keys.head)
-    then keys.head
-    else keys.mkString("_")
+    if keys.isEmpty then empty
+    else
+      val head = keys.head
+      if keys.forall(_ == head) then head else keys.mkString("_")
 
   extension (v: ValueKey)
     inline def value: String           = v
@@ -28,6 +31,8 @@ opaque type JsonString = String
 object JsonString:
   inline def apply(src: String): JsonString = src
   def quoted(raw: String): JsonString       = s"\"${escape(raw)}\""
+
+  val Null: JsonString = "null"
 
   private def needsEscape(c: Char): Boolean =
     c == '"' || c == '\\' || c < 0x20

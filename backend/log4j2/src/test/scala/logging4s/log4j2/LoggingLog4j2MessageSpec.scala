@@ -105,3 +105,12 @@ class LoggingLog4j2MessageSpec extends AnyWordSpec with Matchers:
       }
 
       ThreadContext.get("user") shouldEqual null
+
+    "keep the message clean when the call site passes no values" in:
+      val noValues = Seq.empty[LoggableValue]
+
+      val message = captureMessage("LoggingLog4j2MessageSpec-no-values") { logging =>
+        logging.info("nothing to add", noValues*)
+      }
+
+      message.getFormattedMessage shouldEqual "nothing to add"

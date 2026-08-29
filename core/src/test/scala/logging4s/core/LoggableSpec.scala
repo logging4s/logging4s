@@ -66,7 +66,7 @@ class LoggableSpec extends AnyWordSpec, Matchers:
       Loggable[Option[Int]].plain(Some(5)) shouldEqual "5"
       Loggable[Option[Int]].json(Some(5)) shouldEqual "5"
       Loggable[Option[Int]].plain(None) shouldEqual ""
-      Loggable[Option[Int]].json(None) shouldEqual ""
+      Loggable[Option[Int]].json(None) shouldEqual "null"
 
     "right summon Set instances regardless of element order" in:
       val loggable = Loggable[Set[Int]]
@@ -130,7 +130,7 @@ class LoggableSpec extends AnyWordSpec, Matchers:
 
     "right summon Unit instance" in:
       Loggable[Unit].plain(()) shouldEqual ""
-      Loggable[Unit].json(()) shouldEqual ""
+      Loggable[Unit].json(()) shouldEqual "null"
 
     "right redact a value with the default mask" in:
       val loggable = Loggable[String].redacted()

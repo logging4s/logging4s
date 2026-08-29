@@ -18,7 +18,8 @@ private[log4j2] class LoggingLog4j2Impl[F[*]: Delay](logger: Logger, context: Lo
     val all          = ctxValues ++ LoggableValue.normalizeKeys(values)
     val deduplicated = LoggableValue.deduplicateKeys(all)
     val entries      = deduplicated.map(v => v.key.value -> v.json.value).toMap
-    LoggableMapMessage(entries, s"$message: ${deduplicated.plain}")
+    val full         = if deduplicated.isEmpty then message else s"$message: ${deduplicated.plain}"
+    LoggableMapMessage(entries, full)
 
   override def error(message: String): F[Unit] =
     Delay[F].delay(logger.error(message))

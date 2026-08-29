@@ -115,13 +115,13 @@ object Loggable:
     new:
       override val key: ValueKey               = ValueKey("unit")
       override def plain(u: Unit): PlainString = PlainString("")
-      override def json(u: Unit): JsonString   = JsonString("")
+      override def json(u: Unit): JsonString   = JsonString.Null
 
   given LoggableOption[T](using L: Loggable[T]): Loggable[Option[T]] =
     new:
       override val key: ValueKey                    = L.key
       override def plain(t: Option[T]): PlainString = t.fold(PlainString(""))(L.plain)
-      override def json(t: Option[T]): JsonString   = t.fold(JsonString(""))(L.json)
+      override def json(t: Option[T]): JsonString   = t.fold(JsonString.Null)(L.json)
 
   given LoggableEither[A, B](using AL: Loggable[A], BL: Loggable[B]): Loggable[Either[A, B]] =
     new:

@@ -32,7 +32,7 @@ class KyoInstancesSpec extends AnyWordSpec, Matchers:
       L.json(user) shouldEqual """{"name": "John", "age": 33}"""
       L.plain(user) shouldEqual "name=John, age=33"
 
-      L.json(None) shouldEqual ""
+      L.json(None) shouldEqual "null"
       L.plain(None) shouldEqual ""
 
     "right work Loggable for Maybe[T] derived from Option" in:
@@ -43,5 +43,5 @@ class KyoInstancesSpec extends AnyWordSpec, Matchers:
       L.json(user) shouldEqual """{"name": "John", "age": 33}"""
       L.plain(user) shouldEqual "name=John, age=33"
 
-      L.json(Maybe.Absent) shouldEqual ""
+      L.json(Maybe.Absent) shouldEqual "null"
       L.plain(Maybe.Absent) shouldEqual ""

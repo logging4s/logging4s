@@ -1,6 +1,7 @@
 package logging4s.core
 
 import scala.util.Try
+import scala.util.control.NonFatal
 
 trait Delay[F[*]]:
   def delay[A](a: => A): F[A]
@@ -16,7 +17,5 @@ object Delay:
 
   given Delay[ThrowableEither] = new:
     override def delay[A](a: => A): ThrowableEither[A] =
-      try
-        a
-        Right(a)
-      catch case e: Throwable => Left(e)
+      try Right(a)
+      catch case NonFatal(e) => Left(e)
