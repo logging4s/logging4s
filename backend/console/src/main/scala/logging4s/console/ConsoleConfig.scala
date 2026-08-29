@@ -2,6 +2,8 @@ package logging4s.console
 
 import com.typesafe.config.{Config, ConfigFactory}
 
+import logging4s.core.Level
+
 enum Format:
   case Json, Plain
 
@@ -39,10 +41,13 @@ final case class ConsoleConfig(
 
 object ConsoleConfig:
 
+  private def parseLevel(raw: String): Level =
+    Level.parse(raw).getOrElse(throw new IllegalArgumentException(s"Invalid logging4s.console.level: '$raw'"))
+
   private def load(config: Config = ConfigFactory.load()): ConsoleConfig =
     val section = config.getConfig("logging4s.console")
     ConsoleConfig(
-      level = Level.parse(section.getString("level")),
+      level = parseLevel(section.getString("level")),
       format = Format.parse(section.getString("format")),
       color = ColorMode.parse(section.getString("color")),
       stream = Stream.parse(section.getString("stream")),

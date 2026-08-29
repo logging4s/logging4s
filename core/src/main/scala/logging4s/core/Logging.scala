@@ -8,30 +8,32 @@ trait Logging[F[*]]:
   def withContext(context: LoggingContext): Logging[F]
   def withContextValues(values: LoggableValue*): Logging[F] = withContext(LoggingContext(values))
 
-  def error(message: String): F[Unit]
-  def error(message: String, error: Throwable): F[Unit]
-  def error(message: String, values: LoggableValue*): F[Unit]
-  def error(message: String, error: Throwable, values: LoggableValue*): F[Unit]
+  def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue]): F[Unit]
 
-  def warn(message: String): F[Unit]
-  def warn(message: String, error: Throwable): F[Unit]
-  def warn(message: String, values: LoggableValue*): F[Unit]
-  def warn(message: String, error: Throwable, values: LoggableValue*): F[Unit]
+  final def error(message: String): F[Unit]                                           = emit(Level.Error, message, None, Nil)
+  final def error(message: String, error: Throwable): F[Unit]                         = emit(Level.Error, message, Some(error), Nil)
+  final def error(message: String, values: LoggableValue*): F[Unit]                   = emit(Level.Error, message, None, values)
+  final def error(message: String, error: Throwable, values: LoggableValue*): F[Unit] = emit(Level.Error, message, Some(error), values)
 
-  def info(message: String): F[Unit]
-  def info(message: String, error: Throwable): F[Unit]
-  def info(message: String, values: LoggableValue*): F[Unit]
-  def info(message: String, error: Throwable, values: LoggableValue*): F[Unit]
+  final def warn(message: String): F[Unit]                                           = emit(Level.Warn, message, None, Nil)
+  final def warn(message: String, error: Throwable): F[Unit]                         = emit(Level.Warn, message, Some(error), Nil)
+  final def warn(message: String, values: LoggableValue*): F[Unit]                   = emit(Level.Warn, message, None, values)
+  final def warn(message: String, error: Throwable, values: LoggableValue*): F[Unit] = emit(Level.Warn, message, Some(error), values)
 
-  def debug(message: String): F[Unit]
-  def debug(message: String, error: Throwable): F[Unit]
-  def debug(message: String, values: LoggableValue*): F[Unit]
-  def debug(message: String, error: Throwable, values: LoggableValue*): F[Unit]
+  final def info(message: String): F[Unit]                                           = emit(Level.Info, message, None, Nil)
+  final def info(message: String, error: Throwable): F[Unit]                         = emit(Level.Info, message, Some(error), Nil)
+  final def info(message: String, values: LoggableValue*): F[Unit]                   = emit(Level.Info, message, None, values)
+  final def info(message: String, error: Throwable, values: LoggableValue*): F[Unit] = emit(Level.Info, message, Some(error), values)
 
-  def trace(message: String): F[Unit]
-  def trace(message: String, error: Throwable): F[Unit]
-  def trace(message: String, values: LoggableValue*): F[Unit]
-  def trace(message: String, error: Throwable, values: LoggableValue*): F[Unit]
+  final def debug(message: String): F[Unit]                                           = emit(Level.Debug, message, None, Nil)
+  final def debug(message: String, error: Throwable): F[Unit]                         = emit(Level.Debug, message, Some(error), Nil)
+  final def debug(message: String, values: LoggableValue*): F[Unit]                   = emit(Level.Debug, message, None, values)
+  final def debug(message: String, error: Throwable, values: LoggableValue*): F[Unit] = emit(Level.Debug, message, Some(error), values)
+
+  final def trace(message: String): F[Unit]                                           = emit(Level.Trace, message, None, Nil)
+  final def trace(message: String, error: Throwable): F[Unit]                         = emit(Level.Trace, message, Some(error), Nil)
+  final def trace(message: String, values: LoggableValue*): F[Unit]                   = emit(Level.Trace, message, None, values)
+  final def trace(message: String, error: Throwable, values: LoggableValue*): F[Unit] = emit(Level.Trace, message, Some(error), values)
 
 object Logging:
 

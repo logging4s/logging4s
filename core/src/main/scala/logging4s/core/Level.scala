@@ -1,4 +1,4 @@
-package logging4s.console
+package logging4s.core
 
 enum Level(val priority: Int):
   case Error extends Level(5)
@@ -10,7 +10,4 @@ enum Level(val priority: Int):
   def enabledAt(threshold: Level): Boolean = priority >= threshold.priority
 
 object Level:
-  def parse(raw: String): Level =
-    values
-      .find(_.toString.equalsIgnoreCase(raw.trim))
-      .getOrElse(throw new IllegalArgumentException(s"Invalid logging4s.console.level: '$raw'"))
+  def parse(raw: String): Option[Level] = values.find(_.toString.equalsIgnoreCase(raw.trim))

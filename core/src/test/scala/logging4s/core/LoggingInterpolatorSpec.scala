@@ -8,39 +8,16 @@ import logging4s.core.syntax.all.*
 class LoggingInterpolatorSpec extends AnyWordSpec, Matchers:
 
   final class Capturing extends Logging[Identity]:
+    var level: Level               = Level.Info
     var message: String            = ""
     var values: Seq[LoggableValue] = Seq.empty
 
-    private def capture(m: String, vs: Seq[LoggableValue]): Unit =
-      message = m
-      values = vs
-
     def withContext(context: LoggingContext): Logging[Identity] = this
 
-    def error(message: String): Unit                                           = ()
-    def error(message: String, error: Throwable): Unit                         = ()
-    def error(message: String, values: LoggableValue*): Unit                   = capture(message, values)
-    def error(message: String, error: Throwable, values: LoggableValue*): Unit = ()
-
-    def warn(message: String): Unit                                           = ()
-    def warn(message: String, error: Throwable): Unit                         = ()
-    def warn(message: String, values: LoggableValue*): Unit                   = capture(message, values)
-    def warn(message: String, error: Throwable, values: LoggableValue*): Unit = ()
-
-    def info(message: String): Unit                                           = ()
-    def info(message: String, error: Throwable): Unit                         = ()
-    def info(message: String, values: LoggableValue*): Unit                   = capture(message, values)
-    def info(message: String, error: Throwable, values: LoggableValue*): Unit = ()
-
-    def debug(message: String): Unit                                           = ()
-    def debug(message: String, error: Throwable): Unit                         = ()
-    def debug(message: String, values: LoggableValue*): Unit                   = capture(message, values)
-    def debug(message: String, error: Throwable, values: LoggableValue*): Unit = ()
-
-    def trace(message: String): Unit                                           = ()
-    def trace(message: String, error: Throwable): Unit                         = ()
-    def trace(message: String, values: LoggableValue*): Unit                   = capture(message, values)
-    def trace(message: String, error: Throwable, values: LoggableValue*): Unit = ()
+    def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue]): Unit =
+      this.level = level
+      this.message = message
+      this.values = values
 
   "The log interpolator" must:
     "lower to Logging.info with the literal message and the value keyed by identifier name" in:
@@ -114,5 +91,6 @@ class LoggingInterpolatorSpec extends AnyWordSpec, Matchers:
       val count = 5
       warn"warned $count"
 
+      log.level shouldEqual Level.Warn
       log.message shouldEqual "warned"
       log.values.map(_.key) shouldEqual Seq(ValueKey("count"))

@@ -149,3 +149,12 @@ class LoggingLogbackJsonSpec extends AnyWordSpec with Matchers:
       json.get("nickname").isObject shouldEqual true
       json.get("nickname").get("id").asInt() shouldEqual 1
       json.get("nickname").get("nick").isNull shouldEqual true
+
+    "attach context values to a message logged without call-site values" in:
+      val json = captureJson("LoggingLogbackJsonSpec-context-only") { logging =>
+        logging
+          .withContextValues(LoggableValue(ValueKey("session"), PlainString("abc"), JsonString("\"abc\"")))
+          .info("no call-site values")
+      }
+
+      json.get("session").asText() shouldEqual "abc"

@@ -7,7 +7,7 @@ import scala.util.Try
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
-import logging4s.core.{JsonString, Logging, LoggableValue, PlainString, ValueKey}
+import logging4s.core.{JsonString, Level, Logging, LoggableValue, PlainString, ValueKey}
 
 import ConsoleInstances.given
 
@@ -53,3 +53,12 @@ class LoggingConsoleSpec extends AnyWordSpec, Matchers:
 
       out should include("INFO ConsoleSpec - hello")
       out should include("k -> (v)")
+
+    "attach context values to a message logged without call-site values" in:
+      val out = capture(jsonAtInfo) { logging =>
+        logging
+          .withContextValues(LoggableValue(ValueKey("session"), PlainString("abc"), JsonString("\"abc\"")))
+          .info("no call-site values")
+      }
+
+      out should include(""""session":"abc"""")

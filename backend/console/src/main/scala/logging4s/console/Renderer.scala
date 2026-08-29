@@ -3,9 +3,8 @@ package logging4s.console
 import java.io.{PrintWriter, StringWriter}
 import java.time.Instant
 
-import logging4s.core.{LoggableValue, StructuredJson}
+import logging4s.core.{Level, LogMessage, LoggableValue, StructuredJson}
 import logging4s.core.config.LoggableEncodingConfig
-import logging4s.core.syntax.all.plain
 
 private[console] object Renderer:
 
@@ -23,9 +22,6 @@ private[console] object Renderer:
       case Format.Json  => json(console, level, logger, message, cause, values)
       case Format.Plain => plain(console, level, logger, message, cause, values)
 
-  private def fullMessage(message: String, values: Seq[LoggableValue])(using LoggableEncodingConfig): String =
-    if values.isEmpty then message else s"$message: ${values.plain}"
-
   private def json(
       console: ConsoleConfig,
       level: Level,
@@ -39,7 +35,7 @@ private[console] object Renderer:
       "level"      -> level.toString.toUpperCase,
       "logger"     -> logger,
       "thread"     -> Thread.currentThread.getName,
-      "message"    -> fullMessage(message, values),
+      "message"    -> LogMessage.render(message, None, values),
     )
     val trace    = cause.map(t => "stack_trace" -> stackTrace(t, console.maxStackTraceLines)).toSeq
 
@@ -54,7 +50,7 @@ private[console] object Renderer:
       values: Seq[LoggableValue],
   )(using LoggableEncodingConfig): String =
     val timestamp = Instant.ofEpochMilli(System.currentTimeMillis).toString
-    val base      = s"$timestamp ${level.toString.toUpperCase} $logger - ${fullMessage(message, values)}"
+    val base      = s"$timestamp ${level.toString.toUpperCase} $logger - ${LogMessage.render(message, None, values)}"
     val withTrace = cause.fold(base)(t => s"$base${System.lineSeparator}${stackTrace(t, console.maxStackTraceLines)}")
 
     colorize(console, level, withTrace)

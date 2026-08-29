@@ -114,3 +114,13 @@ class LoggingLog4j2MessageSpec extends AnyWordSpec with Matchers:
       }
 
       message.getFormattedMessage shouldEqual "nothing to add"
+
+    "attach context values to a message logged without call-site values" in:
+      val message = captureMessage("LoggingLog4j2MessageSpec-context-only") { logging =>
+        logging
+          .withContextValues(LoggableValue(ValueKey("session"), PlainString("abc"), JsonString("\"abc\"")))
+          .info("no call-site values")
+      }
+
+      val mapMessage = message.asInstanceOf[MapMessage[?, String]]
+      mapMessage.get("session") shouldEqual "\"abc\""

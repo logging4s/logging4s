@@ -21,7 +21,7 @@ import org.apache.logging.log4j.core.appender.AbstractAppender
 import org.apache.logging.log4j.core.config.{AppenderRef, LoggerConfig, Property}
 import org.apache.logging.log4j.layout.template.json.JsonTemplateLayout
 
-import logging4s.core.{Loggable, LoggableValue, Logging}
+import logging4s.core.{Level, Loggable, LoggableValue, Logging}
 import logging4s.logback.Logging4sEncoder
 
 @State(Scope.Benchmark)
@@ -56,8 +56,8 @@ class BackendsBench:
 
   private def console(): Logging[Try] =
     import logging4s.console.ConsoleInstances.given
-    import logging4s.console.{ColorMode, ConsoleConfig, Format, Level as ConsoleLevel, Stream}
-    given ConsoleConfig = ConsoleConfig(ConsoleLevel.Trace, Format.Json, ColorMode.Off, Stream.Stdout, -1)
+    import logging4s.console.{ColorMode, ConsoleConfig, Format, Stream}
+    given ConsoleConfig = ConsoleConfig(Level.Trace, Format.Json, ColorMode.Off, Stream.Stdout, -1)
     Logging.createTry("bench-console").get
 
   private def logback(name: String, encoder: LogbackEncoder[ILoggingEvent]): Logging[Try] =

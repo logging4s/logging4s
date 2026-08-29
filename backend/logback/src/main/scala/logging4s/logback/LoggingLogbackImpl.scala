@@ -2,9 +2,8 @@ package logging4s.logback
 
 import org.slf4j.Logger
 
-import logging4s.core.{Delay, Logging, LoggableValue, LoggingContext}
+import logging4s.core.{Delay, Level, LogMessage, Logging, LoggableValue, LoggingContext}
 import logging4s.core.config.LoggableEncodingConfig
-import logging4s.core.syntax.all.plain
 
 private[logback] class LoggingLogbackImpl[F[*]: Delay](logger: Logger, context: LoggingContext = LoggingContext.empty)(using
     cfg: LoggableEncodingConfig
@@ -12,144 +11,38 @@ private[logback] class LoggingLogbackImpl[F[*]: Delay](logger: Logger, context: 
 
   private val ctxValues = LoggableValue.normalizeKeys(context.values)
 
-  private def fullMessage(message: String, values: Seq[LoggableValue]): String =
-    if values.isEmpty then message else s"$message: ${values.plain}"
-
-  private def fullMessage(message: String, error: Throwable, values: Seq[LoggableValue]): String =
-    val base = s"$message: class=${error.getClass.getName}, message=${error.getMessage}"
-    if values.isEmpty then base else s"$base, ${values.plain}"
-
-  private def merge(values: Seq[LoggableValue]): Seq[LoggableValue] =
-    ctxValues ++ LoggableValue.normalizeKeys(values)
-
   override def withContext(moreContext: LoggingContext): Logging[F] = LoggingLogbackImpl(logger, context + moreContext)
 
-  override def error(message: String): F[Unit] =
-    Delay[F].delay(logger.error(message))
-
-  override def error(message: String, error: Throwable): F[Unit] =
+  override def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue]): F[Unit] =
     Delay[F].delay {
-      logger.error(s"$message: class=${error.getClass.getName}, message=${error.getMessage}", error)
+      if enabled(level) then
+        val all  = ctxValues ++ LoggableValue.normalizeKeys(values)
+        val text = LogMessage.render(message, cause, all)
+
+        if all.isEmpty then write(level, text, cause)
+        else write(level, MarkerHelper.fromLoggable(all), text, cause)
     }
 
-  override def error(message: String, values: LoggableValue*): F[Unit] =
-    Delay[F].delay {
-      if logger.isErrorEnabled then
-        val all = merge(values)
-        logger.error(MarkerHelper.fromLoggable(all), fullMessage(message, all))
-    }
+  private def enabled(level: Level): Boolean =
+    level match
+      case Level.Error => logger.isErrorEnabled
+      case Level.Warn  => logger.isWarnEnabled
+      case Level.Info  => logger.isInfoEnabled
+      case Level.Debug => logger.isDebugEnabled
+      case Level.Trace => logger.isTraceEnabled
 
-  override def error(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
-    Delay[F].delay {
-      if logger.isErrorEnabled then
-        val all = merge(values)
-        logger.error(
-          MarkerHelper.fromLoggable(all),
-          fullMessage(message, error, all),
-          error,
-        )
-    }
+  private def write(level: Level, message: String, cause: Option[Throwable]): Unit =
+    level match
+      case Level.Error => cause.fold(logger.error(message))(logger.error(message, _))
+      case Level.Warn  => cause.fold(logger.warn(message))(logger.warn(message, _))
+      case Level.Info  => cause.fold(logger.info(message))(logger.info(message, _))
+      case Level.Debug => cause.fold(logger.debug(message))(logger.debug(message, _))
+      case Level.Trace => cause.fold(logger.trace(message))(logger.trace(message, _))
 
-  override def warn(message: String): F[Unit] =
-    Delay[F].delay(logger.warn(message))
-
-  override def warn(message: String, error: Throwable): F[Unit] =
-    Delay[F].delay {
-      logger.warn(s"$message: class=${error.getClass.getName}, message=${error.getMessage}", error)
-    }
-
-  override def warn(message: String, values: LoggableValue*): F[Unit] =
-    Delay[F].delay {
-      if logger.isWarnEnabled then
-        val all = merge(values)
-        logger.warn(MarkerHelper.fromLoggable(all), fullMessage(message, all))
-    }
-
-  override def warn(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
-    Delay[F].delay {
-      if logger.isWarnEnabled then
-        val all = merge(values)
-        logger.warn(
-          MarkerHelper.fromLoggable(all),
-          fullMessage(message, error, all),
-          error,
-        )
-    }
-
-  override def info(message: String): F[Unit] =
-    Delay[F].delay(logger.info(message))
-
-  override def info(message: String, error: Throwable): F[Unit] =
-    Delay[F].delay {
-      logger.info(s"$message: class=${error.getClass.getName}, message=${error.getMessage}", error)
-    }
-
-  override def info(message: String, values: LoggableValue*): F[Unit] =
-    Delay[F].delay {
-      if logger.isInfoEnabled then
-        val all = merge(values)
-        logger.info(MarkerHelper.fromLoggable(all), fullMessage(message, all))
-    }
-
-  override def info(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
-    Delay[F].delay {
-      if logger.isInfoEnabled then
-        val all = merge(values)
-        logger.info(
-          MarkerHelper.fromLoggable(all),
-          fullMessage(message, error, all),
-          error,
-        )
-    }
-
-  override def debug(message: String): F[Unit] =
-    Delay[F].delay(logger.debug(message))
-
-  override def debug(message: String, error: Throwable): F[Unit] =
-    Delay[F].delay {
-      logger.debug(s"$message: class=${error.getClass.getName}, message=${error.getMessage}", error)
-    }
-
-  override def debug(message: String, values: LoggableValue*): F[Unit] =
-    Delay[F].delay {
-      if logger.isDebugEnabled then
-        val all = merge(values)
-        logger.debug(MarkerHelper.fromLoggable(all), fullMessage(message, all))
-    }
-
-  override def debug(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
-    Delay[F].delay {
-      if logger.isDebugEnabled then
-        val all = merge(values)
-        logger.debug(
-          MarkerHelper.fromLoggable(all),
-          fullMessage(message, error, all),
-          error,
-        )
-    }
-
-  override def trace(message: String): F[Unit] =
-    Delay[F].delay(logger.trace(message))
-
-  override def trace(message: String, error: Throwable): F[Unit] =
-    Delay[F].delay {
-      logger.trace(s"$message: class=${error.getClass.getName}, message=${error.getMessage}", error)
-    }
-
-  override def trace(message: String, values: LoggableValue*): F[Unit] =
-    Delay[F].delay {
-      if logger.isTraceEnabled then
-        val all = merge(values)
-        logger.trace(MarkerHelper.fromLoggable(all), fullMessage(message, all))
-    }
-
-  override def trace(message: String, error: Throwable, values: LoggableValue*): F[Unit] =
-    Delay[F].delay {
-      if logger.isTraceEnabled then
-        val all = merge(values)
-        logger.trace(
-          MarkerHelper.fromLoggable(all),
-          fullMessage(message, error, all),
-          error,
-        )
-    }
+  private def write(level: Level, marker: org.slf4j.Marker, message: String, cause: Option[Throwable]): Unit =
+    level match
+      case Level.Error => cause.fold(logger.error(marker, message))(logger.error(marker, message, _))
+      case Level.Warn  => cause.fold(logger.warn(marker, message))(logger.warn(marker, message, _))
+      case Level.Info  => cause.fold(logger.info(marker, message))(logger.info(marker, message, _))
+      case Level.Debug => cause.fold(logger.debug(marker, message))(logger.debug(marker, message, _))
+      case Level.Trace => cause.fold(logger.trace(marker, message))(logger.trace(marker, message, _))
