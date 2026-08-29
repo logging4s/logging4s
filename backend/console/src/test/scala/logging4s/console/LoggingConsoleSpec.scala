@@ -14,7 +14,11 @@ import ConsoleInstances.given
 
 class LoggingConsoleSpec extends AnyWordSpec, Matchers:
 
-  private def capture(config: ConsoleConfig, encoding: LoggableEncodingConfig = LoggableEncodingConfig.Default)(run: Logging[Try] => Unit): String =
+  private def capture(
+      config: ConsoleConfig,
+      encoding: LoggableEncodingConfig = LoggableEncodingConfig.Default,
+      name: String = "ConsoleSpec",
+  )(run: Logging[Try] => Unit): String =
     given ConsoleConfig          = config
     given LoggableEncodingConfig = encoding
 
@@ -22,7 +26,7 @@ class LoggingConsoleSpec extends AnyWordSpec, Matchers:
     val original = System.out
     System.setOut(new PrintStream(out, true, "UTF-8"))
     try
-      val logging = Logging.createTry("ConsoleSpec").get
+      val logging = Logging.createTry(name).get
       run(logging)
     finally System.setOut(original)
 
@@ -79,3 +83,21 @@ class LoggingConsoleSpec extends AnyWordSpec, Matchers:
       }
 
       out should include(""""source":"LoggingConsoleSpec.scala:""")
+
+    "suppress a logger whose own mapped level is higher than the record" in:
+      val config = jsonAtInfo.copy(levels = Map("io.netty" -> Level.Error))
+
+      val quiet = capture(config, name = "io.netty.channel.Pipeline") { logging =>
+        logging.info("noisy")
+      }
+
+      quiet.trim shouldBe empty
+
+    "keep loggers that no mapping matches at the root level" in:
+      val config = jsonAtInfo.copy(levels = Map("io.netty" -> Level.Error))
+
+      val loud = capture(config, name = "com.acme.Service") { logging =>
+        logging.info("kept")
+      }
+
+      loud should include("kept")

@@ -16,7 +16,9 @@ private[console] class LoggingConsoleImpl[F[*]: Delay](name: String, context: Lo
 
   override def unit: F[Unit] = Delay[F].unit
 
-  override def enabled(level: Level): Boolean = level.enabledAt(console.level)
+  private val threshold = console.levelFor(name)
+
+  override def enabled(level: Level): Boolean = level.enabledAt(threshold)
 
   private def target: PrintStream =
     console.stream match

@@ -1,6 +1,8 @@
 package logging4s.console
 
-import com.typesafe.config.{Config, ConfigFactory}
+import scala.jdk.CollectionConverters.*
+
+import com.typesafe.config.{Config, ConfigFactory, ConfigUtil}
 
 import logging4s.core.Level
 
@@ -37,14 +39,33 @@ final case class ConsoleConfig(
     color: ColorMode,
     stream: Stream,
     maxStackTraceLines: Int,
-)
+    levels: Map[String, Level] = Map.empty,
+):
+
+  def levelFor(loggerName: String): Level =
+    if levels.isEmpty then level
+    else
+      levels.iterator
+        .filter((pattern, _) => loggerName == pattern || loggerName.startsWith(s"$pattern."))
+        .maxByOption((pattern, _) => pattern.length)
+        .fold(level)(_._2)
 
 object ConsoleConfig:
 
   private def parseLevel(raw: String): Level =
     Level.parse(raw).getOrElse(throw new IllegalArgumentException(s"Invalid logging4s.console.level: '$raw'"))
 
-  private def load(config: Config = ConfigFactory.load()): ConsoleConfig =
+  private def parseLevels(section: Config): Map[String, Level] =
+    if !section.hasPath("levels") then Map.empty
+    else
+      val levels = section.getConfig("levels")
+      levels
+        .entrySet()
+        .asScala
+        .map(entry => ConfigUtil.splitPath(entry.getKey).asScala.mkString(".") -> parseLevel(entry.getValue.unwrapped().toString))
+        .toMap
+
+  private[console] def load(config: Config = ConfigFactory.load()): ConsoleConfig =
     val section = config.getConfig("logging4s.console")
     ConsoleConfig(
       level = parseLevel(section.getString("level")),
@@ -52,6 +73,7 @@ object ConsoleConfig:
       color = ColorMode.parse(section.getString("color")),
       stream = Stream.parse(section.getString("stream")),
       maxStackTraceLines = section.getInt("max-stack-trace-lines"),
+      levels = parseLevels(section),
     )
 
   given default: ConsoleConfig = load()
