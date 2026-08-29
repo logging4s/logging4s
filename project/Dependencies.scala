@@ -36,7 +36,8 @@ object Dependencies {
     val zioJson   = "0.10.0"
     val fabric    = "1.30.0"
 
-    val scalatest = "3.2.20"
+    val scalatest     = "3.2.20"
+    val scalatestPlus = "3.2.19.0"
   }
 
   object Logback {
@@ -131,10 +132,11 @@ object Dependencies {
   }
 
   object Testing {
-    val scalatest = "org.scalatest" %% "scalatest" % Versions.scalatest % Test
-    val scalactic = "org.scalactic" %% "scalactic" % Versions.scalatest % Test
+    val scalatest  = "org.scalatest"     %% "scalatest"       % Versions.scalatest      % Test
+    val scalacheck = "org.scalatestplus" %% "scalacheck-1-18" % Versions.scalatestPlus % Test
+    val scalactic  = "org.scalactic"     %% "scalactic"       % Versions.scalatest      % Test
 
-    val all: Seq[ModuleID] = Seq(scalatest, scalactic)
+    val all: Seq[ModuleID] = Seq(scalatest, scalactic, scalacheck)
   }
 
 }

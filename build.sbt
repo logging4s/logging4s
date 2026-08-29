@@ -1,5 +1,7 @@
 import Dependencies.Versions
 
+lazy val previousRelease = "2.0.1"
+
 lazy val commonSettings = Seq(
   organization           := "org.logging4s",
   organizationName       := "Logging4s",
@@ -29,6 +31,7 @@ lazy val commonSettings = Seq(
     )
   ),
   exportJars             := false,
+  mimaPreviousArtifacts  := Set(organization.value %% name.value % previousRelease),
   libraryDependencies ++= Dependencies.Testing.all,
   scalacOptions ++= Seq(
     "-encoding",
@@ -94,7 +97,8 @@ lazy val backend = project
   .in(file("backend"))
   .settings(commonSettings)
   .settings(
-    publish / skip := true
+    publish / skip        := true,
+    mimaPreviousArtifacts := Set.empty
   )
   .aggregate(
     logback,
@@ -259,7 +263,8 @@ val runtime = project
   .in(file("runtime"))
   .settings(commonSettings)
   .settings(
-    publish / skip := true
+    publish / skip        := true,
+    mimaPreviousArtifacts := Set.empty
   )
   .aggregate(
     zio,
@@ -272,7 +277,8 @@ lazy val json = project
   .in(file("json"))
   .settings(commonSettings)
   .settings(
-    publish / skip := true
+    publish / skip        := true,
+    mimaPreviousArtifacts := Set.empty
   )
   .aggregate(
     circe,
@@ -293,7 +299,8 @@ lazy val examples = project
   .settings(commonSettings)
   .settings(
     name           := "logging4s-examples",
-    publish / skip := true,
+    publish / skip        := true,
+    mimaPreviousArtifacts := Set.empty,
     libraryDependencies += Dependencies.Cats.catsEffect3,
   )
   .dependsOn(
@@ -310,7 +317,8 @@ lazy val benchmarks = project
   .settings(commonSettings)
   .settings(
     name           := "logging4s-benchmarks",
-    publish / skip := true,
+    publish / skip        := true,
+    mimaPreviousArtifacts := Set.empty,
     libraryDependencies ++= Dependencies.Json.jsoniter,
     libraryDependencies += Dependencies.Log4j2.log4jLayoutJsonTemplate,
   )
@@ -327,7 +335,8 @@ lazy val logging4s = project
   .settings(commonSettings)
   .settings(
     name           := "logging4s",
-    publish / skip := true,
+    publish / skip        := true,
+    mimaPreviousArtifacts := Set.empty,
   )
   .aggregate(
     core,
