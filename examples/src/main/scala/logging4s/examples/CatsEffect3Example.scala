@@ -5,6 +5,7 @@ import cats.effect.{ExitCode, IO, IOApp}
 import scala.language.implicitConversions
 
 import logging4s.core.Logging
+import logging4s.core.syntax.all.*
 
 import logging4s.cats.CatsInstances.given
 import logging4s.logback.LogbackInstances.given
@@ -16,14 +17,19 @@ object CatsEffect3Example extends IOApp:
     yield User(id, name, age)
 
   override def run(args: List[String]): IO[ExitCode] =
-    for
-      logging <- Logging.create[IO]("CatsEffectExampleLogging")
+    Logging.create[IO]("CatsEffectExampleLogging").flatMap { logging =>
+      given Logging[IO] = logging
 
-      johnShow <- createUser("John Show", 22)
-      _        <- logging.info("User created", johnShow)
+      for
+        johnShow <- createUser("John Show", 22)
+        _        <- logging.info("User created", johnShow)
 
-      daenerys <- createUser("Daenerys Targaryen", 22)
-      _        <- logging.info("User created", daenerys)
+        daenerys <- createUser("Daenerys Targaryen", 22)
+        _        <- info"user created: $daenerys"
 
-      _ <- logging.info("All users created", Seq(johnShow, daenerys))
-    yield ExitCode.Success
+        _ <- logging.info("All users created", Seq(johnShow, daenerys))
+
+        failure = new IllegalStateException("raven never arrived")
+        _ <- error"delivery failed: $failure"
+      yield ExitCode.Success
+    }

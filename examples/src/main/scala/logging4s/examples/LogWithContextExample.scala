@@ -1,11 +1,11 @@
 package logging4s.examples
 
 import cats.effect.{ExitCode, IO, IOApp}
+
 import scala.language.implicitConversions
 
 import logging4s.core.{Logging, LoggingContext}
-
-import logging4s.core.syntax.all.withKey
+import logging4s.core.syntax.all.*
 
 import logging4s.cats.CatsInstances.given
 import logging4s.logback.LogbackInstances.given
@@ -25,8 +25,13 @@ object LogWithContextExample extends IOApp:
       johnShow <- createUser("John Show", 22)
       _        <- logging.info("User created", johnShow)
 
-      daenerys <- createUser("Daenerys Targaryen", 22)
-      _        <- logging.info("User created", daenerys)
+      scoped = logging.withContextValues(johnShow.id.asLogValue("actor_id"))
+      _     <- scoped.info("Acting on behalf of the user")
 
-      _ <- logging.info("All users created", Seq(johnShow, daenerys))
+      reScoped = scoped.withContextValues("system".asLogValue("actor_id"))
+      _       <- reScoped.info("The inner scope replaces actor_id, it is not suffixed")
+
+      _ <- reScoped.info("A call-site value wins over the context", "override".asLogValue("actor_id"))
+
+      _ <- logging.info("All users created", Seq(johnShow))
     yield ExitCode.Success

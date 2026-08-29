@@ -140,8 +140,8 @@
   <h2 id="start">Quick start</h2>
   <p>Pick a backend and an effect runtime (a JSON library is optional — <code>derives Loggable</code> needs none):</p>
   <pre><code>libraryDependencies ++= Seq(
-  "org.logging4s" %% "logging4s-cats"    % "2.0.0",
-  "org.logging4s" %% "logging4s-logback" % "2.0.0"
+  "org.logging4s" %% "logging4s-cats"    % "3.0.0",
+  "org.logging4s" %% "logging4s-logback" % "3.0.0"
 )</code></pre>
   <pre><code>import cats.effect.{IO, IOApp}
 
@@ -158,7 +158,7 @@ object Main extends IOApp.Simple:
       _   <- log.info("user created", User(1, "John"))
     yield ()</code></pre>
   <p>The <code>logback</code> backend attaches <code>User</code> as a nested JSON object; the message keeps its plain rendering:</p>
-  <pre><code>{"message":"user created: user -> (id -> (1), name -> (John))","user":{"id":1,"name":"John"},"level":"INFO"}</code></pre>
+  <pre><code>{"message":"user created: user -> (id -> (1), name -> (John))","user":{"id":1,"name":"John"},"source":"Main.scala:12","level":"INFO"}</code></pre>
 
   <h2 id="loggable">The <code>Loggable</code> type class</h2>
   <p>Everything centers on one type class. A <code>Loggable[A]</code> is required for any value you log:</p>
@@ -236,6 +236,16 @@ yield ()</code></pre>
     <code>given Logging[F]</code> in scope, and the key is taken from the interpolated identifier:
   </p>
   <pre><code>info"order placed: $order"   // == log.info("order placed", order.asLogValue("order"))</code></pre>
+  <p>
+    Values render lazily and the interpolator checks the level first, so a <code>debug"…"</code> under a logger set to
+    <code>INFO</code> evaluates neither the interpolated expressions nor their JSON. Every record also carries the call
+    site as a <code>source</code> field.
+  </p>
+  <p>
+    Duplicate keys resolve by specificity: a call-site value overrides a context value with the same key, and a later
+    <code>withContext</code> overrides an earlier one. Only duplicates within a single call are suffixed
+    (<code>k</code>, <code>k_2</code>).
+  </p>
 
   <h2 id="backends">Backends</h2>
   <p>
@@ -282,16 +292,18 @@ yield ()</code></pre>
     <tr><td><code>keyNameStyle</code></td><td><code>SnakeCase</code></td><td>applied to every key: AsIs / Snake / Kebab / Camel / Pascal</td></tr>
     <tr><td><code>plainTupleStyle</code></td><td><code>AsScala</code></td><td>tuple plain form: <code>(1, a)</code> / <code>[1, a]</code> / <code>1, a</code> / <code>{1, a}</code></td></tr>
     <tr><td><code>plainValuesStyle</code></td><td><code>Arrow</code></td><td>value join: <code>k -> (v)</code> / <code>k=v</code> / <code>k: v</code> / <code>{k=v}</code></td></tr>
+    <tr><td><code>includeSourcePosition</code></td><td><code>true</code></td><td>attach the call site as a <code>source</code> field (<code>"OrderService.scala:42"</code>)</td></tr>
   </table>
   <p class="muted">
     Default keys: scalars key by type name (<code>Loggable[Int]</code> → <code>int</code>), date/time use
-    <code>time</code>, <code>FiniteDuration</code> uses <code>time_ms</code>, collections pluralize
+    <code>time</code> (<code>LocalDate</code> → <code>date</code>), <code>FiniteDuration</code> and
+    <code>java.time.Duration</code> use <code>time_ms</code>, <code>Throwable</code> uses <code>error</code>, collections pluralize
     (<code>List[Int]</code> → <code>ints</code>), a derived case class keys by its decapitalized name.
   </p>
 
   <h2 id="modules">Modules</h2>
   <p>Published for Scala 3 under <code>org.logging4s</code>:</p>
-  <pre><code>"org.logging4s" %% "logging4s-&lt;module&gt;" % "2.0.0"</code></pre>
+  <pre><code>"org.logging4s" %% "logging4s-&lt;module&gt;" % "3.0.0"</code></pre>
   <table>
     <tr><th>Kind</th><th>Module</th><th>Notes</th></tr>
     <tr><td>core</td><td><code>logging4s-core</code></td><td>type classes + <code>Logging</code>; no backend dependency</td></tr>
@@ -343,7 +355,52 @@ yield ()</code></pre>
     <code>LogstashEncoder</code> — it builds the JSON in one pass with no Jackson round-trip.
   </p>
 
-  <h2 id="migration">Migration from 1.x</h2>
+
+  <h3>The disabled-level path</h3>
+  <p>
+    A second harness measures what a <em>suppressed</em> record costs — a <code>debug</code> call under a logger set to
+    <code>INFO</code>:
+  </p>
+  <table>
+    <tr><th>Call shape</th><th class="num">ops/s</th></tr>
+    <tr><td>interpolator, level off</td><td class="num">~791M</td></tr>
+    <tr><td>direct call, lazy value, level off</td><td class="num">~387M</td></tr>
+    <tr><td>direct call, pre-rendered value, level off (2.x behaviour)</td><td class="num">~1.5M</td></tr>
+    <tr><td>interpolator, level on</td><td class="num">~409k</td></tr>
+    <tr><td>direct call, level on</td><td class="num">~406k</td></tr>
+  </table>
+  <p class="muted">
+    In 2.x a suppressed <code>debug</code> still rendered every value to JSON at the call site, so it cost roughly a
+    quarter of an actual log write. In 3.0 values render lazily (~250× cheaper) and the interpolator additionally skips
+    the call when the level is off (another ~2×). With the level on, the guard costs nothing measurable. The two
+    disabled rows are JIT-optimistic in absolute terms — with nothing escaping, escape analysis removes the wrapper
+    allocations outright — so read the orders of magnitude, not the nanoseconds.
+  </p>
+  <h2 id="migration">Migration</h2>
+  <h3>From 2.x to 3.0</h3>
+  <p>
+    3.0 is a breaking release. Everyday call sites — <code>Logging.create</code>, the per-level methods,
+    <code>withContext</code>, the <code>*Instances.given</code> imports — are unchanged; the breaks are in what you
+    <em>implement</em> and in the shape of the output.
+  </p>
+  <pre><code>- "org.logging4s" %% "logging4s-cats" % "2.0.1"
++ "org.logging4s" %% "logging4s-cats" % "3.0.0"</code></pre>
+  <ul>
+    <li><strong><code>Logging[F]</code> has three abstract members instead of twenty</strong> — implement
+      <code>emit</code> / <code>enabled</code> / <code>unit</code>; the per-level overloads are <code>final</code>.</li>
+    <li><strong><code>Level</code> moved to <code>logging4s.core</code></strong> from <code>logging4s.console</code>.</li>
+    <li><strong><code>LoggableValue</code> is a sealed trait and renders lazily</strong> — no <code>copy</code>, no
+      pattern matching; use <code>withKey</code> to rewrite a key.</li>
+    <li><strong><code>None</code> and <code>Unit</code> render as JSON <code>null</code></strong> instead of an empty
+      string, which used to produce invalid JSON.</li>
+    <li><strong>Records carry a <code>source</code> field</strong> — disable with
+      <code>LoggableEncodingConfig(includeSourcePosition = false)</code>.</li>
+    <li><strong>Context values merge by key</strong> instead of being suffixed.</li>
+    <li><strong><code>LoggableMapMessage</code> takes <code>Seq[(String, String)]</code></strong> so log4j2 field order
+      follows the call site.</li>
+  </ul>
+
+  <h3>From 1.x to 2.0</h3>
   <p>
     2.0.0 is a breaking release, but most call sites need only small edits — <code>Logging.create</code>, the
     <code>*Instances.given</code> imports, <code>LoggingContext</code>, and the per-level methods are all
