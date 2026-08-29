@@ -16,7 +16,7 @@ private[log4j2] class LoggingLog4j2Impl[F[*]: Delay](logger: Logger, context: Lo
   override def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue])(using position: Position): F[Unit] =
     Delay[F].delay {
       if enabled(level) then
-        val deduplicated = LoggableValue.deduplicateKeys(ctxValues ++ LoggableValue.normalizeKeys(values))
+        val deduplicated = LoggableValue.deduplicateKeys(LoggableValue.mergeByKey(ctxValues, LoggableValue.normalizeKeys(values)))
         val structured   = LoggableValue.withSource(deduplicated, position)
         val entries      = structured.map(v => v.key.value -> v.json.value)
         val payload      = LoggableMapMessage(entries, LogMessage.render(message, cause, deduplicated))

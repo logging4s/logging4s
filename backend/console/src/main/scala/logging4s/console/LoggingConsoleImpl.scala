@@ -29,6 +29,6 @@ private[console] class LoggingConsoleImpl[F[*]: Delay](name: String, context: Lo
     if !enabled(level) then unit
     else
       Delay[F].delay {
-        val all = LoggableValue.deduplicateKeys(ctxValues ++ LoggableValue.normalizeKeys(values))
+        val all = LoggableValue.deduplicateKeys(LoggableValue.mergeByKey(ctxValues, LoggableValue.normalizeKeys(values)))
         target.println(Renderer.render(console, level, name, message, cause, all, position))
       }

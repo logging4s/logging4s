@@ -17,7 +17,7 @@ private[slf4j] class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: Logg
   override def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue])(using position: Position): F[Unit] =
     Delay[F].delay {
       if enabled(level) then
-        val deduplicated = LoggableValue.deduplicateKeys(ctxValues ++ LoggableValue.normalizeKeys(values))
+        val deduplicated = LoggableValue.deduplicateKeys(LoggableValue.mergeByKey(ctxValues, LoggableValue.normalizeKeys(values)))
         val structured   = LoggableValue.withSource(deduplicated, position)
 
         val withCause     = cause.fold(builder(level))(builder(level).setCause)

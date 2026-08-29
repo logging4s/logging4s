@@ -188,3 +188,13 @@ class LoggingLogbackJsonSpec extends AnyWordSpec with Matchers:
 
       json.get("source").asText() should startWith("LoggingLogbackJsonSpec.scala:")
       json.get("user").asInt() shouldEqual 7
+
+    "let a call-site value override a context value with the same key" in:
+      val json = captureJson("LoggingLogbackJsonSpec-override") { logging =>
+        logging
+          .withContextValues(LoggableValue(ValueKey("user"), PlainString("ctx"), JsonString("\"ctx\"")))
+          .info("Hello", LoggableValue(ValueKey("user"), PlainString("call"), JsonString("\"call\"")))
+      }
+
+      json.get("user").asText() shouldEqual "call"
+      json.has("user_2") shouldEqual false

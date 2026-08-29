@@ -78,13 +78,13 @@ opaque type LoggingContext = Seq[LoggableValue]
 object LoggingContext:
   val empty: LoggingContext = LoggingContext(Seq.empty)
 
-  inline def apply(values: Seq[LoggableValue]): LoggingContext = values
+  def apply(values: Seq[LoggableValue]): LoggingContext = LoggableValue.keepLastByKey(values)
 
   @targetName("applyValue")
-  inline def apply(values: LoggableValue*): LoggingContext = values.toSeq
+  def apply(values: LoggableValue*): LoggingContext = apply(values.toSeq)
 
   extension (that: LoggingContext)
     inline def values: Seq[LoggableValue] = that
 
     @targetName("plus")
-    inline infix def +(other: LoggingContext): LoggingContext = that ++ other
+    infix def +(other: LoggingContext): LoggingContext = LoggableValue.mergeByKey(that, other)

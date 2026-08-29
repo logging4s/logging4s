@@ -48,3 +48,17 @@ object LoggableValue:
 
   def withSource(values: Seq[LoggableValue], position: Position)(using cfg: LoggableEncodingConfig): Seq[LoggableValue] =
     if cfg.includeSourcePosition then values :+ Position.asLogValue(position) else values
+
+  def mergeByKey(earlier: Seq[LoggableValue], later: Seq[LoggableValue]): Seq[LoggableValue] =
+    if earlier.isEmpty then later
+    else if later.isEmpty then earlier
+    else
+      val overridden = later.iterator.map(_.key).toSet
+      earlier.filterNot(value => overridden.contains(value.key)) ++ later
+
+  def keepLastByKey(values: Seq[LoggableValue]): Seq[LoggableValue] =
+    if values.sizeIs <= 1 then values
+    else
+      val merged = scala.collection.mutable.LinkedHashMap.empty[ValueKey, LoggableValue]
+      values.foreach(value => merged.update(value.key, value))
+      if merged.size == values.size then values else merged.values.toSeq

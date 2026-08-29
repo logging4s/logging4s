@@ -16,7 +16,7 @@ private[logback] class LoggingLogbackImpl[F[*]: Delay](logger: Logger, context: 
   override def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue])(using position: Position): F[Unit] =
     Delay[F].delay {
       if enabled(level) then
-        val all        = ctxValues ++ LoggableValue.normalizeKeys(values)
+        val all        = LoggableValue.mergeByKey(ctxValues, LoggableValue.normalizeKeys(values))
         val text       = LogMessage.render(message, cause, all)
         val structured = LoggableValue.withSource(all, position)
 
