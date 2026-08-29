@@ -2,7 +2,7 @@ package logging4s.core.deriving.internal
 
 import scala.deriving.Mirror
 
-import logging4s.core.{JsonEncoder, JsonString, Loggable, LoggableValue, PlainEncoder, PlainString, ValueKey}
+import logging4s.core.{JsonEncoder, JsonString, Loggable, PlainEncoder, PlainString, ValueKey}
 import logging4s.core.config.LoggableEncodingConfig
 import logging4s.core.deriving.FieldPolicy
 
@@ -50,7 +50,7 @@ final class ProductLoggable[A](
 
       def entry(fieldKey: String, rawValue: String): Unit =
         if !first then sb.append(',')
-        sb.append('"').append(fieldKey).append("\":").append(rawValue)
+        val _ = sb.append('"').append(fieldKey).append("\":").append(rawValue)
         first = false
 
       specs.foreach { (l, fieldKey, policy) =>

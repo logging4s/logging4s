@@ -33,7 +33,7 @@ class LoggingLogbackTupleConfigSpec extends AnyWordSpec, Matchers:
   private def captureJson(loggerName: String)(run: Logging[Try] => Unit): JsonNode =
     LoggingLogbackJsonSpec.appenderLock.synchronized {
       val logbackLogger = LoggerFactory.getLogger(loggerName).asInstanceOf[LogbackLogger]
-      logbackLogger.setLevel(Level.ALL)
+      logbackLogger.setLevel(Level.TRACE)
 
       val context = logbackLogger.getLoggerContext
 

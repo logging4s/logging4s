@@ -28,13 +28,18 @@ lazy val commonSettings = Seq(
       uri("https://github.com/shadowsmind"),
     )
   ),
+  exportJars             := false,
   libraryDependencies ++= Dependencies.Testing.all,
   scalacOptions ++= Seq(
     "-encoding",
     "UTF-8",
     "-source:future",
-    "-Wunused:all"
+    "-deprecation",
+    "-feature",
+    "-Wunused:all",
+    "-Wnonunit-statement"
   ),
+  Test / scalacOptions ~= (_.filterNot(_ == "-Wnonunit-statement")),
   credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials"),
 )
 

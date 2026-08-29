@@ -24,8 +24,8 @@ object JsonDerivationBench:
   val fromEncodersLoggable: Loggable[Bench] = Loggable.fromEncoders
 
 @State(Scope.Benchmark)
-@BenchmarkMode(Array(Mode.AverageTime))
-@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@BenchmarkMode(Array(Mode.Throughput))
+@OutputTimeUnit(TimeUnit.SECONDS)
 @Warmup(iterations = 3, time = 1)
 @Measurement(iterations = 5, time = 1)
 @Fork(1)

@@ -39,8 +39,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-sbt-
 
+      - name: Check formatting
+        run: sbt scalafmtCheckAll
+
       - name: Compile
         run: sbt compile
 
       - name: Test
-        run: sbt test
+        run: sbt testFull
+
+      - name: Compile examples and benchmarks
+        run: sbt "examples / Compile / compile" "benchmarks / Compile / compile"
