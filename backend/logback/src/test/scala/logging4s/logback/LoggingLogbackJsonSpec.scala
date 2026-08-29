@@ -170,3 +170,21 @@ class LoggingLogbackJsonSpec extends AnyWordSpec with Matchers:
       json.get("boom").isObject shouldEqual true
       json.get("boom").get("class").asText() shouldEqual "java.lang.IllegalStateException"
       json.get("boom").get("message").asText() shouldEqual "kaboom"
+
+    "attach the call site as a source field" in:
+      val json = captureJson("LoggingLogbackJsonSpec-source") { logging =>
+        logging.info("with position")
+      }
+
+      json.get("source").asText() should startWith("LoggingLogbackJsonSpec.scala:")
+
+    "attach the call site for interpolated messages too" in:
+      val json = captureJson("LoggingLogbackJsonSpec-source-interpolated") { logging =>
+        given Logging[Try] = logging
+        val user           = 7
+
+        val _ = info"created $user"
+      }
+
+      json.get("source").asText() should startWith("LoggingLogbackJsonSpec.scala:")
+      json.get("user").asInt() shouldEqual 7

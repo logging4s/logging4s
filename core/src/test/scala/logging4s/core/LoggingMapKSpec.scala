@@ -14,7 +14,7 @@ class LoggingMapKSpec extends AnyWordSpec, Matchers:
     def enabled(level: Level): Boolean                          = true
     def unit: Unit                                              = ()
 
-    def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue]): Unit =
+    def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue])(using Position): Unit =
       emitted = emitted :+ (level, message)
 
   "Logging.mapK" must:

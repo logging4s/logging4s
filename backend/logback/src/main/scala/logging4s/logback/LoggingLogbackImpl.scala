@@ -2,7 +2,7 @@ package logging4s.logback
 
 import org.slf4j.Logger
 
-import logging4s.core.{Delay, Level, LogMessage, Logging, LoggableValue, LoggingContext}
+import logging4s.core.{Delay, Level, LogMessage, Logging, LoggableValue, LoggingContext, Position}
 import logging4s.core.config.LoggableEncodingConfig
 
 private[logback] class LoggingLogbackImpl[F[*]: Delay](logger: Logger, context: LoggingContext = LoggingContext.empty)(using
@@ -13,14 +13,15 @@ private[logback] class LoggingLogbackImpl[F[*]: Delay](logger: Logger, context: 
 
   override def withContext(moreContext: LoggingContext): Logging[F] = LoggingLogbackImpl(logger, context + moreContext)
 
-  override def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue]): F[Unit] =
+  override def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue])(using position: Position): F[Unit] =
     Delay[F].delay {
       if enabled(level) then
-        val all  = ctxValues ++ LoggableValue.normalizeKeys(values)
-        val text = LogMessage.render(message, cause, all)
+        val all        = ctxValues ++ LoggableValue.normalizeKeys(values)
+        val text       = LogMessage.render(message, cause, all)
+        val structured = LoggableValue.withSource(all, position)
 
-        if all.isEmpty then write(level, text, cause)
-        else write(level, MarkerHelper.fromLoggable(all), text, cause)
+        if structured.isEmpty then write(level, text, cause)
+        else write(level, MarkerHelper.fromLoggable(structured), text, cause)
     }
 
   override def unit: F[Unit] = Delay[F].unit

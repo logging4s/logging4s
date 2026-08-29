@@ -58,9 +58,12 @@ private[core] object LoggingInterpolator:
       case "debug" => '{ Level.Debug }
       case _       => '{ Level.Trace }
 
+    val expansion = quotes.reflect.Position.ofMacroExpansion
+    val position  = logging4s.core.Position.ofExpansion(expansion.sourceFile.name, expansion.startLine + 1)
+
     '{
       val logger = $logging
-      if logger.enabled($levelExpr) then logger.emit($levelExpr, $message, None, $values) else logger.unit
+      if logger.enabled($levelExpr) then logger.emit($levelExpr, $message, None, $values)(using $position) else logger.unit
     }
 
   private def toLoggableValue(argExpr: Expr[Any])(using Quotes): Expr[LoggableValue] =

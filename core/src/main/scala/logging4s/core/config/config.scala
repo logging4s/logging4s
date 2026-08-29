@@ -90,6 +90,7 @@ final case class LoggableEncodingConfig(
     keyNameStyle: KeyNameStyle = KeyNameStyle.SnakeCase,
     plainTupleStyle: PlainTupleStyle = PlainTupleStyle.AsScala,
     plainValuesStyle: PlainValuesStyle = PlainValuesStyle.Arrow,
+    includeSourcePosition: Boolean = true,
 )
 
 object LoggableEncodingConfig:

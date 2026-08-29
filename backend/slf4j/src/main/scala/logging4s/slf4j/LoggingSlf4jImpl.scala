@@ -3,7 +3,7 @@ package logging4s.slf4j
 import org.slf4j.Logger
 import org.slf4j.spi.LoggingEventBuilder
 
-import logging4s.core.{Delay, Level, LogMessage, Logging, LoggableValue, LoggingContext}
+import logging4s.core.{Delay, Level, LogMessage, Logging, LoggableValue, LoggingContext, Position}
 import logging4s.core.config.LoggableEncodingConfig
 
 private[slf4j] class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: LoggingContext = LoggingContext.empty)(using
@@ -14,14 +14,14 @@ private[slf4j] class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: Logg
 
   override def withContext(moreContext: LoggingContext): Logging[F] = LoggingSlf4jImpl(logger, context + moreContext)
 
-  override def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue]): F[Unit] =
+  override def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue])(using position: Position): F[Unit] =
     Delay[F].delay {
       if enabled(level) then
-        val all          = ctxValues ++ LoggableValue.normalizeKeys(values)
-        val deduplicated = LoggableValue.deduplicateKeys(all)
+        val deduplicated = LoggableValue.deduplicateKeys(ctxValues ++ LoggableValue.normalizeKeys(values))
+        val structured   = LoggableValue.withSource(deduplicated, position)
 
         val withCause     = cause.fold(builder(level))(builder(level).setCause)
-        val withKeyValues = deduplicated.foldLeft(withCause) { (b, v) => b.addKeyValue(v.key.value, v.json.value) }
+        val withKeyValues = structured.foldLeft(withCause) { (b, v) => b.addKeyValue(v.key.value, v.json.value) }
 
         withKeyValues.log(LogMessage.render(message, cause, deduplicated))
     }

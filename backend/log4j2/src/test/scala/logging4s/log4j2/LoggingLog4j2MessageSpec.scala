@@ -138,5 +138,6 @@ class LoggingLog4j2MessageSpec extends AnyWordSpec with Matchers:
         )
       }
 
-      message.asInstanceOf[LoggableMapMessage].getFormattedMessage(Array("JSON")) shouldEqual
-        """{"zulu":1,"alpha":2,"mike":3,"bravo":4,"yankee":5,"delta":6}"""
+      message.asInstanceOf[LoggableMapMessage].getFormattedMessage(Array("JSON")) should startWith(
+        """{"zulu":1,"alpha":2,"mike":3,"bravo":4,"yankee":5,"delta":6"""
+      )

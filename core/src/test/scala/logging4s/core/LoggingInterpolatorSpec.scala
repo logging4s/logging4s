@@ -19,7 +19,7 @@ class LoggingInterpolatorSpec extends AnyWordSpec, Matchers:
 
     def unit: Unit = ()
 
-    def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue]): Unit =
+    def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue])(using Position): Unit =
       this.level = level
       this.message = message
       this.values = values

@@ -2,7 +2,7 @@ package logging4s.log4j2
 
 import org.apache.logging.log4j.Logger
 
-import logging4s.core.{Delay, Level, LogMessage, Logging, LoggableValue, LoggingContext}
+import logging4s.core.{Delay, Level, LogMessage, Logging, LoggableValue, LoggingContext, Position}
 import logging4s.core.config.LoggableEncodingConfig
 
 private[log4j2] class LoggingLog4j2Impl[F[*]: Delay](logger: Logger, context: LoggingContext = LoggingContext.empty)(using
@@ -13,12 +13,12 @@ private[log4j2] class LoggingLog4j2Impl[F[*]: Delay](logger: Logger, context: Lo
 
   override def withContext(moreContext: LoggingContext): Logging[F] = LoggingLog4j2Impl(logger, context + moreContext)
 
-  override def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue]): F[Unit] =
+  override def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue])(using position: Position): F[Unit] =
     Delay[F].delay {
       if enabled(level) then
-        val all          = ctxValues ++ LoggableValue.normalizeKeys(values)
-        val deduplicated = LoggableValue.deduplicateKeys(all)
-        val entries      = deduplicated.map(v => v.key.value -> v.json.value)
+        val deduplicated = LoggableValue.deduplicateKeys(ctxValues ++ LoggableValue.normalizeKeys(values))
+        val structured   = LoggableValue.withSource(deduplicated, position)
+        val entries      = structured.map(v => v.key.value -> v.json.value)
         val payload      = LoggableMapMessage(entries, LogMessage.render(message, cause, deduplicated))
 
         write(level, payload, cause.orNull)

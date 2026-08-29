@@ -45,3 +45,6 @@ object LoggableValue:
         if seen(value.key) == 1 then value else value.withKey(value.key.suffixed(seen(value.key)))
     }
   end deduplicateKeys
+
+  def withSource(values: Seq[LoggableValue], position: Position)(using cfg: LoggableEncodingConfig): Seq[LoggableValue] =
+    if cfg.includeSourcePosition then values :+ Position.asLogValue(position) else values

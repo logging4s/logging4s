@@ -8,13 +8,15 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 import logging4s.core.{JsonString, Level, Logging, LoggableValue, PlainString, ValueKey}
+import logging4s.core.config.LoggableEncodingConfig
 
 import ConsoleInstances.given
 
 class LoggingConsoleSpec extends AnyWordSpec, Matchers:
 
-  private def capture(config: ConsoleConfig)(run: Logging[Try] => Unit): String =
-    given ConsoleConfig = config
+  private def capture(config: ConsoleConfig, encoding: LoggableEncodingConfig = LoggableEncodingConfig.Default)(run: Logging[Try] => Unit): String =
+    given ConsoleConfig          = config
+    given LoggableEncodingConfig = encoding
 
     val out      = new ByteArrayOutputStream()
     val original = System.out
@@ -62,3 +64,18 @@ class LoggingConsoleSpec extends AnyWordSpec, Matchers:
       }
 
       out should include(""""session":"abc"""")
+
+    "omit the source field when the config disables it" in:
+      val out = capture(jsonAtInfo, LoggableEncodingConfig(includeSourcePosition = false)) { logging =>
+        logging.info("no source here")
+      }
+
+      out should not include "\"source\""
+      out should include(""""message":"no source here"""")
+
+    "include the source field by default" in:
+      val out = capture(jsonAtInfo) { logging =>
+        logging.info("with source")
+      }
+
+      out should include(""""source":"LoggingConsoleSpec.scala:""")

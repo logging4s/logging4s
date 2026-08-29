@@ -3,7 +3,7 @@ package logging4s.console
 import java.io.{PrintWriter, StringWriter}
 import java.time.Instant
 
-import logging4s.core.{Level, LogMessage, LoggableValue, StructuredJson}
+import logging4s.core.{Level, LogMessage, LoggableValue, Position, StructuredJson}
 import logging4s.core.config.LoggableEncodingConfig
 
 private[console] object Renderer:
@@ -17,10 +17,11 @@ private[console] object Renderer:
       message: String,
       cause: Option[Throwable],
       values: Seq[LoggableValue],
+      position: Position,
   )(using LoggableEncodingConfig): String =
     console.format match
-      case Format.Json  => json(console, level, logger, message, cause, values)
-      case Format.Plain => plain(console, level, logger, message, cause, values)
+      case Format.Json  => json(console, level, logger, message, cause, values, position)
+      case Format.Plain => plain(console, level, logger, message, cause, values, position)
 
   private def json(
       console: ConsoleConfig,
@@ -29,6 +30,7 @@ private[console] object Renderer:
       message: String,
       cause: Option[Throwable],
       values: Seq[LoggableValue],
+      position: Position,
   )(using LoggableEncodingConfig): String =
     val envelope = Seq(
       "@timestamp" -> Instant.ofEpochMilli(System.currentTimeMillis).toString,
@@ -39,7 +41,7 @@ private[console] object Renderer:
     )
     val trace    = cause.map(t => "stack_trace" -> stackTrace(t, console.maxStackTraceLines)).toSeq
 
-    StructuredJson.line(envelope ++ trace, values)
+    StructuredJson.line(envelope ++ trace, LoggableValue.withSource(values, position))
 
   private def plain(
       console: ConsoleConfig,
@@ -48,9 +50,10 @@ private[console] object Renderer:
       message: String,
       cause: Option[Throwable],
       values: Seq[LoggableValue],
+      position: Position,
   )(using LoggableEncodingConfig): String =
     val timestamp = Instant.ofEpochMilli(System.currentTimeMillis).toString
-    val base      = s"$timestamp ${level.toString.toUpperCase} $logger - ${LogMessage.render(message, None, values)}"
+    val base      = s"$timestamp ${level.toString.toUpperCase} $logger - ${LogMessage.render(message, None, LoggableValue.withSource(values, position))}"
     val withTrace = cause.fold(base)(t => s"$base${System.lineSeparator}${stackTrace(t, console.maxStackTraceLines)}")
 
     colorize(console, level, withTrace)
