@@ -2,6 +2,8 @@ package logging4s.examples
 
 import cats.effect.{ExitCode, IO, IOApp}
 
+import scala.language.implicitConversions
+
 import logging4s.core.Logging
 import logging4s.core.syntax.all.*
 

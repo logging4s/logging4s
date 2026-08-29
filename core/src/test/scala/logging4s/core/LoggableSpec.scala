@@ -1,7 +1,7 @@
 package logging4s.core
 
 import java.util.UUID
-import java.time.{Instant, LocalDateTime, ZonedDateTime, ZoneOffset}
+import java.time.{Duration as JavaDuration, Instant, LocalDate, LocalDateTime, LocalTime, OffsetDateTime, ZonedDateTime, ZoneOffset}
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -131,6 +131,66 @@ class LoggableSpec extends AnyWordSpec, Matchers:
     "right summon Unit instance" in:
       Loggable[Unit].plain(()) shouldEqual ""
       Loggable[Unit].json(()) shouldEqual "null"
+
+    "right summon Throwable instances" in:
+      val error = new IllegalStateException("boom")
+
+      Loggable[Throwable].key shouldEqual "error"
+      Loggable[Throwable].plain(error) shouldEqual "class=java.lang.IllegalStateException, message=boom"
+      Loggable[Throwable].json(error) shouldEqual """{"class":"java.lang.IllegalStateException","message":"boom"}"""
+
+    "render a Throwable without a message as a null json message" in:
+      Loggable[Throwable].json(new RuntimeException) shouldEqual """{"class":"java.lang.RuntimeException","message":null}"""
+
+    "escape a Throwable message instead of breaking the json" in:
+      Loggable[Throwable].json(new RuntimeException("he said \"hi\"")) shouldEqual
+        """{"class":"java.lang.RuntimeException","message":"he said \"hi\""}"""
+
+    "cover concrete exception subtypes, not just Throwable" in:
+      val error = new IllegalStateException("boom")
+
+      Loggable[IllegalStateException].json(error) shouldEqual
+        """{"class":"java.lang.IllegalStateException","message":"boom"}"""
+
+    "let a user given for a specific exception win over the generic one" in:
+      final class DomainError(val code: Int) extends RuntimeException(s"code $code")
+
+      given Loggable[DomainError] = Loggable.make[DomainError]("domainError")(
+        e => JsonString(e.code.toString),
+        e => PlainString(e.code.toString),
+      )
+
+      Loggable[DomainError].key shouldEqual "domainError"
+      Loggable[DomainError].json(new DomainError(7)) shouldEqual "7"
+
+    "right summon LocalDate instances" in:
+      val value = LocalDate.of(2023, 1, 30)
+
+      Loggable[LocalDate].key shouldEqual "date"
+      Loggable[LocalDate].plain(value) shouldEqual "2023-01-30"
+      Loggable[LocalDate].json(value) shouldEqual "\"2023-01-30\""
+
+    "right summon LocalTime instances" in:
+      val value = LocalTime.of(13, 42, 13)
+
+      Loggable[LocalTime].plain(value) shouldEqual "13:42:13"
+      Loggable[LocalTime].json(value) shouldEqual "\"13:42:13\""
+
+    "right summon OffsetDateTime instances" in:
+      val value = OffsetDateTime.of(2023, 1, 30, 13, 42, 13, 0, ZoneOffset.UTC)
+
+      Loggable[OffsetDateTime].plain(value) shouldEqual "2023-01-30T13:42:13Z"
+      Loggable[OffsetDateTime].json(value) shouldEqual "\"2023-01-30T13:42:13Z\""
+
+    "right summon java.time.Duration instances" in:
+      Loggable[JavaDuration].key shouldEqual "time_ms"
+      Loggable[JavaDuration].plain(JavaDuration.ofSeconds(5)) shouldEqual "5000"
+      Loggable[JavaDuration].json(JavaDuration.ofSeconds(5)) shouldEqual "5000"
+
+    "right summon Array instances" in:
+      Loggable[Array[Int]].key shouldEqual "ints"
+      Loggable[Array[Int]].plain(Array(1, 2, 3)) shouldEqual "[1,2,3]"
+      Loggable[Array[Int]].json(Array(1, 2, 3)) shouldEqual "[1,2,3]"
 
     "right redact a value with the default mask" in:
       val loggable = Loggable[String].redacted()

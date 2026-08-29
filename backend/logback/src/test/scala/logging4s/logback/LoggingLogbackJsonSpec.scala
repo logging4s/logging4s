@@ -158,3 +158,15 @@ class LoggingLogbackJsonSpec extends AnyWordSpec with Matchers:
       }
 
       json.get("session").asText() shouldEqual "abc"
+
+    "attach an interpolated throwable as a structured field" in:
+      val json = captureJson("LoggingLogbackJsonSpec-throwable") { logging =>
+        given Logging[Try] = logging
+        val boom           = new IllegalStateException("kaboom")
+
+        val _ = error"request failed $boom"
+      }
+
+      json.get("boom").isObject shouldEqual true
+      json.get("boom").get("class").asText() shouldEqual "java.lang.IllegalStateException"
+      json.get("boom").get("message").asText() shouldEqual "kaboom"

@@ -1,7 +1,7 @@
 package logging4s.core
 
 import java.util.UUID
-import java.time.{Instant, LocalDateTime, ZonedDateTime}
+import java.time.{Duration as JavaDuration, Instant, LocalDate, LocalDateTime, LocalTime, OffsetDateTime, ZonedDateTime}
 
 import scala.deriving.Mirror
 import scala.concurrent.duration.FiniteDuration
@@ -34,7 +34,7 @@ trait Loggable[A]:
       override def plain(a: A): PlainString = PlainString(mask)
       override def json(a: A): JsonString   = JsonString.quoted(mask)
 
-object Loggable:
+object Loggable extends LoggableLowPriority:
   inline def apply[A](using instance: Loggable[A]): Loggable[A] = instance
 
   inline def derived[A](using Mirror.Of[A]): Loggable[A] = macros.derived[A]
@@ -109,7 +109,27 @@ object Loggable:
     override def plain(a: ZonedDateTime): PlainString = PlainString(a.toString)
     override def json(a: ZonedDateTime): JsonString   = JsonString.quoted(a.toString)
 
+  given LoggableLocalDate: Loggable[LocalDate] = LoggableString.contramap(_.toString, "date")
+
+  given LoggableLocalTime: Loggable[LocalTime] = LoggableString.contramap(_.toString, "time")
+
+  given LoggableOffsetDateTime: Loggable[OffsetDateTime] = LoggableString.contramap(_.toString, "time")
+
   given LoggableFiniteDuration: Loggable[FiniteDuration] = LoggableLong.contramap(_.toMillis, "time_ms")
+
+  given LoggableJavaDuration: Loggable[JavaDuration] = LoggableLong.contramap(_.toMillis, "time_ms")
+
+  private[core] val anyThrowable: Loggable[Throwable] = new:
+    override val key: ValueKey = ValueKey("error")
+
+    override def plain(e: Throwable): PlainString =
+      PlainString(s"class=${e.getClass.getName}, message=${e.getMessage}")
+
+    override def json(e: Throwable): JsonString =
+      JsonString.obj(
+        "class"   -> JsonString.quoted(e.getClass.getName),
+        "message" -> Option(e.getMessage).fold(JsonString.Null)(JsonString.quoted),
+      )
 
   given LoggableUnit: Loggable[Unit] =
     new:
@@ -179,6 +199,12 @@ object Loggable:
       override def plain(a: Set[T]): PlainString = PlainString.array(a.map(L.plain).toSeq*)
       override def json(a: Set[T]): JsonString   = JsonString.array(a.map(L.json).toSeq*)
 
+  given LoggableArray[T](using L: Loggable[T]): Loggable[Array[T]] =
+    new:
+      override val key: ValueKey                   = L.key.pluralized
+      override def plain(a: Array[T]): PlainString = PlainString.array(a.toSeq.map(L.plain)*)
+      override def json(a: Array[T]): JsonString   = JsonString.array(a.toSeq.map(L.json)*)
+
   given LoggableSeq[T](using L: Loggable[T]): Loggable[Seq[T]] =
     new:
       override val key: ValueKey                 = L.key.pluralized
@@ -198,3 +224,7 @@ object Loggable:
       override val key: ValueKey               = L.key.pluralized
       override def plain(a: C[T]): PlainString = PlainString.array(ev(a).toSeq.map(L.plain)*)
       override def json(a: C[T]): JsonString   = JsonString.array(ev(a).toSeq.map(L.json)*)
+
+private[core] trait LoggableLowPriority:
+
+  given LoggableThrowable[E <: Throwable]: Loggable[E] = Loggable.anyThrowable.asInstanceOf[Loggable[E]]
