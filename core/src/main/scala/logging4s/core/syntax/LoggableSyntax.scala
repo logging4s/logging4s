@@ -1,7 +1,7 @@
 package logging4s.core.syntax
 
-import logging4s.core.{JsonEncoder, Loggable, LoggableValue, PlainEncoder, ValueKey}
 import logging4s.core.config.LoggableEncodingConfig
+import logging4s.core.{JsonEncoder, Loggable, LoggableValue, PlainEncoder, ValueKey}
 
 trait LoggableSyntax:
 

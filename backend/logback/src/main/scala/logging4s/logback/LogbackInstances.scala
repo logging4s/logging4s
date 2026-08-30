@@ -2,8 +2,8 @@ package logging4s.logback
 
 import org.slf4j.LoggerFactory
 
-import logging4s.core.{Delay, Logging, LoggingFactory, LoggingContext}
 import logging4s.core.config.LoggableEncodingConfig
+import logging4s.core.{Delay, Logging, LoggingFactory, LoggingContext}
 
 trait LogbackInstances:
 

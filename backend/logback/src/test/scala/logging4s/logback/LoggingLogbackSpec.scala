@@ -2,13 +2,13 @@ package logging4s.logback
 
 import scala.util.Try
 
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.should.Matchers
 
-import ch.qos.logback.classic.{Logger as LogbackLogger}
+import org.slf4j.LoggerFactory
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
-import org.slf4j.LoggerFactory
+import ch.qos.logback.classic.Logger as LogbackLogger
 
 import logging4s.core.{LoggableValue, Logging}
 import logging4s.core.syntax.all.*

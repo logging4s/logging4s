@@ -1,12 +1,11 @@
 package logging4s.logback
 
-import java.nio.charset.StandardCharsets
 import java.time.Instant
+import java.nio.charset.StandardCharsets
 
 import org.slf4j.Marker
-
-import ch.qos.logback.classic.spi.{ILoggingEvent, ThrowableProxyUtil}
 import ch.qos.logback.core.encoder.EncoderBase
+import ch.qos.logback.classic.spi.{ILoggingEvent, ThrowableProxyUtil}
 
 import logging4s.core.StructuredJson
 

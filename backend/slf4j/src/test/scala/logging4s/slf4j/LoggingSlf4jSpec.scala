@@ -1,7 +1,7 @@
 package logging4s.slf4j
 
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.should.Matchers
 
 import logging4s.core.{JsonString, Logging, LoggableValue, PlainString, ValueKey}
 

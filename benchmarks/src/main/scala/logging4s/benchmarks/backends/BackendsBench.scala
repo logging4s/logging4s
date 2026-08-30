@@ -1,7 +1,7 @@
 package logging4s.benchmarks.backends
 
-import java.io.{OutputStream, PrintStream}
 import java.util.concurrent.TimeUnit
+import java.io.{OutputStream, PrintStream}
 
 import scala.util.Try
 
@@ -9,20 +9,19 @@ import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.Blackhole
 
 import org.slf4j.LoggerFactory
-import ch.qos.logback.classic.{Level as LogbackLevel, Logger as LogbackLogger}
+import net.logstash.logback.encoder.LogstashEncoder
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.OutputStreamAppender
 import ch.qos.logback.core.encoder.Encoder as LogbackEncoder
-import net.logstash.logback.encoder.LogstashEncoder
-
+import ch.qos.logback.classic.{Level as LogbackLevel, Logger as LogbackLogger}
 import org.apache.logging.log4j.{Level as Log4jLevel, LogManager}
 import org.apache.logging.log4j.core.{Layout, LogEvent, LoggerContext}
 import org.apache.logging.log4j.core.appender.AbstractAppender
 import org.apache.logging.log4j.core.config.{AppenderRef, LoggerConfig, Property}
 import org.apache.logging.log4j.layout.template.json.JsonTemplateLayout
 
-import logging4s.core.{Level, Loggable, LoggableValue, Logging}
 import logging4s.logback.Logging4sEncoder
+import logging4s.core.{Level, Loggable, LoggableValue, Logging}
 
 @State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))
@@ -109,8 +108,7 @@ class BackendsBench:
   @Benchmark def log4j2Standard(bh: Blackhole): Unit    = bh.consume(log4j2Default.info("event", value(domain.jsoniter)))
   @Benchmark def log4j2OurLayout(bh: Blackhole): Unit   = bh.consume(log4j2Ours.info("event", value(domain.jsoniter)))
 
-class NullLayoutAppender(name: String, layout: Layout[String])
-    extends AbstractAppender(name, null, layout, true, Property.EMPTY_ARRAY):
+class NullLayoutAppender(name: String, layout: Layout[String]) extends AbstractAppender(name, null, layout, true, Property.EMPTY_ARRAY):
 
   override def append(event: LogEvent): Unit =
     val _ = getLayout.toByteArray(event)

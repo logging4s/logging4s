@@ -2,14 +2,14 @@ package logging4s.log4j2
 
 import scala.util.Try
 
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.should.Matchers
+
 import org.apache.logging.log4j.{Level, LogManager, ThreadContext}
 import org.apache.logging.log4j.core.{LogEvent, LoggerContext}
 import org.apache.logging.log4j.core.appender.AbstractAppender
 import org.apache.logging.log4j.core.config.{AppenderRef, Configuration, LoggerConfig, Property}
 import org.apache.logging.log4j.message.{Message, MapMessage}
-
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 
 import logging4s.core.{JsonString, Logging, LoggableValue, PlainString, ValueKey}
 

@@ -2,8 +2,8 @@ package logging4s.cats
 
 import cats.data.{Chain, Ior, NonEmptyList, NonEmptyMap, NonEmptySet, NonEmptyVector}
 
-import logging4s.core.{JsonString, Loggable, PlainString, ValueKey}
 import logging4s.core.config.LoggableEncodingConfig
+import logging4s.core.{JsonString, Loggable, PlainString, ValueKey}
 
 trait DataInstances:
 

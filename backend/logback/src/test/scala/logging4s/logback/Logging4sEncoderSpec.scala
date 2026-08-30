@@ -4,15 +4,14 @@ import java.io.ByteArrayOutputStream
 
 import scala.util.Try
 
-import ch.qos.logback.classic.{Level, Logger as LogbackLogger}
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.should.Matchers
+
+import org.slf4j.LoggerFactory
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.OutputStreamAppender
-import org.slf4j.LoggerFactory
-
+import ch.qos.logback.classic.{Level, Logger as LogbackLogger}
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
-
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 
 import logging4s.core.{JsonString, Logging, LoggableValue, PlainString, ValueKey}
 

@@ -9,10 +9,10 @@ import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.Blackhole
 
 import org.slf4j.LoggerFactory
-import ch.qos.logback.classic.{Level as LogbackLevel, Logger as LogbackLogger}
+import net.logstash.logback.encoder.LogstashEncoder
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.OutputStreamAppender
-import net.logstash.logback.encoder.LogstashEncoder
+import ch.qos.logback.classic.{Level as LogbackLevel, Logger as LogbackLogger}
 
 import logging4s.core.{LoggableValue, Logging}
 import logging4s.core.syntax.all.*

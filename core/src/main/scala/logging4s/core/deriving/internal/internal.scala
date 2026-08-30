@@ -2,9 +2,9 @@ package logging4s.core.deriving.internal
 
 import scala.deriving.Mirror
 
-import logging4s.core.{JsonEncoder, JsonString, Loggable, PlainEncoder, PlainString, ValueKey}
-import logging4s.core.config.LoggableEncodingConfig
 import logging4s.core.deriving.FieldPolicy
+import logging4s.core.config.LoggableEncodingConfig
+import logging4s.core.{JsonEncoder, JsonString, Loggable, PlainEncoder, PlainString, ValueKey}
 
 private[internal] def decapitalize(name: String): String =
   if name.isEmpty then name else s"${name.head.toLower}${name.tail}"

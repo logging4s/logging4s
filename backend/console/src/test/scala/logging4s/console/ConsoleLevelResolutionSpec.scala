@@ -1,9 +1,9 @@
 package logging4s.console
 
-import com.typesafe.config.ConfigFactory
-
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.should.Matchers
+
+import com.typesafe.config.ConfigFactory
 
 import logging4s.core.Level
 

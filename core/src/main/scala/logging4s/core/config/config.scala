@@ -1,7 +1,7 @@
 package logging4s.core.config
 
-import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
+import java.util.concurrent.ConcurrentHashMap
 
 import logging4s.core.{LoggableValue, PlainString}
 

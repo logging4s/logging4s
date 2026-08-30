@@ -1,10 +1,10 @@
 package logging4s.console
 
-import java.io.{PrintWriter, StringWriter}
 import java.time.Instant
+import java.io.{PrintWriter, StringWriter}
 
-import logging4s.core.{Level, LogMessage, LoggableValue, Position, StructuredJson}
 import logging4s.core.config.LoggableEncodingConfig
+import logging4s.core.{Level, LogMessage, LoggableValue, Position, StructuredJson}
 
 private[console] object Renderer:
 

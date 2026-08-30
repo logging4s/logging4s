@@ -2,8 +2,8 @@ package logging4s.log4j2
 
 import org.apache.logging.log4j.LogManager
 
-import logging4s.core.{Delay, Logging, LoggingFactory, LoggingContext}
 import logging4s.core.config.LoggableEncodingConfig
+import logging4s.core.{Delay, Logging, LoggingFactory, LoggingContext}
 
 trait Log4j2Instances:
 

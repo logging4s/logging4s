@@ -1,22 +1,21 @@
 package logging4s.logback
 
-import scala.jdk.CollectionConverters.*
 import scala.util.Try
 
-import ch.qos.logback.classic.{Level, Logger as LogbackLogger}
-import ch.qos.logback.classic.spi.ILoggingEvent
-import ch.qos.logback.core.read.ListAppender
-import net.logstash.logback.encoder.LogstashEncoder
-import org.slf4j.LoggerFactory
-
-import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
-
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.should.Matchers
+
+import org.slf4j.LoggerFactory
+import net.logstash.logback.encoder.LogstashEncoder
+import ch.qos.logback.core.read.ListAppender
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.classic.{Level, Logger as LogbackLogger}
+import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
 
 import logging4s.core.{JsonString, Logging, LoggableValue, PlainString, ValueKey}
 import logging4s.core.config.{KeyNameStyle, LoggableEncodingConfig, PlainValuesStyle}
 
+import scala.jdk.CollectionConverters.given
 import LogbackInstances.given
 
 class LoggingLogbackConfigSpec extends AnyWordSpec, Matchers:

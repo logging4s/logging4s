@@ -4,11 +4,11 @@ import java.io.{ByteArrayOutputStream, PrintStream}
 
 import scala.util.Try
 
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.should.Matchers
 
-import logging4s.core.{JsonString, Level, Logging, LoggableValue, PlainString, ValueKey}
 import logging4s.core.config.LoggableEncodingConfig
+import logging4s.core.{JsonString, Level, Logging, LoggableValue, PlainString, ValueKey}
 
 import ConsoleInstances.given
 

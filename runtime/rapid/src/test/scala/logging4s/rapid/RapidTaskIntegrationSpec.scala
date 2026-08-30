@@ -7,8 +7,8 @@ import rapid.{AsyncTaskSpec, Task}
 
 import logging4s.core.{Delay, Logging}
 
-import logging4s.logback.LogbackInstances.given
 import logging4s.rapid.RapidInstances.given
+import logging4s.logback.LogbackInstances.given
 
 class RapidTaskIntegrationSpec extends AsyncWordSpec, AsyncTaskSpec, Matchers:
 

@@ -2,8 +2,8 @@ package logging4s.logback
 
 import org.slf4j.Logger
 
-import logging4s.core.{Delay, Level, LogMessage, Logging, LoggableValue, LoggingContext, Position}
 import logging4s.core.config.LoggableEncodingConfig
+import logging4s.core.{Delay, Level, LogMessage, Logging, LoggableValue, LoggingContext, Position}
 
 private[logback] class LoggingLogbackImpl[F[*]: Delay](logger: Logger, context: LoggingContext = LoggingContext.empty)(using
     cfg: LoggableEncodingConfig

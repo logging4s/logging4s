@@ -298,7 +298,7 @@ lazy val examples = project
   .in(file("examples"))
   .settings(commonSettings)
   .settings(
-    name           := "logging4s-examples",
+    name                  := "logging4s-examples",
     publish / skip        := true,
     mimaPreviousArtifacts := Set.empty,
     libraryDependencies += Dependencies.Cats.catsEffect3,
@@ -316,7 +316,7 @@ lazy val benchmarks = project
   .enablePlugins(JmhPlugin)
   .settings(commonSettings)
   .settings(
-    name           := "logging4s-benchmarks",
+    name                  := "logging4s-benchmarks",
     publish / skip        := true,
     mimaPreviousArtifacts := Set.empty,
     libraryDependencies ++= Dependencies.Json.jsoniter,
@@ -334,7 +334,7 @@ lazy val logging4s = project
   .in(file("."))
   .settings(commonSettings)
   .settings(
-    name           := "logging4s",
+    name                  := "logging4s",
     publish / skip        := true,
     mimaPreviousArtifacts := Set.empty,
   )

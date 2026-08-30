@@ -1,12 +1,12 @@
 package logging4s.log4j2
 
-import org.apache.logging.log4j.Level
-import org.apache.logging.log4j.core.config.DefaultConfiguration
-import org.apache.logging.log4j.core.impl.Log4jLogEvent
-import org.apache.logging.log4j.layout.template.json.JsonTemplateLayout
-
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.should.Matchers
+
+import org.apache.logging.log4j.Level
+import org.apache.logging.log4j.core.impl.Log4jLogEvent
+import org.apache.logging.log4j.core.config.DefaultConfiguration
+import org.apache.logging.log4j.layout.template.json.JsonTemplateLayout
 
 class LoggableMapMessageJsonTemplateSpec extends AnyWordSpec, Matchers:
 

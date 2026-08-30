@@ -1,7 +1,7 @@
 package logging4s.core
 
 import java.util.UUID
-import java.time.{Duration as JavaDuration, Instant, LocalDate, LocalDateTime, LocalTime, OffsetDateTime, ZonedDateTime, ZoneOffset}
+import java.time.{Duration as JavaDuration, *}
 
 import scala.concurrent.duration.FiniteDuration
 

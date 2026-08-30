@@ -1,12 +1,12 @@
 package logging4s.core.deriving
 
+import scala.quoted.*
 import scala.deriving.Mirror
 import scala.compiletime.{constValue, erasedValue, summonAll, summonFrom, summonInline}
-import scala.quoted.*
 
-import logging4s.core.{JsonEncoder, Loggable, PlainEncoder, PlainString}
-import logging4s.core.config.LoggableEncodingConfig
 import logging4s.core.deriving.internal.*
+import logging4s.core.config.LoggableEncodingConfig
+import logging4s.core.{JsonEncoder, Loggable, PlainEncoder, PlainString}
 
 private[core] object macros:
 

@@ -2,11 +2,10 @@ package logging4s.examples
 
 import cats.effect.{ExitCode, IO, IOApp}
 
-import scala.language.implicitConversions
-
 import logging4s.core.{Logging, LoggingContext}
 import logging4s.core.syntax.all.*
 
+import scala.language.implicitConversions
 import logging4s.cats.CatsInstances.given
 import logging4s.logback.LogbackInstances.given
 import logging4s.json.circe.CirceInstances.given

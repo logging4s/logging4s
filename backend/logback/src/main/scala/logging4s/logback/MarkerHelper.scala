@@ -1,11 +1,11 @@
 package logging4s.logback
 
-import scala.language.implicitConversions
-
 import net.logstash.logback.marker.Markers.*
 import net.logstash.logback.marker.LogstashMarker
 
 import logging4s.core.LoggableValue
+
+import scala.language.implicitConversions
 
 private[logback] object MarkerHelper:
 
