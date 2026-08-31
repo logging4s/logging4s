@@ -313,7 +313,7 @@ yield ()</code></pre>
     <tr><td><code>logging4s-console</code></td><td>3.3 LTS</td><td>standalone JSON/plain to stdout; HOCON-configured</td></tr>
     <tr><td rowspan="4">runtime</td><td><code>logging4s-cats</code></td><td>3.3 LTS</td><td>cats-effect 3; plain via <code>cats.Show</code></td></tr>
     <tr><td><code>logging4s-zio</code></td><td>3.3 LTS</td><td>zio.Task; plain via <code>zio.prelude.Debug</code></td></tr>
-    <tr><td><code>logging4s-kyo</code></td><td><strong>3.8</strong></td><td>kyo.IO; plain via <code>kyo.Render</code></td></tr>
+    <tr><td><code>logging4s-kyo</code></td><td><strong>3.8</strong></td><td>kyo.Sync; plain via <code>kyo.Render</code></td></tr>
     <tr><td><code>logging4s-rapid</code></td><td><strong>3.8</strong></td><td>rapid.Task</td></tr>
     <tr><td rowspan="11">json</td><td><code>logging4s-circe</code></td><td>3.3 LTS</td><td>io.circe.Encoder</td></tr>
     <tr><td><code>logging4s-jsoniter</code></td><td>3.3 LTS</td><td>jsoniter-scala JsonValueCodec</td></tr>
@@ -348,6 +348,12 @@ yield ()</code></pre>
     From 3.0.0 onward, binary compatibility within a major version is checked by
     <a href="https://github.com/lightbend/mima">MiMa</a> on every build, and
     <code>versionScheme := "semver-spec"</code> describes what the artifacts promise.
+  </p>
+  <p class="muted">
+    <code>logging4s-kyo</code> depends on a kyo release candidate (<code>1.0.0-RC6</code>). Until kyo reaches
+    <code>1.0.0</code> final, that module sits outside the binary-compatibility promise the other artifacts make.
+    Compiling it also needs <strong>JDK 25</strong> — kyo's <code>Frame</code> macro runs inside the compiler and its
+    class files target Java 25, so this is a compile-time requirement, not just a runtime one.
   </p>
 
   <h2 id="benchmarks">Benchmarks</h2>

@@ -1,5 +1,5 @@
 package logging4s.kyo
 
-trait KyoInstances extends IoToDelayInstance, DataInstances, RenderToPlainEncoderInstance
+trait KyoInstances extends SyncToDelayInstance, DataInstances, RenderToPlainEncoderInstance
 
 object KyoInstances extends KyoInstances

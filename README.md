@@ -354,7 +354,7 @@ Published for Scala 3 under `org.logging4s`:
 | | `logging4s-console` | 3.3 LTS | standalone JSON/plain to stdout/stderr; HOCON-configured; no logging framework needed |
 | runtime | `logging4s-cats` | 3.3 LTS | `cats-effect 3`; plain via `cats.Show` |
 | | `logging4s-zio` | 3.3 LTS | `zio.Task`; plain via `zio.prelude.Debug` |
-| | `logging4s-kyo` | **3.8** | `kyo.IO`; plain via `kyo.Render` |
+| | `logging4s-kyo` | **3.8** | `kyo.Sync`; plain via `kyo.Render` |
 | | `logging4s-rapid` | **3.8** | `rapid.Task` |
 | json | `logging4s-circe` | 3.3 LTS | `io.circe.Encoder` |
 | | `logging4s-jsoniter` | 3.3 LTS | `jsoniter-scala JsonValueCodec` |
@@ -381,6 +381,11 @@ In practice: if your application is on `3.3 LTS`, pick any backend and any JSON 
 From 3.0.0 onward, binary compatibility within a major version is checked by
 [MiMa](https://github.com/lightbend/mima) on every build, and `versionScheme := "semver-spec"` describes what the
 artifacts promise.
+
+`logging4s-kyo` depends on a kyo release candidate (`1.0.0-RC6`). Until kyo reaches `1.0.0` final, that module sits
+outside the binary-compatibility promise the other artifacts make. Compiling it also needs **JDK 25** — kyo's `Frame`
+macro runs inside the compiler and its class files target Java 25, so this is a compile-time requirement, not just a
+runtime one.
 
 Each integration module exposes its `given`s as a named trait plus a companion object, so you can also mix several into
 one import for your app:

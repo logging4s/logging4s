@@ -1,5 +1,5 @@
 package logging4s.kyo
 
-import kyo.{IO, <}
+import kyo.{Sync, <}
 
-type KIO[T] = T < IO
+type KIO[T] = T < Sync

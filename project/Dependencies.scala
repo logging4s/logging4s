@@ -20,7 +20,7 @@ object Dependencies {
     val zio        = "2.1.26"
     val zioPrelude = "1.0.0-RC48"
 
-    val kyo = "0.19.0"
+    val kyo = "1.0.0-RC6"
 
     val rapid = "2.9.9"
 
