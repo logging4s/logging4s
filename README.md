@@ -345,28 +345,42 @@ Published for Scala 3 under `org.logging4s`:
 "org.logging4s" %% "logging4s-<module>" % "3.0.0"
 ```
 
-| | Module | Notes |
-| --- | --- | --- |
-| core | `logging4s-core` | type classes + `Logging`; no backend dependency |
-| backend | `logging4s-logback` | slf4j + logback + logstash-encoder; real nested JSON |
-| | `logging4s-log4j2` | Log4j2 API; values as a `MapMessage` |
-| | `logging4s-slf4j` | bare slf4j-api 2.x `addKeyValue`; bring your own binding |
-| | `logging4s-console` | standalone JSON/plain to stdout/stderr; HOCON-configured; no logging framework needed |
-| runtime | `logging4s-cats` | `cats-effect 3`; plain via `cats.Show` |
-| | `logging4s-zio` | `zio.Task`; plain via `zio.prelude.Debug` |
-| | `logging4s-kyo` | `kyo.IO`; plain via `kyo.Render` |
-| | `logging4s-rapid` | `rapid.Task` |
-| json | `logging4s-circe` | `io.circe.Encoder` |
-| | `logging4s-jsoniter` | `jsoniter-scala JsonValueCodec` |
-| | `logging4s-zio-json` | `zio-json JsonEncoder` |
-| | `logging4s-play-json` | `play-json Writes` |
-| | `logging4s-spray-json` | `spray-json JsonWriter` |
-| | `logging4s-json4s` | `json4s Formats` |
-| | `logging4s-argonaut` | `argonaut EncodeJson` |
-| | `logging4s-borer` | `borer Encoder` |
-| | `logging4s-upickle` | `upickle Writer` |
-| | `logging4s-weepickle` | `weepickle From` |
-| | `logging4s-fabric` | `fabric Json` |
+| | Module | Min. Scala | Notes |
+| --- | --- | --- | --- |
+| core | `logging4s-core` | 3.3 LTS | type classes + `Logging`; no backend dependency |
+| backend | `logging4s-logback` | 3.3 LTS | slf4j + logback + logstash-encoder; real nested JSON |
+| | `logging4s-log4j2` | 3.3 LTS | Log4j2 API; values as a `MapMessage` |
+| | `logging4s-slf4j` | 3.3 LTS | bare slf4j-api 2.x `addKeyValue`; bring your own binding |
+| | `logging4s-console` | 3.3 LTS | standalone JSON/plain to stdout/stderr; HOCON-configured; no logging framework needed |
+| runtime | `logging4s-cats` | 3.3 LTS | `cats-effect 3`; plain via `cats.Show` |
+| | `logging4s-zio` | 3.3 LTS | `zio.Task`; plain via `zio.prelude.Debug` |
+| | `logging4s-kyo` | **3.8** | `kyo.IO`; plain via `kyo.Render` |
+| | `logging4s-rapid` | **3.8** | `rapid.Task` |
+| json | `logging4s-circe` | 3.3 LTS | `io.circe.Encoder` |
+| | `logging4s-jsoniter` | 3.3 LTS | `jsoniter-scala JsonValueCodec` |
+| | `logging4s-zio-json` | 3.3 LTS | `zio-json JsonEncoder` |
+| | `logging4s-play-json` | 3.3 LTS | `play-json Writes` |
+| | `logging4s-spray-json` | 3.3 LTS | `spray-json JsonWriter` |
+| | `logging4s-json4s` | 3.3 LTS | `json4s Formats` |
+| | `logging4s-argonaut` | 3.3 LTS | `argonaut EncodeJson` |
+| | `logging4s-borer` | 3.3 LTS | `borer Encoder` |
+| | `logging4s-upickle` | 3.3 LTS | `upickle Writer` |
+| | `logging4s-weepickle` | 3.3 LTS | `weepickle From` |
+| | `logging4s-fabric` | 3.3 LTS | `fabric Json` |
+
+### Compatibility
+
+`Scala 3` TASTy is backward but not forward compatible, so the two modules built on `3.8` above **cannot be consumed
+from a Scala `3.3 LTS` project**, even though every other module can. They are pinned there because kyo and rapid
+themselves require it — nothing in logging4s does. Everything else, `logging4s-core` included, stays on `3.3 LTS` and
+is usable from both.
+
+In practice: if your application is on `3.3 LTS`, pick any backend and any JSON module freely, and use the `cats` or
+`zio` runtime. Reaching for `logging4s-kyo` or `logging4s-rapid` means moving the whole application to `3.8`.
+
+From 3.0.0 onward, binary compatibility within a major version is checked by
+[MiMa](https://github.com/lightbend/mima) on every build, and `versionScheme := "semver-spec"` describes what the
+artifacts promise.
 
 Each integration module exposes its `given`s as a named trait plus a companion object, so you can also mix several into
 one import for your app:
