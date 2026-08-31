@@ -17,7 +17,7 @@ enum KeyNameStyle:
       if cached != null then cached
       else
         val formatted = reformat(name)
-        if cache.size < KeyNameStyle.MaxCachedKeys then cache.putIfAbsent(name, formatted)
+        if cache.size < KeyNameStyle.MaxCachedKeys then cache.putIfAbsent(name, formatted): Unit
         formatted
 
   private def reformat(name: String): String =

@@ -132,9 +132,9 @@ object Dependencies {
   }
 
   object Testing {
-    val scalatest  = "org.scalatest"     %% "scalatest"       % Versions.scalatest      % Test
+    val scalatest  = "org.scalatest"     %% "scalatest"       % Versions.scalatest     % Test
     val scalacheck = "org.scalatestplus" %% "scalacheck-1-18" % Versions.scalatestPlus % Test
-    val scalactic  = "org.scalactic"     %% "scalactic"       % Versions.scalatest      % Test
+    val scalactic  = "org.scalactic"     %% "scalactic"       % Versions.scalatest     % Test
 
     val all: Seq[ModuleID] = Seq(scalatest, scalactic, scalacheck)
   }

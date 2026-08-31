@@ -13,19 +13,19 @@ object StructuredJson:
     private var first = true
 
     private def separate(): Unit =
-      if !first then sb.append(',')
+      if !first then sb.append(','): Unit
       first = false
 
     def field(key: String, value: String): Unit =
       separate()
-      sb.append(JsonString.quoted(key).value).append(':').append(JsonString.quoted(value).value)
+      sb.append(JsonString.quoted(key).value).append(':').append(JsonString.quoted(value).value): Unit
 
     def fields(entries: Iterable[(String, String)]): Unit =
       entries.foreach((key, value) => field(key, value))
 
     def value(value: LoggableValue): Unit =
       separate()
-      sb.append(JsonString.quoted(value.key.value).value).append(':').append(value.json.value)
+      sb.append(JsonString.quoted(value.key.value).value).append(':').append(value.json.value): Unit
 
     def values(values: Iterable[LoggableValue]): Unit =
       values.foreach(value)

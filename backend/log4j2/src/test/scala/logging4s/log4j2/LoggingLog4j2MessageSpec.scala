@@ -26,7 +26,7 @@ final class MessageCapturingAppender extends AbstractAppender("message-capturing
 object LoggingLog4j2MessageSpec:
   private val configurationLock = new Object
 
-class LoggingLog4j2MessageSpec extends AnyWordSpec with Matchers:
+class LoggingLog4j2MessageSpec extends AnyWordSpec, Matchers:
 
   Log4j2Warmup.touch()
 

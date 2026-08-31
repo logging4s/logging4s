@@ -24,7 +24,7 @@ final case class Nickname(id: Int, nick: Option[String]) derives Loggable
 object LoggingLogbackJsonSpec:
   private[logback] val appenderLock = new Object
 
-class LoggingLogbackJsonSpec extends AnyWordSpec with Matchers:
+class LoggingLogbackJsonSpec extends AnyWordSpec, Matchers:
 
   LogbackWarmup.touch()
 

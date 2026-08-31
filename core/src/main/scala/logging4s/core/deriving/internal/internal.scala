@@ -50,7 +50,7 @@ final class ProductLoggable[A](
 
       def entry(fieldKey: String, rawValue: String): Unit =
         if !first then sb.append(',')
-        val _ = sb.append('"').append(fieldKey).append("\":").append(rawValue)
+        sb.append('"').append(fieldKey).append("\":").append(rawValue): Unit
         first = false
 
       specs.foreach { (l, fieldKey, policy) =>

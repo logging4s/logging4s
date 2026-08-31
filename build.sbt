@@ -1,6 +1,7 @@
 import Dependencies.Versions
+import com.typesafe.tools.mima.plugin.MimaKeys.mimaPreviousArtifacts
 
-lazy val previousRelease = "2.0.1"
+lazy val binaryCompatibleWith = Set.empty[String]
 
 lazy val commonSettings = Seq(
   organization           := "org.logging4s",
@@ -31,7 +32,7 @@ lazy val commonSettings = Seq(
     )
   ),
   exportJars             := false,
-  mimaPreviousArtifacts  := Set(organization.value %% name.value % previousRelease),
+  mimaPreviousArtifacts  := binaryCompatibleWith.map(organization.value %% moduleName.value % _),
   libraryDependencies ++= Dependencies.Testing.all,
   scalacOptions ++= Seq(
     "-encoding",
@@ -39,10 +40,13 @@ lazy val commonSettings = Seq(
     "-source:future",
     "-deprecation",
     "-feature",
+    "-unchecked",
+    "-Xcheck-macros",
     "-Wunused:all",
-    "-Wnonunit-statement"
+    "-Wvalue-discard",
+    "-Wnonunit-statement",
   ),
-  Test / scalacOptions ~= (_.filterNot(_ == "-Wnonunit-statement")),
+  Test / scalacOptions ~= (_.filterNot(Set("-Wvalue-discard", "-Wnonunit-statement"))),
   credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials"),
 )
 
@@ -97,8 +101,7 @@ lazy val backend = project
   .in(file("backend"))
   .settings(commonSettings)
   .settings(
-    publish / skip        := true,
-    mimaPreviousArtifacts := Set.empty
+    publish / skip := true
   )
   .aggregate(
     logback,
@@ -184,6 +187,7 @@ lazy val `play-json` = project
   .settings(
     name := "logging4s-play-json",
     libraryDependencies += Dependencies.Json.playJson,
+    scalacOptions ~= (_.filterNot(_ == "-Xcheck-macros")),
   )
   .dependsOn(core)
 
@@ -263,8 +267,7 @@ val runtime = project
   .in(file("runtime"))
   .settings(commonSettings)
   .settings(
-    publish / skip        := true,
-    mimaPreviousArtifacts := Set.empty
+    publish / skip := true
   )
   .aggregate(
     zio,
@@ -277,8 +280,7 @@ lazy val json = project
   .in(file("json"))
   .settings(commonSettings)
   .settings(
-    publish / skip        := true,
-    mimaPreviousArtifacts := Set.empty
+    publish / skip := true
   )
   .aggregate(
     circe,
@@ -298,9 +300,8 @@ lazy val examples = project
   .in(file("examples"))
   .settings(commonSettings)
   .settings(
-    name                  := "logging4s-examples",
-    publish / skip        := true,
-    mimaPreviousArtifacts := Set.empty,
+    name           := "logging4s-examples",
+    publish / skip := true,
     libraryDependencies += Dependencies.Cats.catsEffect3,
   )
   .dependsOn(
@@ -316,9 +317,8 @@ lazy val benchmarks = project
   .enablePlugins(JmhPlugin)
   .settings(commonSettings)
   .settings(
-    name                  := "logging4s-benchmarks",
-    publish / skip        := true,
-    mimaPreviousArtifacts := Set.empty,
+    name           := "logging4s-benchmarks",
+    publish / skip := true,
     libraryDependencies ++= Dependencies.Json.jsoniter,
     libraryDependencies += Dependencies.Log4j2.log4jLayoutJsonTemplate,
   )
@@ -334,9 +334,8 @@ lazy val logging4s = project
   .in(file("."))
   .settings(commonSettings)
   .settings(
-    name                  := "logging4s",
-    publish / skip        := true,
-    mimaPreviousArtifacts := Set.empty,
+    name           := "logging4s",
+    publish / skip := true,
   )
   .aggregate(
     core,
