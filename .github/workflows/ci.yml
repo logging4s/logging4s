@@ -49,7 +49,7 @@ jobs:
         run: sbt testFull
 
       - name: Compile examples and benchmarks
-        run: sbt "examples / Compile / compile" "benchmarks / Compile / compile"
+        run: sbt "examples / Compile / compile; benchmarks / Compile / compile"
 
       - name: Binary compatibility
         run: sbt mimaReportBinaryIssues
