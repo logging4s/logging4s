@@ -7,22 +7,22 @@ import logging4s.core.{JsonString, Loggable, PlainString, ValueKey}
 
 trait DataInstances:
 
-  given NonEmptyListLoggable[T: Loggable]: Loggable[NonEmptyList[T]] =
+  given NonEmptyListLoggable: [T: Loggable] => Loggable[NonEmptyList[T]] =
     Loggable[List[T]].contramap(_.toList)
 
-  given NonEmptyVectorLoggable[T: Loggable]: Loggable[NonEmptyVector[T]] =
+  given NonEmptyVectorLoggable: [T: Loggable] => Loggable[NonEmptyVector[T]] =
     Loggable[Vector[T]].contramap(_.toVector)
 
-  given NonEmptySetLoggable[T: Loggable]: Loggable[NonEmptySet[T]] =
+  given NonEmptySetLoggable: [T: Loggable] => Loggable[NonEmptySet[T]] =
     Loggable[Set[T]].contramap(_.toSortedSet)
 
-  given NonEmptyMapLoggable[K: Loggable, V: Loggable]: Loggable[NonEmptyMap[K, V]] =
+  given NonEmptyMapLoggable: [K: Loggable, V: Loggable] => Loggable[NonEmptyMap[K, V]] =
     Loggable[Map[K, V]].contramap(_.toSortedMap)
 
-  given ChainLoggable[T: Loggable]: Loggable[Chain[T]] =
+  given ChainLoggable: [T: Loggable] => Loggable[Chain[T]] =
     Loggable[List[T]].contramap(_.toList)
 
-  given IorLoggable[A, B](using AL: Loggable[A], BL: Loggable[B], cfg: LoggableEncodingConfig): Loggable[Ior[A, B]] =
+  given IorLoggable: [A, B] => (AL: Loggable[A], BL: Loggable[B], cfg: LoggableEncodingConfig) => Loggable[Ior[A, B]] =
     new:
       override val key: ValueKey =
         ValueKey.combine(AL.key, BL.key)

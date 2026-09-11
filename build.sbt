@@ -8,7 +8,7 @@ lazy val commonSettings = Seq(
   organizationName       := "Logging4s",
   homepage               := Some(uri("https://logging4s.org/")),
   description            := "Structural logging for Scala 3 for any backend, runtime and json library",
-  version                := "3.0.0",
+  version                := "4.0.0",
   versionScheme          := Some("semver-spec"),
   scalaVersion           := Versions.scalaLTS,
   parallelExecution      := true,
@@ -141,8 +141,7 @@ lazy val kyo = project
   .in(file("runtime/kyo"))
   .settings(commonSettings)
   .settings(
-    name         := "logging4s-kyo",
-    scalaVersion := Versions.scalaLast,
+    name := "logging4s-kyo",
     libraryDependencies ++= Dependencies.Kyo.all,
   )
   .dependsOn(
@@ -154,8 +153,7 @@ lazy val rapid = project
   .in(file("runtime/rapid"))
   .settings(commonSettings)
   .settings(
-    name         := "logging4s-rapid",
-    scalaVersion := Versions.scalaLast,
+    name := "logging4s-rapid",
     libraryDependencies ++= Dependencies.Rapid.all,
   )
   .dependsOn(

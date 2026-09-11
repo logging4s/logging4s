@@ -3,10 +3,13 @@ package logging4s.slf4j
 import org.slf4j.Logger
 import org.slf4j.spi.LoggingEventBuilder
 
+import logging4s.core.*
 import logging4s.core.config.LoggableEncodingConfig
-import logging4s.core.{Delay, Level, LogMessage, Logging, LoggableValue, LoggingContext, Position}
 
-private[slf4j] class LoggingSlf4jImpl[F[*]: Delay](logger: Logger, context: LoggingContext = LoggingContext.empty)(using
+private[slf4j] class LoggingSlf4jImpl[F[*]: Delay](
+    logger: Logger,
+    context: LoggingContext = LoggingContext.empty,
+)(using
     cfg: LoggableEncodingConfig
 ) extends Logging[F]:
 

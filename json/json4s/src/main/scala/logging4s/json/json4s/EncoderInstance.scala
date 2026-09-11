@@ -7,5 +7,5 @@ import org.json4s.native.Serialization
 
 trait EncoderInstance:
 
-  given Json4sJsonEncoder[A](using Formats): JsonEncoder[A] =
+  given Json4sJsonEncoder: [A] => Formats => JsonEncoder[A] =
     a => JsonString(Serialization.write(a))

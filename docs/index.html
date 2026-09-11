@@ -103,7 +103,7 @@
     <p class="badges">
       <a href="https://github.com/logging4s/logging4s/actions/workflows/ci.yml"><img src="https://github.com/logging4s/logging4s/actions/workflows/ci.yml/badge.svg" alt="CI status" height="20"/></a>
       <a href="https://central.sonatype.com/search?q=logging4s"><img src="https://img.shields.io/maven-central/v/org.logging4s/logging4s-core_3?color=blue" alt="Maven Central version" height="20"/></a>
-      <a href="https://www.scala-lang.org/"><img src="https://img.shields.io/badge/Scala-3-blue" alt="Scala 3" height="20"/></a>
+      <a href="https://www.scala-lang.org/"><img src="https://img.shields.io/badge/Scala-3.9-blue" alt="Scala 3.9" height="20"/></a>
       <a href="https://github.com/logging4s/logging4s/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="Apache 2.0 license" height="20"/></a>
     </p>
     <nav class="links">
@@ -140,8 +140,8 @@
   <h2 id="start">Quick start</h2>
   <p>Pick a backend and an effect runtime (a JSON library is optional — <code>derives Loggable</code> needs none):</p>
   <pre><code>libraryDependencies ++= Seq(
-  "org.logging4s" %% "logging4s-cats"    % "3.0.0",
-  "org.logging4s" %% "logging4s-logback" % "3.0.0"
+  "org.logging4s" %% "logging4s-cats"    % "4.0.0",
+  "org.logging4s" %% "logging4s-logback" % "4.0.0"
 )</code></pre>
   <pre><code>import cats.effect.{IO, IOApp}
 
@@ -288,7 +288,8 @@ yield ()</code></pre>
   </p>
   <table>
     <tr><th>Field</th><th>Default</th><th>Effect</th></tr>
-    <tr><td><code>jsonTupleAsArray</code></td><td><code>true</code></td><td>tuple/Map/Ior JSON: <code>[1,"a"]</code> vs <code>{"int":1,"string":"a"}</code></td></tr>
+    <tr><td><code>jsonTupleAsArray</code></td><td><code>true</code></td><td>tuple/Ior JSON: <code>[1,"a"]</code> vs <code>{"int":1,"string":"a"}</code></td></tr>
+    <tr><td><code>mapAsObject</code></td><td><code>true</code></td><td><code>Map</code> JSON: <code>{"a":1}</code> vs <code>[["a",1]]</code> (the 3.x shape)</td></tr>
     <tr><td><code>keyNameStyle</code></td><td><code>SnakeCase</code></td><td>applied to every key: AsIs / Snake / Kebab / Camel / Pascal</td></tr>
     <tr><td><code>plainTupleStyle</code></td><td><code>AsScala</code></td><td>tuple plain form: <code>(1, a)</code> / <code>[1, a]</code> / <code>1, a</code> / <code>{1, a}</code></td></tr>
     <tr><td><code>plainValuesStyle</code></td><td><code>Arrow</code></td><td>value join: <code>k -> (v)</code> / <code>k=v</code> / <code>k: v</code> / <code>{k=v}</code></td></tr>
@@ -303,29 +304,29 @@ yield ()</code></pre>
 
   <h2 id="modules">Modules</h2>
   <p>Published for Scala 3 under <code>org.logging4s</code>:</p>
-  <pre><code>"org.logging4s" %% "logging4s-&lt;module&gt;" % "3.0.0"</code></pre>
+  <pre><code>"org.logging4s" %% "logging4s-&lt;module&gt;" % "4.0.0"</code></pre>
   <table>
     <tr><th>Kind</th><th>Module</th><th>Min. Scala</th><th>Notes</th></tr>
-    <tr><td>core</td><td><code>logging4s-core</code></td><td>3.3 LTS</td><td>type classes + <code>Logging</code>; no backend dependency</td></tr>
-    <tr><td rowspan="4">backend</td><td><code>logging4s-logback</code></td><td>3.3 LTS</td><td>logback + logstash-encoder; real nested JSON</td></tr>
-    <tr><td><code>logging4s-log4j2</code></td><td>3.3 LTS</td><td>Log4j2 API; values as a <code>MapMessage</code></td></tr>
-    <tr><td><code>logging4s-slf4j</code></td><td>3.3 LTS</td><td>bare slf4j-api 2.x; bring your own binding</td></tr>
-    <tr><td><code>logging4s-console</code></td><td>3.3 LTS</td><td>standalone JSON/plain to stdout; HOCON-configured</td></tr>
-    <tr><td rowspan="4">runtime</td><td><code>logging4s-cats</code></td><td>3.3 LTS</td><td>cats-effect 3; plain via <code>cats.Show</code></td></tr>
-    <tr><td><code>logging4s-zio</code></td><td>3.3 LTS</td><td>zio.Task; plain via <code>zio.prelude.Debug</code></td></tr>
-    <tr><td><code>logging4s-kyo</code></td><td><strong>3.8</strong></td><td>kyo.Sync; plain via <code>kyo.Render</code></td></tr>
-    <tr><td><code>logging4s-rapid</code></td><td><strong>3.8</strong></td><td>rapid.Task</td></tr>
-    <tr><td rowspan="11">json</td><td><code>logging4s-circe</code></td><td>3.3 LTS</td><td>io.circe.Encoder</td></tr>
-    <tr><td><code>logging4s-jsoniter</code></td><td>3.3 LTS</td><td>jsoniter-scala JsonValueCodec</td></tr>
-    <tr><td><code>logging4s-zio-json</code></td><td>3.3 LTS</td><td>zio-json JsonEncoder</td></tr>
-    <tr><td><code>logging4s-play-json</code></td><td>3.3 LTS</td><td>play-json Writes</td></tr>
-    <tr><td><code>logging4s-spray-json</code></td><td>3.3 LTS</td><td>spray-json JsonWriter</td></tr>
-    <tr><td><code>logging4s-json4s</code></td><td>3.3 LTS</td><td>json4s Formats</td></tr>
-    <tr><td><code>logging4s-argonaut</code></td><td>3.3 LTS</td><td>argonaut EncodeJson</td></tr>
-    <tr><td><code>logging4s-borer</code></td><td>3.3 LTS</td><td>borer Encoder</td></tr>
-    <tr><td><code>logging4s-upickle</code></td><td>3.3 LTS</td><td>upickle Writer</td></tr>
-    <tr><td><code>logging4s-weepickle</code></td><td>3.3 LTS</td><td>weepickle From</td></tr>
-    <tr><td><code>logging4s-fabric</code></td><td>3.3 LTS</td><td>fabric Json</td></tr>
+    <tr><td>core</td><td><code>logging4s-core</code></td><td>3.9 LTS</td><td>type classes + <code>Logging</code>; no backend dependency</td></tr>
+    <tr><td rowspan="4">backend</td><td><code>logging4s-logback</code></td><td>3.9 LTS</td><td>logback + logstash-encoder; real nested JSON</td></tr>
+    <tr><td><code>logging4s-log4j2</code></td><td>3.9 LTS</td><td>Log4j2 API; values as a <code>MapMessage</code></td></tr>
+    <tr><td><code>logging4s-slf4j</code></td><td>3.9 LTS</td><td>bare slf4j-api 2.x; bring your own binding</td></tr>
+    <tr><td><code>logging4s-console</code></td><td>3.9 LTS</td><td>standalone JSON/plain to stdout; HOCON-configured</td></tr>
+    <tr><td rowspan="4">runtime</td><td><code>logging4s-cats</code></td><td>3.9 LTS</td><td>cats-effect 3; plain via <code>cats.Show</code></td></tr>
+    <tr><td><code>logging4s-zio</code></td><td>3.9 LTS</td><td>zio.Task; plain via <code>zio.prelude.Debug</code></td></tr>
+    <tr><td><code>logging4s-kyo</code></td><td>3.9 LTS</td><td>kyo.Sync; plain via <code>kyo.Render</code></td></tr>
+    <tr><td><code>logging4s-rapid</code></td><td>3.9 LTS</td><td>rapid.Task</td></tr>
+    <tr><td rowspan="11">json</td><td><code>logging4s-circe</code></td><td>3.9 LTS</td><td>io.circe.Encoder</td></tr>
+    <tr><td><code>logging4s-jsoniter</code></td><td>3.9 LTS</td><td>jsoniter-scala JsonValueCodec</td></tr>
+    <tr><td><code>logging4s-zio-json</code></td><td>3.9 LTS</td><td>zio-json JsonEncoder</td></tr>
+    <tr><td><code>logging4s-play-json</code></td><td>3.9 LTS</td><td>play-json Writes</td></tr>
+    <tr><td><code>logging4s-spray-json</code></td><td>3.9 LTS</td><td>spray-json JsonWriter</td></tr>
+    <tr><td><code>logging4s-json4s</code></td><td>3.9 LTS</td><td>json4s Formats</td></tr>
+    <tr><td><code>logging4s-argonaut</code></td><td>3.9 LTS</td><td>argonaut EncodeJson</td></tr>
+    <tr><td><code>logging4s-borer</code></td><td>3.9 LTS</td><td>borer Encoder</td></tr>
+    <tr><td><code>logging4s-upickle</code></td><td>3.9 LTS</td><td>upickle Writer</td></tr>
+    <tr><td><code>logging4s-weepickle</code></td><td>3.9 LTS</td><td>weepickle From</td></tr>
+    <tr><td><code>logging4s-fabric</code></td><td>3.9 LTS</td><td>fabric Json</td></tr>
   </table>
   <p class="muted">
     Each integration module exposes its <code>given</code>s as a named trait plus companion object, so you can also mix
@@ -334,18 +335,16 @@ yield ()</code></pre>
 
   <h3>Compatibility</h3>
   <p>
-    <code>Scala 3</code> TASTy is backward but not forward compatible, so the two modules built on <code>3.8</code>
-    above <strong>cannot be consumed from a Scala <code>3.3 LTS</code> project</strong>, even though every other module
-    can. They are pinned there because kyo and rapid themselves require it — nothing in logging4s does. Everything
-    else, <code>logging4s-core</code> included, stays on <code>3.3 LTS</code> and is usable from both.
+    Every module is built on the <code>3.9 LTS</code> release. <code>Scala 3</code> TASTy is backward but not forward
+    compatible, so <strong>4.x cannot be consumed from a <code>3.3 LTS</code> project</strong> — <code>3.0.x</code> is
+    the line to stay on until your application moves to <code>3.9</code>.
   </p>
   <p>
-    In practice: if your application is on <code>3.3 LTS</code>, pick any backend and any JSON module freely, and use
-    the <code>cats</code> or <code>zio</code> runtime. Reaching for <code>logging4s-kyo</code> or
-    <code>logging4s-rapid</code> means moving the whole application to <code>3.8</code>.
+    In exchange, the split that 3.x had is gone: <code>logging4s-kyo</code> and <code>logging4s-rapid</code> used to be
+    pinned to a newer Scala than everything else, and now sit on the same release as <code>core</code>.
   </p>
   <p class="muted">
-    From 3.0.0 onward, binary compatibility within a major version is checked by
+    Within a major version, binary compatibility is checked by
     <a href="https://github.com/lightbend/mima">MiMa</a> on every build, and
     <code>versionScheme := "semver-spec"</code> describes what the artifacts promise.
   </p>
@@ -401,6 +400,33 @@ yield ()</code></pre>
     allocations outright — so read the orders of magnitude, not the nanoseconds.
   </p>
   <h2 id="migration">Migration</h2>
+  <h3>From 3.x to 4.0</h3>
+  <p>
+    4.0 breaks in exactly two places: the Scala version the artifacts are built on, and the way <code>Map</code>
+    renders. No call site, type class or <code>given</code> import changes.
+  </p>
+  <pre><code>- "org.logging4s" %% "logging4s-cats" % "3.0.0"
++ "org.logging4s" %% "logging4s-cats" % "4.0.0"</code></pre>
+  <ul>
+    <li><strong>Your application must be on Scala <code>3.9</code></strong> — every module moved from
+      <code>3.3 LTS</code> to the new <code>3.9 LTS</code>, and TASTy is not forward compatible. Stay on
+      <code>3.0.x</code> until you move.</li>
+    <li><strong><code>Map</code> renders as a JSON object</strong> — <code>{"a":1}</code> instead of the old
+      <code>[["a",1]]</code>, keyed by the plain form of each key; the plain form follows
+      <code>plainValuesStyle</code>. Restore the old shape with
+      <code>LoggableEncodingConfig(mapAsObject = false)</code>.</li>
+    <li><strong>Your own <code>given</code> definitions need Scala 3's new syntax</strong> —
+      <code>given L: [A] =&gt; (l: Loggable[A]) =&gt; Loggable[Wrapper[A]]</code>. A Scala change rather than a
+      logging4s one, but the first thing you hit on <code>3.9</code>.</li>
+  </ul>
+  <p>Fixed in 4.0:</p>
+  <ul>
+    <li><strong>The interpolator rendered eagerly</strong> — <code>info"…"</code> built both the JSON and the plain
+      form of every value up front, bypassing the lazy <code>LoggableValue</code> added in 3.0.</li>
+    <li><strong>Field names were not JSON-escaped</strong> — a key containing a quote produced invalid JSON.</li>
+    <li><strong>A hole in the middle of a message left a double space.</strong></li>
+  </ul>
+
   <h3>From 2.x to 3.0</h3>
   <p>
     3.0 is a breaking release. Everyday call sites — <code>Logging.create</code>, the per-level methods,

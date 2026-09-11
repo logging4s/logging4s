@@ -62,7 +62,7 @@ object JsonString:
   def array(elements: JsonString*): JsonString = elements.mkString("[", ",", "]")
 
   def obj(fields: (String, JsonString)*): JsonString =
-    fields.map((key, value) => s"\"$key\":${value.value}").mkString("{", ",", "}")
+    fields.map((key, value) => s"${quoted(key).value}:${value.value}").mkString("{", ",", "}")
 
   extension (v: JsonString) inline def value: String = v
 

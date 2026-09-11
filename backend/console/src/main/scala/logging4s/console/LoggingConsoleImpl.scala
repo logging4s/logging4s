@@ -2,8 +2,8 @@ package logging4s.console
 
 import java.io.PrintStream
 
-import logging4s.core.{Delay, Level, Logging, LoggableValue, LoggingContext, Position}
 import logging4s.core.config.LoggableEncodingConfig
+import logging4s.core.{Delay, Level, Logging, LoggableValue, LoggingContext, Position}
 
 private[console] class LoggingConsoleImpl[F[*]: Delay](name: String, context: LoggingContext = LoggingContext.empty)(using
     console: ConsoleConfig,

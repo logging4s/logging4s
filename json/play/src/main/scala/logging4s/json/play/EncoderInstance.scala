@@ -6,5 +6,5 @@ import logging4s.core.{JsonEncoder, JsonString}
 
 trait EncoderInstance:
 
-  given PlayJsonEncoder[A](using W: Writes[A]): JsonEncoder[A] =
+  given PlayJsonEncoder: [A] => (W: Writes[A]) => JsonEncoder[A] =
     a => JsonString(W.writes(a).toString)

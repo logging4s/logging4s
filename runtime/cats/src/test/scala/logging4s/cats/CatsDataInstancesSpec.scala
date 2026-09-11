@@ -34,8 +34,8 @@ class CatsDataInstancesSpec extends AnyWordSpec, Matchers:
     "right summon NonEmptyMap instances" in:
       val nem = NonEmptyMap.of("a" -> 1)
 
-      Loggable[NonEmptyMap[String, Int]].plain(nem) shouldEqual "[(a, 1)]"
-      Loggable[NonEmptyMap[String, Int]].json(nem) shouldEqual """[["a",1]]"""
+      Loggable[NonEmptyMap[String, Int]].plain(nem) shouldEqual "a -> (1)"
+      Loggable[NonEmptyMap[String, Int]].json(nem) shouldEqual """{"a":1}"""
 
     "right summon Chain instances" in:
       val chain = Chain(1, 2, 3)

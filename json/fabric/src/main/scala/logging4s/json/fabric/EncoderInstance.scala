@@ -9,5 +9,5 @@ import fabric.rw.given
 
 trait EncoderInstance:
 
-  given FabricJsonEncoder[A: RW]: JsonEncoder[A] =
+  given FabricJsonEncoder: [A: RW] => JsonEncoder[A] =
     a => JsonString(JsonFormatter.Compact(a.asJson))

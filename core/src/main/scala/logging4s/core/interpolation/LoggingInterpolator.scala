@@ -6,29 +6,39 @@ import logging4s.core.{Level, Loggable, LoggableValue, Logging, ValueKey}
 
 private[core] object LoggingInterpolator:
 
-  def infoImpl[F[*]: Type](sc: Expr[StringContext], args: Expr[Seq[Any]], logging: Expr[Logging[F]])(using
-      Quotes
-  ): Expr[F[Unit]] =
+  def infoImpl[F[*]: Type](
+      sc: Expr[StringContext],
+      args: Expr[Seq[Any]],
+      logging: Expr[Logging[F]],
+  )(using Quotes): Expr[F[Unit]] =
     build(sc, args, logging, "info")
 
-  def warnImpl[F[*]: Type](sc: Expr[StringContext], args: Expr[Seq[Any]], logging: Expr[Logging[F]])(using
-      Quotes
-  ): Expr[F[Unit]] =
+  def warnImpl[F[*]: Type](
+      sc: Expr[StringContext],
+      args: Expr[Seq[Any]],
+      logging: Expr[Logging[F]],
+  )(using Quotes): Expr[F[Unit]] =
     build(sc, args, logging, "warn")
 
-  def errorImpl[F[*]: Type](sc: Expr[StringContext], args: Expr[Seq[Any]], logging: Expr[Logging[F]])(using
-      Quotes
-  ): Expr[F[Unit]] =
+  def errorImpl[F[*]: Type](
+      sc: Expr[StringContext],
+      args: Expr[Seq[Any]],
+      logging: Expr[Logging[F]],
+  )(using Quotes): Expr[F[Unit]] =
     build(sc, args, logging, "error")
 
-  def debugImpl[F[*]: Type](sc: Expr[StringContext], args: Expr[Seq[Any]], logging: Expr[Logging[F]])(using
-      Quotes
-  ): Expr[F[Unit]] =
+  def debugImpl[F[*]: Type](
+      sc: Expr[StringContext],
+      args: Expr[Seq[Any]],
+      logging: Expr[Logging[F]],
+  )(using Quotes): Expr[F[Unit]] =
     build(sc, args, logging, "debug")
 
-  def traceImpl[F[*]: Type](sc: Expr[StringContext], args: Expr[Seq[Any]], logging: Expr[Logging[F]])(using
-      Quotes
-  ): Expr[F[Unit]] =
+  def traceImpl[F[*]: Type](
+      sc: Expr[StringContext],
+      args: Expr[Seq[Any]],
+      logging: Expr[Logging[F]],
+  )(using Quotes): Expr[F[Unit]] =
     build(sc, args, logging, "trace")
 
   private def build[F[*]: Type](
@@ -43,7 +53,7 @@ private[core] object LoggingInterpolator:
       case '{ StringContext(${ Varargs(rawParts) }*) } => rawParts.map(_.valueOrAbort)
       case _                                           => report.errorAndAbort("the logging interpolator requires a string literal")
 
-    val message = Expr(parts.mkString.replaceAll("[\\s:]+$", ""))
+    val message = Expr(joinParts(parts))
 
     val argExprs = args match
       case Varargs(exprs) => exprs
@@ -65,6 +75,16 @@ private[core] object LoggingInterpolator:
       val logger = $logging
       if logger.enabled($levelExpr) then logger.emit($levelExpr, $message, None, $values)(using $position) else logger.unit
     }
+
+  private def joinParts(parts: Seq[String]): String =
+    parts
+      .foldLeft(new StringBuilder) { (acc, part) =>
+        if acc.nonEmpty && acc.last.isWhitespace && part.headOption.exists(_.isWhitespace)
+        then acc.append(part.stripLeading)
+        else acc.append(part)
+      }
+      .toString
+      .replaceAll("[\\s:]+$", "")
 
   private def toLoggableValue(argExpr: Expr[Any])(using Quotes): Expr[LoggableValue] =
     import quotes.reflect.*
@@ -90,8 +110,8 @@ private[core] object LoggingInterpolator:
               nameOf(term) match
                 case Some(name) =>
                   val key = Expr(name)
-                  '{ val a = $arg; val l = $loggable; LoggableValue(ValueKey($key), l.plain(a), l.json(a)) }
+                  '{ val l = $loggable; LoggableValue.deferred(ValueKey($key), $arg, l) }
                 case None       =>
-                  '{ val a = $arg; val l = $loggable; LoggableValue(l.key, l.plain(a), l.json(a)) }
+                  '{ val l = $loggable; LoggableValue.deferred(l.key, $arg, l) }
             case None           =>
               report.errorAndAbort(s"no given Loggable[${tpe.show}] for the interpolated value")

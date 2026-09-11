@@ -7,7 +7,7 @@ import logging4s.core.{Delay, Logging, LoggingFactory, LoggingContext}
 
 trait LogbackInstances:
 
-  given LogbackLoggingFactory(using LoggableEncodingConfig): LoggingFactory with
+  given LogbackLoggingFactory: LoggableEncodingConfig => LoggingFactory:
     def create[F[*]: Delay](name: String, context: LoggingContext): F[Logging[F]] =
       Delay[F].delay(LoggingLogbackImpl(LoggerFactory.getLogger(name), context))
 

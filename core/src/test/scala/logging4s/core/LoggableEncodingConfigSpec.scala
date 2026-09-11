@@ -31,10 +31,21 @@ class LoggableEncodingConfigSpec extends AnyWordSpec, Matchers:
 
       Loggable[(Int, FiniteDuration)].json((1, 5.seconds)) shouldEqual """{"int":1,"time_ms":5000}"""
 
-    "propagate into Map, which renders as an array of tuples" in:
-      given LoggableEncodingConfig = LoggableEncodingConfig(plainTupleStyle = PlainTupleStyle.Braces)
+    "propagate into Map once it falls back to an array of tuples" in:
+      given LoggableEncodingConfig = LoggableEncodingConfig(plainTupleStyle = PlainTupleStyle.Braces, mapAsObject = false)
 
       Loggable[Map[String, Int]].plain(Map("a" -> 1)) shouldEqual "[{a, 1}]"
+
+  "mapAsObject" must:
+    "restore the pre-4.0 array of pairs when switched off" in:
+      given LoggableEncodingConfig = LoggableEncodingConfig(mapAsObject = false)
+
+      Loggable[Map[String, Int]].json(Map("a" -> 1)) shouldEqual """[["a",1]]"""
+
+    "follow plainValuesStyle when rendering entries in plain form" in:
+      given LoggableEncodingConfig = LoggableEncodingConfig(plainValuesStyle = PlainValuesStyle.Logfmt)
+
+      Loggable[Map[String, Int]].plain(Map("a" -> 1)) shouldEqual "a=1"
 
   "KeyNameStyle via LoggableValue.normalizeKeys (aggregation side)" must:
     "reformat every key with the configured style" in:

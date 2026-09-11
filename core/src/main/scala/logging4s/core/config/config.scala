@@ -91,6 +91,7 @@ final case class LoggableEncodingConfig(
     plainTupleStyle: PlainTupleStyle = PlainTupleStyle.AsScala,
     plainValuesStyle: PlainValuesStyle = PlainValuesStyle.Arrow,
     includeSourcePosition: Boolean = true,
+    mapAsObject: Boolean = true,
 )
 
 object LoggableEncodingConfig:

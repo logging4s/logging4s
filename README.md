@@ -10,7 +10,7 @@ event as structured data; the message string carries a human-readable rendering 
 
 [![CI](https://github.com/logging4s/logging4s/actions/workflows/ci.yml/badge.svg)](https://github.com/logging4s/logging4s/actions/workflows/ci.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/org.logging4s/logging4s-core_3?color=blue)](https://central.sonatype.com/search?q=logging4s)
-[![Scala 3](https://img.shields.io/badge/Scala-3-blue)](https://www.scala-lang.org/)
+[![Scala 3.9](https://img.shields.io/badge/Scala-3.9-blue)](https://www.scala-lang.org/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 The library is a backend-agnostic `core` plus thin integration modules. The logging backend (logback / log4j2 / slf4j),
@@ -49,8 +49,8 @@ Pick a backend and an effect runtime (a JSON library is optional — `derives Lo
 
 ```scala
 libraryDependencies ++= Seq(
-  "org.logging4s" %% "logging4s-cats"    % "3.0.0",
-  "org.logging4s" %% "logging4s-logback" % "3.0.0"
+  "org.logging4s" %% "logging4s-cats"    % "4.0.0",
+  "org.logging4s" %% "logging4s-logback" % "4.0.0"
 )
 ```
 
@@ -324,14 +324,16 @@ given LoggableEncodingConfig =
 
 | Field | Default | Effect |
 | --- | --- | --- |
-| `jsonTupleAsArray` | `true` | tuple/`Map`/`Ior` JSON: `true` → `[1,"a"]`, `false` → `{"int":1,"string":"a"}` |
+| `jsonTupleAsArray` | `true` | tuple/`Ior` JSON: `true` → `[1,"a"]`, `false` → `{"int":1,"string":"a"}` |
+| `mapAsObject` | `true` | `Map` JSON: `true` → `{"a":1}`, `false` → `[["a",1]]` (the 3.x shape) |
 | `keyNameStyle` | `SnakeCase` | applied to every key: `AsIs` / `SnakeCase` / `KebabCase` / `CamelCase` / `PascalCase` |
 | `plainTupleStyle` | `AsScala` | tuple plain form: `(1, a)` / `[1, a]` / `1, a` / `{1, a}` |
 | `plainValuesStyle` | `Arrow` | value-list join: `Arrow` `k -> (v)`, `Logfmt` `k=v`, `Colon` `k: v`, `CurlyMap` `{k=v}`, … |
 | `includeSourcePosition` | `true` | attach the call site as a `source` field (`"OrderService.scala:42"`) |
 
-`keyNameStyle` and `plainValuesStyle` are applied by the backend at aggregation time; `jsonTupleAsArray` and
-`plainTupleStyle` are baked into compound `Loggable`s when they are summoned. A single top-level `given` covers both.
+`keyNameStyle` and `plainValuesStyle` are applied by the backend at aggregation time; `jsonTupleAsArray`,
+`plainTupleStyle` and `mapAsObject` are baked into compound `Loggable`s when they are summoned. A single top-level
+`given` covers both.
 
 Default keys: scalars key by type name (`Loggable[Int]` → `int`), date/time types use `time` (`LocalDate` uses `date`),
 `FiniteDuration` and `java.time.Duration` use `time_ms`, `Throwable` uses `error`, collections append a plural suffix
@@ -342,43 +344,40 @@ Default keys: scalars key by type name (`Loggable[Int]` → `int`), date/time ty
 Published for Scala 3 under `org.logging4s`:
 
 ```scala
-"org.logging4s" %% "logging4s-<module>" % "3.0.0"
+"org.logging4s" %% "logging4s-<module>" % "4.0.0"
 ```
 
 | | Module | Min. Scala | Notes |
 | --- | --- | --- | --- |
-| core | `logging4s-core` | 3.3 LTS | type classes + `Logging`; no backend dependency |
-| backend | `logging4s-logback` | 3.3 LTS | slf4j + logback + logstash-encoder; real nested JSON |
-| | `logging4s-log4j2` | 3.3 LTS | Log4j2 API; values as a `MapMessage` |
-| | `logging4s-slf4j` | 3.3 LTS | bare slf4j-api 2.x `addKeyValue`; bring your own binding |
-| | `logging4s-console` | 3.3 LTS | standalone JSON/plain to stdout/stderr; HOCON-configured; no logging framework needed |
-| runtime | `logging4s-cats` | 3.3 LTS | `cats-effect 3`; plain via `cats.Show` |
-| | `logging4s-zio` | 3.3 LTS | `zio.Task`; plain via `zio.prelude.Debug` |
-| | `logging4s-kyo` | **3.8** | `kyo.Sync`; plain via `kyo.Render` |
-| | `logging4s-rapid` | **3.8** | `rapid.Task` |
-| json | `logging4s-circe` | 3.3 LTS | `io.circe.Encoder` |
-| | `logging4s-jsoniter` | 3.3 LTS | `jsoniter-scala JsonValueCodec` |
-| | `logging4s-zio-json` | 3.3 LTS | `zio-json JsonEncoder` |
-| | `logging4s-play-json` | 3.3 LTS | `play-json Writes` |
-| | `logging4s-spray-json` | 3.3 LTS | `spray-json JsonWriter` |
-| | `logging4s-json4s` | 3.3 LTS | `json4s Formats` |
-| | `logging4s-argonaut` | 3.3 LTS | `argonaut EncodeJson` |
-| | `logging4s-borer` | 3.3 LTS | `borer Encoder` |
-| | `logging4s-upickle` | 3.3 LTS | `upickle Writer` |
-| | `logging4s-weepickle` | 3.3 LTS | `weepickle From` |
-| | `logging4s-fabric` | 3.3 LTS | `fabric Json` |
+| core | `logging4s-core` | 3.9 LTS | type classes + `Logging`; no backend dependency |
+| backend | `logging4s-logback` | 3.9 LTS | slf4j + logback + logstash-encoder; real nested JSON |
+| | `logging4s-log4j2` | 3.9 LTS | Log4j2 API; values as a `MapMessage` |
+| | `logging4s-slf4j` | 3.9 LTS | bare slf4j-api 2.x `addKeyValue`; bring your own binding |
+| | `logging4s-console` | 3.9 LTS | standalone JSON/plain to stdout/stderr; HOCON-configured; no logging framework needed |
+| runtime | `logging4s-cats` | 3.9 LTS | `cats-effect 3`; plain via `cats.Show` |
+| | `logging4s-zio` | 3.9 LTS | `zio.Task`; plain via `zio.prelude.Debug` |
+| | `logging4s-kyo` | 3.9 LTS | `kyo.Sync`; plain via `kyo.Render` |
+| | `logging4s-rapid` | 3.9 LTS | `rapid.Task` |
+| json | `logging4s-circe` | 3.9 LTS | `io.circe.Encoder` |
+| | `logging4s-jsoniter` | 3.9 LTS | `jsoniter-scala JsonValueCodec` |
+| | `logging4s-zio-json` | 3.9 LTS | `zio-json JsonEncoder` |
+| | `logging4s-play-json` | 3.9 LTS | `play-json Writes` |
+| | `logging4s-spray-json` | 3.9 LTS | `spray-json JsonWriter` |
+| | `logging4s-json4s` | 3.9 LTS | `json4s Formats` |
+| | `logging4s-argonaut` | 3.9 LTS | `argonaut EncodeJson` |
+| | `logging4s-borer` | 3.9 LTS | `borer Encoder` |
+| | `logging4s-upickle` | 3.9 LTS | `upickle Writer` |
+| | `logging4s-weepickle` | 3.9 LTS | `weepickle From` |
+| | `logging4s-fabric` | 3.9 LTS | `fabric Json` |
 
 ### Compatibility
 
-`Scala 3` TASTy is backward but not forward compatible, so the two modules built on `3.8` above **cannot be consumed
-from a Scala `3.3 LTS` project**, even though every other module can. They are pinned there because kyo and rapid
-themselves require it — nothing in logging4s does. Everything else, `logging4s-core` included, stays on `3.3 LTS` and
-is usable from both.
+Every module is built on the `3.9 LTS` release. `Scala 3` TASTy is backward but not forward compatible, so **4.x
+cannot be consumed from a `3.3 LTS` project** — `3.0.x` is the line to stay on until your application moves to `3.9`.
+In exchange, the split that 3.x had is gone: `logging4s-kyo` and `logging4s-rapid` used to be pinned to a newer Scala
+than everything else, and now sit on the same release as `core`.
 
-In practice: if your application is on `3.3 LTS`, pick any backend and any JSON module freely, and use the `cats` or
-`zio` runtime. Reaching for `logging4s-kyo` or `logging4s-rapid` means moving the whole application to `3.8`.
-
-From 3.0.0 onward, binary compatibility within a major version is checked by
+Within a major version, binary compatibility is checked by
 [MiMa](https://github.com/lightbend/mima) on every build, and `versionScheme := "semver-spec"` describes what the
 artifacts promise.
 
@@ -456,6 +455,42 @@ when the level is off (another ~2×). With the level *on*, the guard costs nothi
 > the ordering are the signal; the enabled rows are ordinary measured work.
 
 ## Migration
+
+### From 3.x to 4.0
+
+4.0 breaks in exactly two places: the Scala version the artifacts are built on, and the way `Map` renders. No call
+site, type class or `given` import changes.
+
+**1. Your application must be on Scala `3.9`.** Every module moved from `3.3 LTS` to the new `3.9 LTS`, and TASTy is
+not forward compatible — a `3.3` application cannot read these artifacts at all. Stay on `3.0.x` until you move.
+
+```diff
+- "org.logging4s" %% "logging4s-cats" % "3.0.0"
++ "org.logging4s" %% "logging4s-cats" % "4.0.0"
+```
+
+**2. `Map` renders as a JSON object.** `Map("a" -> 1)` used to render as `[["a",1]]`, an array of pairs that is
+awkward to query; it now renders as `{"a":1}`, keyed by the plain form of each key. The plain form follows
+`plainValuesStyle` (`a -> (1)`) rather than the tuple style. If a dashboard depends on the old shape, set
+`LoggableEncodingConfig(mapAsObject = false)`.
+
+**3. Your own `given` definitions need Scala 3's new syntax.** This is a Scala change rather than a logging4s one, but
+it is what you hit first on `3.9`:
+
+```diff
+- given MyLoggable[A](using L: Loggable[A]): Loggable[Wrapper[A]] = ...
++ given MyLoggable: [A] => (L: Loggable[A]) => Loggable[Wrapper[A]] = ...
+```
+
+### Fixed in 4.0
+
+- **The interpolator rendered eagerly.** `info"..."` built both the JSON and the plain form of every value up front.
+  3.0 made `LoggableValue` lazy, but the interpolator — the main call path — did not use it. A backend that reads only
+  one of the two no longer pays for the other.
+- **Field names were not JSON-escaped.** A key containing a quote (from `rename`, or a `Map` key) produced invalid
+  JSON. Derived instances escape their field names once, when the instance is built, so this costs nothing at log time.
+- **A hole in the middle of a message left a double space.** `info"created $user with $n"` produced `created  with`;
+  the gap is now collapsed.
 
 ### From 2.x to 3.0
 

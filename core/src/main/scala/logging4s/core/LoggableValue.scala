@@ -29,9 +29,9 @@ object LoggableValue:
     then values
     else values.map(value => value.withKey(ValueKey(cfg.keyNameStyle.format(value.key.value))))
 
-  given [T](using L: Loggable[T]): Conversion[T, LoggableValue] = v => deferred(L.key, v, L)
+  given [T] => (L: Loggable[T]) => Conversion[T, LoggableValue] = v => deferred(L.key, v, L)
 
-  given [T, C[*]](using L: Loggable[C[T]]): Conversion[C[T], LoggableValue] = v => deferred(L.key, v, L)
+  given [T, C[*]] => (L: Loggable[C[T]]) => Conversion[C[T], LoggableValue] = v => deferred(L.key, v, L)
 
   def deduplicateKeys(values: Seq[LoggableValue]): Seq[LoggableValue] =
     val counts = values.groupBy(_.key).view.mapValues(_.size).toMap

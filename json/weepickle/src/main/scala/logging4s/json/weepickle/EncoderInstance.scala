@@ -7,5 +7,5 @@ import logging4s.core.{JsonEncoder, JsonString}
 
 trait EncoderInstance:
 
-  given WeepickleJsonEncoder[A: From]: JsonEncoder[A] =
+  given WeepickleJsonEncoder: [A: From] => JsonEncoder[A] =
     a => JsonString(FromScala(a).transform(ToJson.string))

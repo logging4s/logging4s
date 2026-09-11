@@ -20,3 +20,7 @@ class JsonStringSpec extends AnyWordSpec, Matchers:
 
     "escape control characters as \\uXXXX" in:
       JsonString.quoted("\u0001\u001f").value shouldEqual "\"\\u0001\\u001f\""
+
+  "JsonString.obj" must:
+    "quote field names so a renamed key cannot break out of the object" in:
+      JsonString.obj("a\"b" -> JsonString("1")).value shouldEqual """{"a\"b":1}"""

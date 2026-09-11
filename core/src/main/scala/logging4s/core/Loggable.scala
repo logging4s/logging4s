@@ -1,7 +1,7 @@
 package logging4s.core
 
 import java.util.UUID
-import java.time.{Duration as JavaDuration, Instant, LocalDate, LocalDateTime, LocalTime, OffsetDateTime, ZonedDateTime}
+import java.time.{Duration as JavaDuration, *}
 
 import scala.deriving.Mirror
 import scala.concurrent.duration.FiniteDuration
@@ -143,93 +143,88 @@ object Loggable extends LoggableLowPriority:
       override def plain(u: Unit): PlainString = PlainString("")
       override def json(u: Unit): JsonString   = JsonString.Null
 
-  given LoggableOption[T](using L: Loggable[T]): Loggable[Option[T]] =
+  given LoggableOption: [T] => (L: Loggable[T]) => Loggable[Option[T]] =
     new:
       override val key: ValueKey                    = L.key
       override def plain(t: Option[T]): PlainString = t.fold(PlainString(""))(L.plain)
       override def json(t: Option[T]): JsonString   = t.fold(JsonString.Null)(L.json)
 
-  given LoggableEither[A, B](using AL: Loggable[A], BL: Loggable[B]): Loggable[Either[A, B]] =
+  given LoggableEither: [A, B] => (AL: Loggable[A], BL: Loggable[B]) => Loggable[Either[A, B]] =
     new:
       override val key: ValueKey                       = ValueKey.combine(AL.key, BL.key)
       override def plain(e: Either[A, B]): PlainString = e.fold(AL.plain, BL.plain)
       override def json(e: Either[A, B]): JsonString   = e.fold(AL.json, BL.json)
 
-  given LoggableTuple2[A, B](using
-      Loggable[A],
-      Loggable[B],
-      LoggableEncodingConfig,
-  ): Loggable[(A, B)] =
+  given LoggableTuple2: [A, B] => (Loggable[A], Loggable[B], LoggableEncodingConfig) => Loggable[(A, B)] =
     macros.deriveTuple
 
-  given LoggableTuple3[A, B, C](using
-      Loggable[A],
-      Loggable[B],
-      Loggable[C],
-      LoggableEncodingConfig,
-  ): Loggable[(A, B, C)] =
+  given LoggableTuple3: [A, B, C] => (Loggable[A], Loggable[B], Loggable[C], LoggableEncodingConfig) => Loggable[(A, B, C)] =
     macros.deriveTuple
 
-  given LoggableTuple4[A, B, C, D](using
-      Loggable[A],
-      Loggable[B],
-      Loggable[C],
-      Loggable[D],
-      LoggableEncodingConfig,
-  ): Loggable[(A, B, C, D)] = macros.deriveTuple
+  given LoggableTuple4: [A, B, C, D] => (Loggable[A], Loggable[B], Loggable[C], Loggable[D], LoggableEncodingConfig) => Loggable[(A, B, C, D)] =
+    macros.deriveTuple
 
-  given LoggableTuple5[A, B, C, D, E](using
+  given LoggableTuple5: [A, B, C, D, E] => (
       Loggable[A],
       Loggable[B],
       Loggable[C],
       Loggable[D],
       Loggable[E],
       LoggableEncodingConfig,
-  ): Loggable[(A, B, C, D, E)] = macros.deriveTuple
+  ) => Loggable[(A, B, C, D, E)] =
+    macros.deriveTuple
 
-  given LoggableList[T](using L: Loggable[T]): Loggable[List[T]] =
+  given LoggableList: [T] => (L: Loggable[T]) => Loggable[List[T]] =
     new:
       override val key: ValueKey                  = L.key.pluralized
       override def plain(a: List[T]): PlainString = PlainString.array(a.map(L.plain)*)
       override def json(a: List[T]): JsonString   = JsonString.array(a.map(L.json)*)
 
-  given LoggableVector[T](using L: Loggable[T]): Loggable[Vector[T]] =
+  given LoggableVector: [T] => (L: Loggable[T]) => Loggable[Vector[T]] =
     new:
       override val key: ValueKey                    = L.key.pluralized
       override def plain(a: Vector[T]): PlainString = PlainString.array(a.map(L.plain)*)
       override def json(a: Vector[T]): JsonString   = JsonString.array(a.map(L.json)*)
 
-  given LoggableSet[T](using L: Loggable[T]): Loggable[Set[T]] =
+  given LoggableSet: [T] => (L: Loggable[T]) => Loggable[Set[T]] =
     new:
       override val key: ValueKey                 = L.key.pluralized
       override def plain(a: Set[T]): PlainString = PlainString.array(a.toSeq.map(L.plain).sortBy(_.value)*)
       override def json(a: Set[T]): JsonString   = JsonString.array(a.toSeq.map(L.json).sortBy(_.value)*)
 
-  given LoggableArray[T](using L: Loggable[T]): Loggable[Array[T]] =
+  given LoggableArray: [T] => (L: Loggable[T]) => Loggable[Array[T]] =
     new:
       override val key: ValueKey                   = L.key.pluralized
       override def plain(a: Array[T]): PlainString = PlainString.array(a.toSeq.map(L.plain)*)
       override def json(a: Array[T]): JsonString   = JsonString.array(a.toSeq.map(L.json)*)
 
-  given LoggableSeq[T](using L: Loggable[T]): Loggable[Seq[T]] =
+  given LoggableSeq: [T] => (L: Loggable[T]) => Loggable[Seq[T]] =
     new:
       override val key: ValueKey                 = L.key.pluralized
       override def plain(a: Seq[T]): PlainString = PlainString.array(a.map(L.plain)*)
       override def json(a: Seq[T]): JsonString   = JsonString.array(a.map(L.json)*)
 
-  given LoggableMap[K, V](using KL: Loggable[K], VL: Loggable[V], cfg: LoggableEncodingConfig): Loggable[Map[K, V]] =
+  given LoggableMap: [K, V] => (KL: Loggable[K], VL: Loggable[V], cfg: LoggableEncodingConfig) => Loggable[Map[K, V]] =
     new:
       private val entry: Loggable[(K, V)] = Loggable[(K, V)]
 
-      override val key: ValueKey                    = entry.key.pluralized
-      override def plain(a: Map[K, V]): PlainString = PlainString.array(a.toSeq.map(entry.plain)*)
-      override def json(a: Map[K, V]): JsonString   = JsonString.array(a.toSeq.map(entry.json)*)
+      override val key: ValueKey = entry.key.pluralized
+
+      override def plain(a: Map[K, V]): PlainString =
+        if cfg.mapAsObject
+        then PlainString(cfg.plainValuesStyle.renderFields(a.toSeq.map((k, v) => KL.plain(k).value -> VL.plain(v).value)))
+        else PlainString.array(a.toSeq.map(entry.plain)*)
+
+      override def json(a: Map[K, V]): JsonString =
+        if cfg.mapAsObject
+        then JsonString.obj(a.toSeq.map((k, v) => KL.plain(k).value -> VL.json(v))*)
+        else JsonString.array(a.toSeq.map(entry.json)*)
 
 private[core] trait LoggableLowPriority:
 
-  given LoggableThrowable[E <: Throwable]: Loggable[E] = Loggable.anyThrowable.asInstanceOf[Loggable[E]]
+  given LoggableThrowable: [E <: Throwable] => Loggable[E] = Loggable.anyThrowable.asInstanceOf[Loggable[E]]
 
-  given LoggableContainer[T, C[*]](using L: Loggable[T], ev: C[T] => Iterable[T]): Loggable[C[T]] =
+  given LoggableContainer: [T, C[*]] => (L: Loggable[T], ev: C[T] => Iterable[T]) => Loggable[C[T]] =
     new:
       override val key: ValueKey               = L.key.pluralized
       override def plain(a: C[T]): PlainString = PlainString.array(ev(a).toSeq.map(L.plain)*)

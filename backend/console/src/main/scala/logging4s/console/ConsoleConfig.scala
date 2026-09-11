@@ -1,10 +1,10 @@
 package logging4s.console
 
-import scala.jdk.CollectionConverters.*
-
 import com.typesafe.config.{Config, ConfigFactory, ConfigUtil}
 
 import logging4s.core.Level
+
+import scala.jdk.CollectionConverters.given
 
 enum Format:
   case Json, Plain

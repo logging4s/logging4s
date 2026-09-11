@@ -75,9 +75,15 @@ class LoggableSpec extends AnyWordSpec, Matchers:
       loggable.plain(Set(1)) shouldEqual "[1]"
       loggable.json(Set(1)) shouldEqual "[1]"
 
-    "right summon Map instances" in:
-      Loggable[Map[String, Int]].plain(Map("a" -> 1)) shouldEqual "[(a, 1)]"
-      Loggable[Map[String, Int]].json(Map("a" -> 1)) shouldEqual """[["a",1]]"""
+    "right summon Map instances, rendering entries as fields rather than pairs" in:
+      Loggable[Map[String, Int]].plain(Map("a" -> 1)) shouldEqual "a -> (1)"
+      Loggable[Map[String, Int]].json(Map("a" -> 1)) shouldEqual """{"a":1}"""
+
+    "render a Map with non-string keys as an object keyed by their plain form" in:
+      Loggable[Map[Int, String]].json(Map(1 -> "a")) shouldEqual """{"1":"a"}"""
+
+    "quote Map keys so that data cannot break out of the object" in:
+      Loggable[Map[String, Int]].json(Map("a\"b" -> 1)) shouldEqual """{"a\"b":1}"""
 
     "right summon Char instances" in:
       Loggable[Char].plain('a') shouldEqual "a"

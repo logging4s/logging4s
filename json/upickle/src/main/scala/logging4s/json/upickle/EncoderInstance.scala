@@ -7,5 +7,5 @@ import logging4s.core.{JsonEncoder, JsonString}
 
 trait EncoderInstance:
 
-  given UpickleJsonEncoder[A: Writer]: JsonEncoder[A] =
+  given UpickleJsonEncoder: [A: Writer] => JsonEncoder[A] =
     a => JsonString(write(a))

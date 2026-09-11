@@ -6,5 +6,5 @@ import logging4s.core.{JsonEncoder, JsonString}
 
 trait EncoderInstance:
 
-  given BorerJsonEncoder[A: Encoder]: JsonEncoder[A] =
+  given BorerJsonEncoder: [A: Encoder] => JsonEncoder[A] =
     a => JsonString(Json.encode(a).toUtf8String)

@@ -6,7 +6,10 @@ import scala.jdk.CollectionConverters.given
 
 import logging4s.core.JsonString
 
-final class LoggableMapMessage(entries: Seq[(String, String)], plainMessage: String) extends StringMapMessage(entries.toMap.asJava):
+final class LoggableMapMessage(
+    entries: Seq[(String, String)],
+    plainMessage: String,
+) extends StringMapMessage(entries.toMap.asJava):
 
   override def getFormattedMessage: String = plainMessage
 

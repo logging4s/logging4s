@@ -2,12 +2,21 @@ package logging4s.core.deriving.internal
 
 import scala.deriving.Mirror
 
+import logging4s.core.*
 import logging4s.core.deriving.FieldPolicy
 import logging4s.core.config.LoggableEncodingConfig
-import logging4s.core.{JsonEncoder, JsonString, Loggable, PlainEncoder, PlainString, ValueKey}
 
 private[internal] def decapitalize(name: String): String =
-  if name.isEmpty then name else s"${name.head.toLower}${name.tail}"
+  if name.isEmpty
+  then name
+  else s"${name.head.toLower}${name.tail}"
+
+private final case class FieldSpec(
+    loggable: Loggable[Any],
+    key: String,
+    quotedKey: String,
+    policy: Option[FieldPolicy],
+)
 
 final class TupleLoggable[T <: Tuple](loggables: List[Loggable[Any]], cfg: LoggableEncodingConfig) extends Loggable[T]:
 
@@ -19,7 +28,8 @@ final class TupleLoggable[T <: Tuple](loggables: List[Loggable[Any]], cfg: Logga
 
   override def json(t: T): JsonString =
     val elements = t.productIterator
-    if cfg.jsonTupleAsArray then JsonString.array(loggables.map(_.json(elements.next()))*)
+    if cfg.jsonTupleAsArray
+    then JsonString.array(loggables.map(_.json(elements.next()))*)
     else JsonString.obj(loggables.map(l => l.key.value -> l.json(elements.next()))*)
 
 final class ProductLoggable[A](
@@ -32,58 +42,72 @@ final class ProductLoggable[A](
 
   override val key: ValueKey = ValueKey(decapitalize(typeName))
 
-  private val specs: List[(Loggable[Any], String, Option[FieldPolicy])] =
-    labels.lazyZip(loggables).map { (label, l) =>
+  private val specs: List[FieldSpec] =
+    labels.lazyZip(loggables).map { (label, loggable) =>
       val policy   = policies.get(label)
       val fieldKey = policy match
         case Some(FieldPolicy.Rename(name)) => cfg.keyNameStyle.format(name)
         case _                              => cfg.keyNameStyle.format(label)
-      (l, fieldKey, policy)
+
+      FieldSpec(
+        loggable = loggable,
+        key = fieldKey,
+        quotedKey = JsonString.quoted(fieldKey).value,
+        policy = policy,
+      )
     }
 
   override def json(a: A): JsonString =
-    if specs.isEmpty then JsonString.quoted(typeName)
+    if specs.isEmpty
+    then JsonString.quoted(typeName)
     else
       val fields = a.asInstanceOf[Product].productIterator
       val sb     = new StringBuilder("{")
       var first  = true
 
-      def entry(fieldKey: String, rawValue: String): Unit =
-        if !first then sb.append(',')
-        sb.append('"').append(fieldKey).append("\":").append(rawValue): Unit
-        first = false
+      def entry(quotedKey: String, rawValue: String): Unit =
+        if !first
+        then sb.append(',')
 
-      specs.foreach { (l, fieldKey, policy) =>
+        sb.append(quotedKey).append(':').append(rawValue): Unit
+        first = false
+      end entry
+
+      specs.foreach { spec =>
         val v = fields.next()
-        policy match
+        spec.policy match
           case Some(FieldPolicy.Hide)       => ()
-          case Some(FieldPolicy.Mask(mode)) => entry(fieldKey, JsonString.quoted(mode(l.plain(v).value)).value)
+          case Some(FieldPolicy.Mask(mode)) => entry(spec.quotedKey, JsonString.quoted(mode(spec.loggable.plain(v).value)).value)
           case Some(FieldPolicy.Unembed)    =>
-            val raw = l.json(v).value
-            if raw.length >= 2 && raw.charAt(0) == '{' && raw.charAt(raw.length - 1) == '}' then
+            val raw = spec.loggable.json(v).value
+            if raw.length >= 2 && raw.charAt(0) == '{' && raw.charAt(raw.length - 1) == '}'
+            then
               val inner = raw.substring(1, raw.length - 1)
-              if inner.nonEmpty then
-                if !first then sb.append(',')
+              if inner.nonEmpty
+              then
+                if !first
+                then sb.append(',')
                 sb.append(inner)
                 first = false
-            else entry(fieldKey, raw)
-          case _                            => entry(fieldKey, l.json(v).value)
+            else entry(spec.quotedKey, raw)
+          case _                            => entry(spec.quotedKey, spec.loggable.json(v).value)
       }
 
       JsonString(sb.append('}').toString)
 
   override def plain(a: A): PlainString =
-    if specs.isEmpty then PlainString(typeName)
+    if specs.isEmpty
+    then PlainString(typeName)
     else
       val fields   = a.asInstanceOf[Product].productIterator
       val rendered = List.newBuilder[(String, String)]
 
-      specs.foreach { (l, fieldKey, policy) =>
+      specs.foreach { spec =>
         val v = fields.next()
-        policy match
+        spec.policy match
           case Some(FieldPolicy.Hide)       => ()
-          case Some(FieldPolicy.Mask(mode)) => rendered += fieldKey -> mode(l.plain(v).value)
-          case _                            => rendered += fieldKey -> l.plain(v).value
+          case Some(FieldPolicy.Mask(mode)) => rendered += spec.key -> mode(spec.loggable.plain(v).value)
+          case _                            => rendered += spec.key -> spec.loggable.plain(v).value
       }
 
       PlainString(cfg.plainValuesStyle.renderFields(rendered.result()))

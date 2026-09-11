@@ -3,13 +3,12 @@ import sbt.*
 object Dependencies {
 
   object Versions {
-    val scalaLTS  = "3.3.8"
-    val scalaLast = "3.8.4"
+    val scalaLTS = "3.9.0"
 
     val logback         = "1.6.3"
     val logbackEncoder  = "9.0"
     val log4j           = "2.26.1"
-    val slf4j           = "2.0.18"
+    val slf4j           = "2.0.19"
     val typesafeConfig  = "1.4.9"
     val jacksonDatabind = "2.22.2"
 
@@ -30,14 +29,14 @@ object Dependencies {
     val sprayJson = "1.3.6"
     val json4s    = "4.0.7"
     val argonaut  = "6.3.10"
-    val borer     = "1.17.0"
+    val borer     = "1.18.0"
     val upickle   = "4.4.3"
     val weepickle = "1.9.1"
-    val zioJson   = "0.10.0"
+    val zioJson   = "1.1.0"
     val fabric    = "1.30.0"
 
     val scalatest     = "3.2.20"
-    val scalatestPlus = "3.2.19.0"
+    val scalatestPlus = "3.2.20.0"
   }
 
   object Logback {
@@ -133,7 +132,7 @@ object Dependencies {
 
   object Testing {
     val scalatest  = "org.scalatest"     %% "scalatest"       % Versions.scalatest     % Test
-    val scalacheck = "org.scalatestplus" %% "scalacheck-1-18" % Versions.scalatestPlus % Test
+    val scalacheck = "org.scalatestplus" %% "scalacheck-1-19" % Versions.scalatestPlus % Test
     val scalactic  = "org.scalactic"     %% "scalactic"       % Versions.scalatest     % Test
 
     val all: Seq[ModuleID] = Seq(scalatest, scalactic, scalacheck)

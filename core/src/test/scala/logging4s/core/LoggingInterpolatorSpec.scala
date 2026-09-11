@@ -5,6 +5,22 @@ import org.scalatest.matchers.should.Matchers
 
 import logging4s.core.syntax.all.*
 
+object Instrumented:
+  var json: Int  = 0
+  var plain: Int = 0
+
+  final case class Value(raw: String)
+
+  private def countJson(v: Value): JsonString =
+    json += 1
+    JsonString.quoted(v.raw)
+
+  private def countPlain(v: Value): PlainString =
+    plain += 1
+    PlainString(v.raw)
+
+  given Loggable[Value] = Loggable.make[Value]("instrumented")(countJson, countPlain)
+
 class LoggingInterpolatorSpec extends AnyWordSpec, Matchers:
 
   final class Capturing extends Logging[Identity]:
@@ -128,3 +144,33 @@ class LoggingInterpolatorSpec extends AnyWordSpec, Matchers:
       log.level shouldEqual Level.Warn
       log.message shouldEqual "warned"
       log.values.map(_.key) shouldEqual Seq(ValueKey("count"))
+
+    "collapse the gap a hole leaves behind in the middle of the message" in:
+      val log                 = new Capturing
+      given Logging[Identity] = log
+
+      val user = Point(1, 2)
+      val n    = 3
+      info"created $user with $n retries"
+
+      log.message shouldEqual "created with retries"
+
+    "defer rendering until the backend reads the value" in:
+      val log                 = new Capturing
+      given Logging[Identity] = log
+
+      import Instrumented.given
+
+      Instrumented.json = 0
+      Instrumented.plain = 0
+
+      val instrumented = Instrumented.Value("x")
+      info"seen $instrumented"
+
+      Instrumented.json shouldEqual 0
+      Instrumented.plain shouldEqual 0
+
+      log.values.head.json shouldEqual "\"x\""
+
+      Instrumented.json shouldEqual 1
+      Instrumented.plain shouldEqual 0
