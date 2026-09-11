@@ -1,7 +1,12 @@
 import Dependencies.Versions
 import com.typesafe.tools.mima.plugin.MimaKeys.mimaPreviousArtifacts
 
-lazy val binaryCompatibleWith = Set.empty[String]
+lazy val binaryCompatibleWith = Set("4.0.0")
+
+lazy val noPublishSettings = Seq(
+  publish / skip        := true,
+  mimaPreviousArtifacts := Set.empty,
+)
 
 lazy val commonSettings = Seq(
   organization           := "org.logging4s",
@@ -100,9 +105,7 @@ lazy val console = project
 lazy val backend = project
   .in(file("backend"))
   .settings(commonSettings)
-  .settings(
-    publish / skip := true
-  )
+  .settings(noPublishSettings)
   .aggregate(
     logback,
     log4j2,
@@ -264,9 +267,7 @@ lazy val fabric = project
 val runtime = project
   .in(file("runtime"))
   .settings(commonSettings)
-  .settings(
-    publish / skip := true
-  )
+  .settings(noPublishSettings)
   .aggregate(
     zio,
     kyo,
@@ -277,9 +278,7 @@ val runtime = project
 lazy val json = project
   .in(file("json"))
   .settings(commonSettings)
-  .settings(
-    publish / skip := true
-  )
+  .settings(noPublishSettings)
   .aggregate(
     circe,
     json4s,
@@ -297,9 +296,9 @@ lazy val json = project
 lazy val examples = project
   .in(file("examples"))
   .settings(commonSettings)
+  .settings(noPublishSettings)
   .settings(
-    name           := "logging4s-examples",
-    publish / skip := true,
+    name := "logging4s-examples",
     libraryDependencies += Dependencies.Cats.catsEffect3,
   )
   .dependsOn(
@@ -314,9 +313,9 @@ lazy val benchmarks = project
   .in(file("benchmarks"))
   .enablePlugins(JmhPlugin)
   .settings(commonSettings)
+  .settings(noPublishSettings)
   .settings(
-    name           := "logging4s-benchmarks",
-    publish / skip := true,
+    name := "logging4s-benchmarks",
     libraryDependencies ++= Dependencies.Json.jsoniter,
     libraryDependencies += Dependencies.Log4j2.log4jLayoutJsonTemplate,
   )
@@ -331,9 +330,9 @@ lazy val benchmarks = project
 lazy val logging4s = project
   .in(file("."))
   .settings(commonSettings)
+  .settings(noPublishSettings)
   .settings(
-    name           := "logging4s",
-    publish / skip := true,
+    name := "logging4s",
   )
   .aggregate(
     core,

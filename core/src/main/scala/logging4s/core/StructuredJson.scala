@@ -8,7 +8,7 @@ object StructuredJson:
     builder.values(values)
     builder.result
   end line
-  
+
   final class Builder:
     private val sb    = new java.lang.StringBuilder(256).append('{')
     private var first = true
