@@ -24,37 +24,78 @@ trait Logging[F[*]]:
       override def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue])(using Position): G[Unit] =
         f(self.emit(level, message, cause, values))
 
-  final def error(message: String)(using Position): F[Unit]                                           = emit(Level.Error, message, None, Nil)
-  final def error(message: String, error: Throwable)(using Position): F[Unit]                         = emit(Level.Error, message, Some(error), Nil)
-  final def error(message: String, values: LoggableValue*)(using Position): F[Unit]                   = emit(Level.Error, message, None, values)
-  final def error(message: String, error: Throwable, values: LoggableValue*)(using Position): F[Unit] =
-    emit(Level.Error, message, Some(error), values)
+  final inline def error(inline message: String)(using Position): F[Unit] =
+    emit(Level.Error, LogMessage.static(message), None, Nil)
 
-  final def warn(message: String)(using Position): F[Unit]                                           = emit(Level.Warn, message, None, Nil)
-  final def warn(message: String, error: Throwable)(using Position): F[Unit]                         = emit(Level.Warn, message, Some(error), Nil)
-  final def warn(message: String, values: LoggableValue*)(using Position): F[Unit]                   = emit(Level.Warn, message, None, values)
-  final def warn(message: String, error: Throwable, values: LoggableValue*)(using Position): F[Unit] = emit(Level.Warn, message, Some(error), values)
+  final inline def error(inline message: String, error: Throwable)(using Position): F[Unit] =
+    emit(Level.Error, LogMessage.static(message), Some(error), Nil)
 
-  final def info(message: String)(using Position): F[Unit]                                           = emit(Level.Info, message, None, Nil)
-  final def info(message: String, error: Throwable)(using Position): F[Unit]                         = emit(Level.Info, message, Some(error), Nil)
-  final def info(message: String, values: LoggableValue*)(using Position): F[Unit]                   = emit(Level.Info, message, None, values)
-  final def info(message: String, error: Throwable, values: LoggableValue*)(using Position): F[Unit] = emit(Level.Info, message, Some(error), values)
+  final inline def error(inline message: String, values: LoggableValue*)(using Position): F[Unit] =
+    emit(Level.Error, LogMessage.static(message), None, values)
 
-  final def debug(message: String)(using Position): F[Unit]                                           = emit(Level.Debug, message, None, Nil)
-  final def debug(message: String, error: Throwable)(using Position): F[Unit]                         = emit(Level.Debug, message, Some(error), Nil)
-  final def debug(message: String, values: LoggableValue*)(using Position): F[Unit]                   = emit(Level.Debug, message, None, values)
-  final def debug(message: String, error: Throwable, values: LoggableValue*)(using Position): F[Unit] =
-    emit(Level.Debug, message, Some(error), values)
+  final inline def error(inline message: String, error: Throwable, values: LoggableValue*)(using Position): F[Unit] =
+    emit(Level.Error, LogMessage.static(message), Some(error), values)
 
-  final def trace(message: String)(using Position): F[Unit]                                           = emit(Level.Trace, message, None, Nil)
-  final def trace(message: String, error: Throwable)(using Position): F[Unit]                         = emit(Level.Trace, message, Some(error), Nil)
-  final def trace(message: String, values: LoggableValue*)(using Position): F[Unit]                   = emit(Level.Trace, message, None, values)
-  final def trace(message: String, error: Throwable, values: LoggableValue*)(using Position): F[Unit] =
-    emit(Level.Trace, message, Some(error), values)
+  final inline def warn(inline message: String)(using Position): F[Unit] =
+    emit(Level.Warn, LogMessage.static(message), None, Nil)
+
+  final inline def warn(inline message: String, error: Throwable)(using Position): F[Unit] =
+    emit(Level.Warn, LogMessage.static(message), Some(error), Nil)
+
+  final inline def warn(inline message: String, values: LoggableValue*)(using Position): F[Unit] =
+    emit(Level.Warn, LogMessage.static(message), None, values)
+
+  final inline def warn(inline message: String, error: Throwable, values: LoggableValue*)(using Position): F[Unit] =
+    emit(Level.Warn, LogMessage.static(message), Some(error), values)
+
+  final inline def info(inline message: String)(using Position): F[Unit] =
+    emit(Level.Info, LogMessage.static(message), None, Nil)
+
+  final inline def info(inline message: String, error: Throwable)(using Position): F[Unit] =
+    emit(Level.Info, LogMessage.static(message), Some(error), Nil)
+
+  final inline def info(inline message: String, values: LoggableValue*)(using Position): F[Unit] =
+    emit(Level.Info, LogMessage.static(message), None, values)
+
+  final inline def info(inline message: String, error: Throwable, values: LoggableValue*)(using Position): F[Unit] =
+    emit(Level.Info, LogMessage.static(message), Some(error), values)
+
+  final inline def debug(inline message: String)(using Position): F[Unit] =
+    emit(Level.Debug, LogMessage.static(message), None, Nil)
+
+  final inline def debug(inline message: String, error: Throwable)(using Position): F[Unit] =
+    emit(Level.Debug, LogMessage.static(message), Some(error), Nil)
+
+  final inline def debug(inline message: String, values: LoggableValue*)(using Position): F[Unit] =
+    emit(Level.Debug, LogMessage.static(message), None, values)
+
+  final inline def debug(inline message: String, error: Throwable, values: LoggableValue*)(using Position): F[Unit] =
+    emit(Level.Debug, LogMessage.static(message), Some(error), values)
+
+  final inline def trace(inline message: String)(using Position): F[Unit] =
+    emit(Level.Trace, LogMessage.static(message), None, Nil)
+
+  final inline def trace(inline message: String, error: Throwable)(using Position): F[Unit] =
+    emit(Level.Trace, LogMessage.static(message), Some(error), Nil)
+
+  final inline def trace(inline message: String, values: LoggableValue*)(using Position): F[Unit] =
+    emit(Level.Trace, LogMessage.static(message), None, values)
+
+  final inline def trace(inline message: String, error: Throwable, values: LoggableValue*)(using Position): F[Unit] =
+    emit(Level.Trace, LogMessage.static(message), Some(error), values)
 
 object Logging:
 
   def apply[F[*]](using instance: Logging[F]): Logging[F] = instance
+
+  def noop[F[*]: Delay]: Logging[F] =
+    new:
+      override val unit: F[Unit]                                    = Delay[F].unit
+      override def withContext(context: LoggingContext): Logging[F] = this
+      override def enabled(level: Level): Boolean                   = false
+
+      override def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue])(using Position): F[Unit] =
+        unit
 
   def create[F[*]: Delay, S](using factory: LoggingFactory, S: ClassTag[S]): F[Logging[F]] =
     factory.create(S.runtimeClass.getName.stripSuffix("$"), LoggingContext.empty)

@@ -9,31 +9,31 @@ import logging4s.core.Level
 
 class ConsoleLevelResolutionSpec extends AnyWordSpec, Matchers:
 
-  private def config(levels: (String, Level)*): ConsoleConfig =
-    ConsoleConfig(Level.Info, Format.Json, ColorMode.Off, Stream.Stdout, -1, levels.toMap)
+  private def config(levels: (String, Threshold)*): ConsoleConfig =
+    ConsoleConfig(Threshold.At(Level.Info), Format.Json, ColorMode.Off, Stream.Stdout, -1, levels.toMap)
 
-  "ConsoleConfig.levelFor" must:
+  "ConsoleConfig.thresholdFor" must:
     "fall back to the root level when there are no mappings" in:
-      config().levelFor("com.acme.Service") shouldEqual Level.Info
+      config().thresholdFor("com.acme.Service") shouldEqual Threshold.At(Level.Info)
 
     "fall back to the root level when nothing matches" in:
-      config("io.netty" -> Level.Error).levelFor("com.acme.Service") shouldEqual Level.Info
+      config("io.netty" -> Threshold.At(Level.Error)).thresholdFor("com.acme.Service") shouldEqual Threshold.At(Level.Info)
 
     "use an exact match" in:
-      config("com.acme.Service" -> Level.Debug).levelFor("com.acme.Service") shouldEqual Level.Debug
+      config("com.acme.Service" -> Threshold.At(Level.Debug)).thresholdFor("com.acme.Service") shouldEqual Threshold.At(Level.Debug)
 
     "apply a prefix to child loggers" in:
-      config("io.netty" -> Level.Error).levelFor("io.netty.channel.Pipeline") shouldEqual Level.Error
+      config("io.netty" -> Threshold.At(Level.Error)).thresholdFor("io.netty.channel.Pipeline") shouldEqual Threshold.At(Level.Error)
 
     "not treat a partial segment as a prefix" in:
-      config("io.netty" -> Level.Error).levelFor("io.nettyfoo.Bar") shouldEqual Level.Info
+      config("io.netty" -> Threshold.At(Level.Error)).thresholdFor("io.nettyfoo.Bar") shouldEqual Threshold.At(Level.Info)
 
     "prefer the most specific prefix" in:
-      val cfg = config("io" -> Level.Error, "io.netty" -> Level.Warn, "io.netty.channel" -> Level.Debug)
+      val cfg = config("io" -> Threshold.At(Level.Error), "io.netty" -> Threshold.At(Level.Warn), "io.netty.channel" -> Threshold.At(Level.Debug))
 
-      cfg.levelFor("io.netty.channel.Pipeline") shouldEqual Level.Debug
-      cfg.levelFor("io.netty.buffer.Buf") shouldEqual Level.Warn
-      cfg.levelFor("io.grpc.Server") shouldEqual Level.Error
+      cfg.thresholdFor("io.netty.channel.Pipeline") shouldEqual Threshold.At(Level.Debug)
+      cfg.thresholdFor("io.netty.buffer.Buf") shouldEqual Threshold.At(Level.Warn)
+      cfg.thresholdFor("io.grpc.Server") shouldEqual Threshold.At(Level.Error)
 
   "ConsoleConfig loading" must:
     "read quoted and nested mapping keys the same way" in:
@@ -53,8 +53,8 @@ class ConsoleLevelResolutionSpec extends AnyWordSpec, Matchers:
 
       val loaded = ConsoleConfig.load(raw)
 
-      loaded.level shouldEqual Level.Info
-      loaded.levels shouldEqual Map("io.netty" -> Level.Warn, "com.acme.Service" -> Level.Debug)
+      loaded.level shouldEqual Threshold.At(Level.Info)
+      loaded.levels shouldEqual Map("io.netty" -> Threshold.At(Level.Warn), "com.acme.Service" -> Threshold.At(Level.Debug))
 
     "default to no mappings when the section is absent" in:
       val raw = ConfigFactory.parseString(
@@ -68,3 +68,38 @@ class ConsoleLevelResolutionSpec extends AnyWordSpec, Matchers:
       )
 
       ConsoleConfig.load(raw).levels shouldBe empty
+
+    "read off as a threshold that lets nothing through" in:
+      val raw = ConfigFactory.parseString(
+        """logging4s.console {
+          |  level = "info"
+          |  format = "json"
+          |  color = "off"
+          |  stream = "stdout"
+          |  max-stack-trace-lines = -1
+          |  levels {
+          |    "io.netty" = "off"
+          |  }
+          |}""".stripMargin
+      )
+
+      val loaded = ConsoleConfig.load(raw)
+
+      loaded.thresholdFor("io.netty.channel.Pipeline") shouldEqual Threshold.Off
+      Level.values.foreach(level => loaded.thresholdFor("io.netty").allows(level) shouldEqual false)
+      loaded.thresholdFor("com.acme.Service").allows(Level.Info) shouldEqual true
+
+    "turn the whole console off when the root level is off" in:
+      val raw = ConfigFactory.parseString(
+        """logging4s.console {
+          |  level = "off"
+          |  format = "json"
+          |  color = "off"
+          |  stream = "stdout"
+          |  max-stack-trace-lines = -1
+          |}""".stripMargin
+      )
+
+      val loaded = ConsoleConfig.load(raw)
+
+      Level.values.foreach(level => loaded.thresholdFor("anything").allows(level) shouldEqual false)

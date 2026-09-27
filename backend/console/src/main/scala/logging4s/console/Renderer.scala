@@ -1,10 +1,11 @@
 package logging4s.console
 
+import java.util.Locale
 import java.time.Instant
 import java.io.{PrintWriter, StringWriter}
 
 import logging4s.core.config.LoggableEncodingConfig
-import logging4s.core.{Level, LogMessage, LoggableValue, Position, StructuredJson}
+import logging4s.core.{Level, LogMessage, LogRecord, StructuredJson}
 
 private[console] object Renderer:
 
@@ -16,12 +17,11 @@ private[console] object Renderer:
       logger: String,
       message: String,
       cause: Option[Throwable],
-      values: Seq[LoggableValue],
-      position: Position,
+      record: LogRecord,
   )(using LoggableEncodingConfig): String =
     console.format match
-      case Format.Json  => json(console, level, logger, message, cause, values, position)
-      case Format.Plain => plain(console, level, logger, message, cause, values, position)
+      case Format.Json  => json(console, level, logger, message, cause, record)
+      case Format.Plain => plain(console, level, logger, message, cause, record)
 
   private def json(
       console: ConsoleConfig,
@@ -29,19 +29,18 @@ private[console] object Renderer:
       logger: String,
       message: String,
       cause: Option[Throwable],
-      values: Seq[LoggableValue],
-      position: Position,
+      record: LogRecord,
   )(using LoggableEncodingConfig): String =
     val envelope = Seq(
       "@timestamp" -> Instant.ofEpochMilli(System.currentTimeMillis).toString,
-      "level"      -> level.toString.toUpperCase,
+      "level"      -> level.toString.toUpperCase(Locale.ROOT),
       "logger"     -> logger,
       "thread"     -> Thread.currentThread.getName,
-      "message"    -> LogMessage.render(message, None, values),
+      "message"    -> LogMessage.render(message, None, record.values),
     )
     val trace    = cause.map(t => "stack_trace" -> stackTrace(t, console.maxStackTraceLines)).toSeq
 
-    StructuredJson.line(envelope ++ trace, LoggableValue.withSource(values, position))
+    StructuredJson.line(envelope ++ trace, record.structured)
 
   private def plain(
       console: ConsoleConfig,
@@ -49,11 +48,11 @@ private[console] object Renderer:
       logger: String,
       message: String,
       cause: Option[Throwable],
-      values: Seq[LoggableValue],
-      position: Position,
+      record: LogRecord,
   )(using LoggableEncodingConfig): String =
     val timestamp = Instant.ofEpochMilli(System.currentTimeMillis).toString
-    val base      = s"$timestamp ${level.toString.toUpperCase} $logger - ${LogMessage.render(message, None, LoggableValue.withSource(values, position))}"
+    val rendered  = LogMessage.renderAll(message, None, record.structured)
+    val base      = s"$timestamp ${level.toString.toUpperCase(Locale.ROOT)} $logger - $rendered"
     val withTrace = cause.fold(base)(t => s"$base${System.lineSeparator}${stackTrace(t, console.maxStackTraceLines)}")
 
     colorize(console, level, withTrace)

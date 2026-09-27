@@ -5,19 +5,25 @@ run its tests, and where to make changes for common kinds of contributions.
 
 ## Building
 
-Tested against JDK 21 (LTS) — that's what CI uses. Other recent JDKs likely work too, but JDK 21 is the
-one to reach for if something looks version-specific.
+**JDK 25 is required**, and that is what CI uses. It is not merely a preference: `runtime/kyo` expands
+kyo's `Frame` macro inside the compiler, and those class files target Java 25, so an older JDK fails to
+compile that module.
 
-The project is built with [sbt](https://www.scala-sbt.org/). Modules are mostly on the Scala 3 LTS
-release; `runtime/kyo` and `runtime/rapid` target the latest Scala 3 release instead, since their
-dependencies require it. sbt handles this transparently — you don't need to do anything special.
+The project is built with [sbt](https://www.scala-sbt.org/) 2.x. Every module is on the Scala `3.9 LTS`
+release — there is no longer a per-module Scala version to keep track of.
 
 ```bash
 sbt compile             # compile everything
-sbt test                # run unit tests for all modules
-sbt scalafmtCheckAll     # verify formatting
-sbt scalafmtAll          # fix formatting
+sbt testFull            # run unit tests for all modules
+sbt scalafmtCheckAll    # verify formatting
+sbt scalafmtAll         # fix formatting
 ```
+
+Prefer `testFull` over `test`: sbt 2 consults its action cache for `test` and will replay a previous
+run's results instead of re-running suites you just changed.
+
+sbt 2 joins its arguments into a single command string, so several tasks must be one quoted argument
+separated by `;` — `sbt "scalafmtCheckAll; testFull"`, never `sbt scalafmtCheckAll testFull`.
 
 To run a single module's tests:
 
@@ -90,4 +96,18 @@ non-obvious — well-named identifiers should carry the *what*.
 - Keep PRs focused — one backend, one codec bridge, one runtime, or one bug fix per PR is easier to
   review than a mix.
 - Add or extend tests for anything behavioral you change.
-- `sbt scalafmtCheckAll test` should pass locally before you push.
+- `sbt "scalafmtCheckAll; testFull"` should pass locally before you push.
+
+## Backend conformance
+
+`core`'s test sources carry a shared `BackendConformance` suite (`logging4s.core.conformance`), and every backend
+module depends on them via `core % "compile->compile;test->test"`. A backend implements one method — capture a record
+and return its message plus its fields in order — and inherits the contract every backend must satisfy: context
+merging, call-site override, key normalization, `source` placement, duplicate-key resolution, and reserved envelope
+names.
+
+Add a new backend's conformance spec before anything else; the suite exists because these invariants had quietly
+diverged between the four backends, and no per-backend test noticed.
+
+`slf4j` is deliberately outside the suite: it is a facade whose key-value pairs are stringly-typed by definition, so
+its field values are not comparable with the other backends'.

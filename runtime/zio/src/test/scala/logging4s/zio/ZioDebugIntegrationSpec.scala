@@ -15,3 +15,22 @@ class ZioDebugIntegrationSpec extends AnyWordSpec, Matchers:
 
       val expected = "test_value"
       Loggable.fromEncoders[String]("value").plain(expected) shouldEqual expected
+
+    "strip the quotes zio adds around a string, and nothing else" in:
+      import logging4s.core.PlainEncoder
+
+      PlainEncoder[String].encode("test_value").value shouldEqual "test_value"
+      PlainEncoder[String].encode("").value shouldEqual ""
+
+    "keep numeric and boolean renderings intact" in:
+      import logging4s.core.PlainEncoder
+
+      PlainEncoder[Int].encode(123).value shouldEqual "123"
+      PlainEncoder[Int].encode(1).value shouldEqual "1"
+      PlainEncoder[Long].encode(-5L).value shouldEqual "-5L"
+      PlainEncoder[Boolean].encode(true).value shouldEqual "true"
+
+    "render a char without its quotes" in:
+      import logging4s.core.PlainEncoder
+
+      PlainEncoder[Char].encode('a').value shouldEqual "a"

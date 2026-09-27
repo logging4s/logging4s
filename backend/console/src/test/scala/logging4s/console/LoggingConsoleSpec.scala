@@ -22,17 +22,19 @@ class LoggingConsoleSpec extends AnyWordSpec, Matchers:
     given ConsoleConfig          = config
     given LoggableEncodingConfig = encoding
 
-    val out      = new ByteArrayOutputStream()
-    val original = System.out
-    System.setOut(new PrintStream(out, true, "UTF-8"))
-    try
-      val logging = Logging.createTry(name).get
-      run(logging)
-    finally System.setOut(original)
+    ConsoleCaptureLock.synchronized {
+      val out      = new ByteArrayOutputStream()
+      val original = System.out
+      System.setOut(new PrintStream(out, true, "UTF-8"))
+      try
+        val logging = Logging.createTry(name).get
+        run(logging)
+      finally System.setOut(original)
 
-    out.toString("UTF-8")
+      out.toString("UTF-8")
+    }
 
-  private val jsonAtInfo = ConsoleConfig(Level.Info, Format.Json, ColorMode.Off, Stream.Stdout, -1)
+  private val jsonAtInfo = ConsoleConfig(Threshold.At(Level.Info), Format.Json, ColorMode.Off, Stream.Stdout, -1)
 
   "LoggingConsole" must:
     "emit structured values as nested JSON with an envelope" in:
@@ -53,7 +55,7 @@ class LoggingConsoleSpec extends AnyWordSpec, Matchers:
       out.trim shouldBe empty
 
     "render the plain format when configured" in:
-      val out = capture(ConsoleConfig(Level.Info, Format.Plain, ColorMode.Off, Stream.Stdout, -1)) { logging =>
+      val out = capture(ConsoleConfig(Threshold.At(Level.Info), Format.Plain, ColorMode.Off, Stream.Stdout, -1)) { logging =>
         logging.info("hello", LoggableValue(ValueKey("k"), PlainString("v"), JsonString("\"v\"")))
       }
 
@@ -85,7 +87,7 @@ class LoggingConsoleSpec extends AnyWordSpec, Matchers:
       out should include(""""source":"LoggingConsoleSpec.scala:""")
 
     "suppress a logger whose own mapped level is higher than the record" in:
-      val config = jsonAtInfo.copy(levels = Map("io.netty" -> Level.Error))
+      val config = jsonAtInfo.copy(levels = Map("io.netty" -> Threshold.At(Level.Error)))
 
       val quiet = capture(config, name = "io.netty.channel.Pipeline") { logging =>
         logging.info("noisy")
@@ -94,7 +96,7 @@ class LoggingConsoleSpec extends AnyWordSpec, Matchers:
       quiet.trim shouldBe empty
 
     "keep loggers that no mapping matches at the root level" in:
-      val config = jsonAtInfo.copy(levels = Map("io.netty" -> Level.Error))
+      val config = jsonAtInfo.copy(levels = Map("io.netty" -> Threshold.At(Level.Error)))
 
       val loud = capture(config, name = "com.acme.Service") { logging =>
         logging.info("kept")

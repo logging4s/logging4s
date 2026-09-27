@@ -10,8 +10,9 @@ object StructuredJson:
   end line
 
   final class Builder:
-    private val sb    = new java.lang.StringBuilder(256).append('{')
-    private var first = true
+    private val sb     = new java.lang.StringBuilder(256).append('{')
+    private var first  = true
+    private var closed = false
 
     private def separate(): Unit =
       if !first then sb.append(','): Unit
@@ -32,4 +33,9 @@ object StructuredJson:
       values.foreach(value)
 
     def result: String =
-      sb.append('}').toString
+      if !closed
+      then
+        sb.append('}'): Unit
+        closed = true
+
+      sb.toString

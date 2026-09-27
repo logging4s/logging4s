@@ -1,5 +1,6 @@
 package logging4s.core.config
 
+import java.util.Locale
 import java.util.regex.Pattern
 import java.util.concurrent.ConcurrentHashMap
 
@@ -23,13 +24,13 @@ enum KeyNameStyle:
   private def reformat(name: String): String =
     this match
       case AsIs       => name
-      case SnakeCase  => words(name).map(_.toLowerCase).mkString("_")
-      case KebabCase  => words(name).map(_.toLowerCase).mkString("-")
+      case SnakeCase  => words(name).map(_.toLowerCase(Locale.ROOT)).mkString("_")
+      case KebabCase  => words(name).map(_.toLowerCase(Locale.ROOT)).mkString("-")
       case PascalCase => words(name).map(capitalize).mkString
       case CamelCase  =>
         words(name) match
           case Nil          => ""
-          case head :: tail => (head.toLowerCase +: tail.map(capitalize)).mkString
+          case head :: tail => (head.toLowerCase(Locale.ROOT) +: tail.map(capitalize)).mkString
 
 object KeyNameStyle:
   private val MaxCachedKeys = 1024
@@ -52,8 +53,26 @@ private[config] def words(name: String): List[String] =
     .filter(_.nonEmpty)
     .toList
 
+private def needsLogfmtQuoting(value: String): Boolean =
+  value.isEmpty || value.exists(c => c.isWhitespace || c == '"' || c == '=' || c == '\\')
+
+private[config] def logfmt(value: String): String =
+  if !needsLogfmtQuoting(value)
+  then value
+  else
+    val sb = new java.lang.StringBuilder(value.length + 8).append('"')
+    value.foreach {
+      case '"'  => sb.append("\\\""): Unit
+      case '\\' => sb.append("\\\\"): Unit
+      case '\n' => sb.append("\\n"): Unit
+      case '\r' => sb.append("\\r"): Unit
+      case '\t' => sb.append("\\t"): Unit
+      case c    => sb.append(c): Unit
+    }
+    sb.append('"').toString
+
 private[config] def capitalize(word: String): String =
-  if word.isEmpty then word else s"${word.head.toUpper}${word.tail.toLowerCase}"
+  if word.isEmpty then word else s"${word.head.toUpper}${word.tail.toLowerCase(Locale.ROOT)}"
 
 enum PlainTupleStyle:
   case AsScala, AsArray, Bare, Braces
@@ -78,7 +97,7 @@ enum PlainValuesStyle:
     this match
       case Arrow         => fields.map((key, value) => s"$key -> ($value)").mkString(", ")
       case ArrowBare     => fields.map((key, value) => s"$key -> $value").mkString(", ")
-      case Logfmt        => fields.map((key, value) => s"$key=$value").mkString(" ")
+      case Logfmt        => fields.map((key, value) => s"$key=${logfmt(value)}").mkString(" ")
       case KeyValueComma => fields.map((key, value) => s"$key=$value").mkString(", ")
       case Colon         => fields.map((key, value) => s"$key: $value").mkString(", ")
       case Bracketed     => fields.map((key, value) => s"[$key=$value]").mkString(" ")
@@ -92,6 +111,7 @@ final case class LoggableEncodingConfig(
     plainValuesStyle: PlainValuesStyle = PlainValuesStyle.Arrow,
     includeSourcePosition: Boolean = true,
     mapAsObject: Boolean = true,
+    includeValuesInMessage: Boolean = true,
 )
 
 object LoggableEncodingConfig:

@@ -36,3 +36,21 @@ class PlainValuesStyleSpec extends AnyWordSpec, Matchers:
 
     "render CurlyMap" in:
       CurlyMap.render(values) shouldEqual "{user=John, count=5}"
+
+    "quote a Logfmt value that would otherwise read as several fields" in:
+      val field = Seq(LoggableValue(ValueKey("name"), PlainString("John role=admin"), JsonString("\"x\"")))
+
+      Logfmt.render(field) shouldEqual """name="John role=admin""""
+
+    "quote an empty Logfmt value" in:
+      val field = Seq(LoggableValue(ValueKey("name"), PlainString(""), JsonString("\"\"")))
+
+      Logfmt.render(field) shouldEqual """name="""""
+
+    "escape quotes, backslashes and newlines inside a Logfmt value" in:
+      val raw   = "a" + '"' + "b" + '\\' + "c" + '\n' + "d"
+      val field = Seq(LoggableValue(ValueKey("k"), PlainString(raw), JsonString("\"x\"")))
+
+      val expected = "k=" + '"' + "a" + "\\\"" + "b" + "\\\\" + "c" + "\\n" + "d" + '"'
+
+      Logfmt.render(field) shouldEqual expected

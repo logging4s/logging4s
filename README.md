@@ -49,8 +49,8 @@ Pick a backend and an effect runtime (a JSON library is optional — `derives Lo
 
 ```scala
 libraryDependencies ++= Seq(
-  "org.logging4s" %% "logging4s-cats"    % "4.0.0",
-  "org.logging4s" %% "logging4s-logback" % "4.0.0"
+  "org.logging4s" %% "logging4s-cats"    % "5.0.0",
+  "org.logging4s" %% "logging4s-logback" % "5.0.0"
 )
 ```
 
@@ -83,7 +83,7 @@ Everything centers on one type class. A `Loggable[A]` is required for any value 
 
 ```scala
 trait Loggable[A]:
-  val key: ValueKey            // the field name the value logs under
+  def key: ValueKey            // the field name the value logs under
   def json(a: A): JsonString   // structured form
   def plain(a: A): PlainString // human-readable form, appended to the message
 ```
@@ -113,6 +113,19 @@ enum Color derives Loggable:
 
 Products render as objects keyed by field name (run through `keyNameStyle`); sum types delegate to the selected
 variant, and a parameterless case renders as its label.
+
+### Named tuples
+
+A named tuple needs no declaration at all — it renders as an object keyed by its own field names, which makes it the
+lightest way to attach a few related fields to one record:
+
+```scala
+log.info("order priced", (currency = "EUR", cents = 1999).asLogValue("price"))
+// "price":{"currency":"EUR","cents":1999}
+```
+
+They go through the same `keyNameStyle` as a derived product, nest inside one another, and have no arity limit —
+unlike plain tuples, whose instances stop at `Tuple5`.
 
 ### From an existing codec
 
@@ -204,6 +217,16 @@ yield ()
 The passed message is joined with the `plain` rendering of the values, and each value is attached as structured data
 for the backend to emit as fields. Every record also carries the call site as a `source` field.
 
+The call site is captured at **compile time** — `Position` is an implicit parameter filled in by an inline given, so
+it costs a constant in the emitted code rather than the stack-trace walk that `%F:%L` and log4j2's location info do at
+log time. One consequence worth knowing: it is the position of the *log call*, so if you wrap logging in a helper,
+every record points at the helper. Take `Position` as a parameter and it follows your caller instead:
+
+```scala
+def audit(action: String)(using Logging[IO], Position): IO[Unit] =   // without `using Position`,
+  Logging[IO].info(action)                                          // source points here, not at the caller
+```
+
 Duplicate keys resolve by specificity: a call-site value overrides a context value with the same key, and a later
 `withContext` overrides an earlier one. Only duplicates *within a single call* are suffixed (`k`, `k_2`), since those
 are two values you deliberately passed.
@@ -239,16 +262,34 @@ choice that materially affects the result:
 The same `log.info("user created", User(1, "John"))` (with `User derives Loggable`) comes out as:
 
 ```jsonc
-// logback (LogstashEncoder) and log4j2 (JsonTemplateLayout) — user is a nested object
+// logback (LogstashEncoder) — user is a nested object alongside the message
 {"message":"user created: user -> (id -> (1), name -> (John))","user":{"id":1,"name":"John"}}
 
 // slf4j — the same value, escaped, because its key-value pairs are stringly-typed
 {"message":"user created: user -> (id -> (1), name -> (John))","user":"{\"id\":1,\"name\":\"John\"}"}
 ```
 
-The message string is identical; the difference is whether `user` is a queryable object or an opaque string. `logback`
-(with `LogstashEncoder`) and `log4j2` (with `JsonTemplateLayout`) both emit it nested; `slf4j` can't. All three share
-the same `Logging.create` API — you only swap the `import logging4s.<backend>.<Backend>Instances.given`.
+`log4j2` also emits `user` as a genuine nested object, but its `JsonTemplateLayout` reaches the text and the values
+through the *same* resolver, so a template has to ask for both explicitly — see
+[the log4j2 template](#log4j2-json-template) below. The difference between backends is whether `user` is a queryable
+object or an opaque string. All of them share the same `Logging.create` API — you only swap the
+`import logging4s.<backend>.<Backend>Instances.given`.
+
+<a id="log4j2-json-template"></a>
+
+For `log4j2`, use an event template that renders the message twice — once stringified for humans, once in object mode
+for the structured values:
+
+```json
+{
+  "message": {"$resolver": "message", "stringified": true},
+  "data": {"$resolver": "message"}
+}
+```
+
+A template with only `{"$resolver": "message"}` emits the values and **drops the human-readable text**; that is the
+resolver's object mode, not a logging4s limitation. This exact template is pinned by a test against a real
+`JsonTemplateLayout`.
 
 <details>
 <summary>How structured values reach each backend</summary>
@@ -271,11 +312,17 @@ plain `PatternLayout` prints the text message and ignores the structured attachm
 
 `logging4s-logback` also ships an opt-in `Logging4sEncoder` that writes the JSON itself — no `LogstashEncoder`
 round-trip, no Jackson — smaller and faster for the fixed shape it emits (`@timestamp`, `level`, `logger`, `thread`,
-`message`, your values as raw nested JSON, MDC, `stack_trace`). Point your appender at it in `logback.xml`:
+`message`, your values as raw nested JSON, MDC, slf4j 2.x fluent key-value pairs, `stack_trace`). Point your appender
+at it in `logback.xml`:
 
 ```xml
 <encoder class="logging4s.logback.Logging4sEncoder"/>
 ```
+
+It reads logging4s values, the MDC and the event's own key-value pairs, so plain
+`logger.atInfo().addKeyValue("request_id", id).log("event")` from elsewhere in your application keeps its structured
+field. It does **not** understand third-party logstash markers — if a dependency attaches those, stay on
+`LogstashEncoder`.
 
 If you'd rather keep `LogstashEncoder` (or any other), nothing changes — the structured values are attached both ways.
 
@@ -287,7 +334,7 @@ it in your `application.conf`, or with `LOGGING4S_CONSOLE_*` environment variabl
 
 ```hocon
 logging4s.console {
-  level  = "info"    # error | warn | info | debug | trace
+  level  = "info"    # off | error | warn | info | debug | trace
   format = "json"    # json | plain
   color  = "auto"    # auto (TTY only) | on | off   — plain format
   stream = "stdout"  # stdout | stderr
@@ -296,10 +343,17 @@ logging4s.console {
   # per-logger thresholds: exact name or dot-segment prefix, most specific wins
   levels {
     "io.netty"       = "warn"
+    "io.grpc"        = "off"     # silenced entirely
     com.acme.Service = "debug"
   }
 }
 ```
+
+`off` silences a logger completely, at the root or per logger. It is a *threshold*, not a level — `Level` still has
+exactly the five levels you can log at, and the console config holds a `Threshold` (`Threshold.Off` or
+`Threshold.At(level)`) so that no backend has to answer the meaningless question of what it means to *write* a record
+at level "off". The other backends need nothing here: their `enabled` delegates to logback / log4j2 / your slf4j
+provider, each of which already has `OFF` in its own configuration.
 
 ```scala
 import logging4s.console.ConsoleInstances.given
@@ -330,6 +384,7 @@ given LoggableEncodingConfig =
 | `plainTupleStyle` | `AsScala` | tuple plain form: `(1, a)` / `[1, a]` / `1, a` / `{1, a}` |
 | `plainValuesStyle` | `Arrow` | value-list join: `Arrow` `k -> (v)`, `Logfmt` `k=v`, `Colon` `k: v`, `CurlyMap` `{k=v}`, … |
 | `includeSourcePosition` | `true` | attach the call site as a `source` field (`"OrderService.scala:42"`) |
+| `includeValuesInMessage` | `true` | append the values to the message text; `false` keeps the message as bare static text and renders only the structured form |
 
 `keyNameStyle` and `plainValuesStyle` are applied by the backend at aggregation time; `jsonTupleAsArray`,
 `plainTupleStyle` and `mapAsObject` are baked into compound `Loggable`s when they are summoned. A single top-level
@@ -344,7 +399,7 @@ Default keys: scalars key by type name (`Loggable[Int]` → `int`), date/time ty
 Published for Scala 3 under `org.logging4s`:
 
 ```scala
-"org.logging4s" %% "logging4s-<module>" % "4.0.0"
+"org.logging4s" %% "logging4s-<module>" % "5.0.0"
 ```
 
 | | Module | Min. Scala | Notes |
@@ -456,6 +511,100 @@ when the level is off (another ~2×). With the level *on*, the guard costs nothi
 
 ## Migration
 
+### From 4.x to 5.0
+
+5.0 is a correctness release. Everyday call sites are unchanged; what moves is the shape of the output in cases
+where 4.x quietly produced duplicate or wrong data, plus one type-class signature.
+
+```diff
+- "org.logging4s" %% "logging4s-cats" % "4.0.0"
++ "org.logging4s" %% "logging4s-cats" % "5.0.0"
+```
+
+**1. Field policies compose instead of overwriting each other.** In 4.x each call on the `deriving` builder replaced
+the previous policy for that field, so `.mask(_.password)(…).rename(_.password, "pan")` silently **unmasked** the
+value. Policies are now independent properties, and `hide` beats `mask` beats `unembed`:
+
+```scala
+Loggable.deriving[Secret].mask(_.password)(MaskMode.Full).rename(_.password, "pan").derived
+// 4.x: {"pan":"hunter2"}      5.0: {"pan":"*******"}
+```
+
+If you built `FieldPolicy` values yourself, it is now a case class of independent settings rather than an enum of
+mutually exclusive cases.
+
+**2. `Loggable.key` is a `def`.** It was a `val`. Instances written as `override val key = …` keep working unchanged;
+this only matters if you wrote `Loggable` implementations that relied on the abstract member being a `val`.
+
+**3. Recursive types now derive instead of hanging.** `final case class Node(value: Int, next: Option[Node]) derives
+Loggable` used to compile with an `Infinite loop in function body` warning and then deadlock on first use. Field
+codecs are bound lazily, so recursive products, mutually recursive products and recursive enums all work.
+
+**4. Duplicate field names are resolved everywhere.** Values that would have collided now get a free `_2` suffix:
+a user value named `level` or `message` no longer fights the envelope, two case-class fields that normalize to the
+same key stay distinct, a tuple rendered as an object keys its elements apart, and `unembed` falls back to nesting
+rather than splicing a name the parent already uses.
+
+**5. Context keys are compared after normalization.** `withContext(userId = 1)` followed by
+`withContext(user_id = 2)` used to keep both under the default `SnakeCase`; the later one now replaces the earlier,
+matching what call-site values already did.
+
+**6. `Map` keys come from the key's JSON form, not its plain form.** For the built-in instances the rendered name is
+unchanged, but keys whose plain rendering collided (or was masked) no longer collapse into one field.
+
+**7. Non-finite `Float`/`Double` render as JSON `null`.** `NaN` and `±Infinity` used to be written as bare literals,
+which made the whole record unparseable. The plain rendering still shows `NaN` / `Infinity`.
+
+**8. `PlainValuesStyle.Logfmt` quotes and escapes values.** A value containing a space, `=`, a quote or a newline is
+now a quoted logfmt value instead of silently reading as several fields.
+
+**9. ZIO `Debug`-derived `PlainEncoder`s render correctly.** The adapter used to strip the first and last character
+of every rendering: `123` became `2`, `true` became `ru`, and single-character renderings threw.
+
+**10. Key-name styles use `Locale.ROOT`.** Field names no longer depend on the JVM's default locale.
+
+**11. A log message must stay static text.** An interpolated message is now a compile error, because the message is
+the aggregation key — baking values into it produces one distinct key per request:
+
+```diff
+- log.info(s"user $id created")
++ log.info("user created", id.asLogValue("user_id"))
++ info"user created $id"                              // the interpolator extracts them for you
+```
+
+A message that merely *varies* is still fine (`log.info(if created then "user created" else "user updated")`), and so
+is an interpolation without holes. Only holes are rejected.
+
+**12. `ConsoleConfig` holds a `Threshold`, not a `Level`.** This only affects code that builds the console config
+programmatically — HOCON configuration is unchanged apart from gaining `off`:
+
+```diff
+- ConsoleConfig(Level.Info, Format.Json, ColorMode.Off, Stream.Stdout, -1)
++ ConsoleConfig(Threshold.At(Level.Info), Format.Json, ColorMode.Off, Stream.Stdout, -1)
+
+- config.levelFor("io.netty")
++ config.thresholdFor("io.netty")
+```
+
+### New in 5.0 (optional — pick these up while you're here)
+
+- **Named tuples render as objects** keyed by their field names, with no arity limit — see
+  [Named tuples](#named-tuples). There is a runnable
+  [`NamedTupleExample`](examples/src/main/scala/logging4s/examples/NamedTupleExample.scala).
+- **`off` as a console threshold**, at the root or per logger — see [the console section](#standalone-console).
+- **`includeValuesInMessage = false`** keeps the message as bare static text and renders values only into the
+  structured channel, halving the per-event rendering work for structured pipelines. The console's *plain* format
+  ignores the setting, since it has nowhere else to put the values.
+- **A test toolkit** — `Logging.noop[F]` and `logging4s.core.testing.RecordingLogging[F]`, which captures every
+  record for assertions without a logging framework:
+
+  ```scala
+  val log = RecordingLogging[Try]()
+  service(log)
+  log.recorded.map(_.message) shouldEqual Seq("user created")
+  log.recorded.head.valueOf("user_id") shouldEqual Some("1")
+  ```
+
 ### From 3.x to 4.0
 
 4.0 breaks in exactly two places: the Scala version the artifacts are built on, and the way `Map` renders. No call
@@ -504,11 +653,12 @@ it is what you hit first on `3.9`:
 + "org.logging4s" %% "logging4s-cats" % "3.0.0"
 ```
 
-**2. `Logging[F]` now has three abstract members instead of twenty.** If you implement `Logging` yourself (a custom
-backend, or a test double), implement `emit` / `enabled` / `unit`; the twenty per-level overloads became `final` and
-forward to `emit`:
+**2. `Logging[F]` now has four abstract members instead of twenty-one.** If you implement `Logging` yourself (a
+custom backend, or a test double), implement `withContext` / `emit` / `enabled` / `unit`; the twenty per-level
+overloads became `final` and forward to `emit`:
 
 ```scala
+def withContext(context: LoggingContext): Logging[F]
 def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue])(using Position): F[Unit]
 def enabled(level: Level): Boolean
 def unit: F[Unit]
@@ -629,9 +779,33 @@ Using logging4s? Open a PR to add your logo.
 * **Lazy values, eager keys.** A `LoggableValue` holds the value and its `Loggable` and renders on first read, so a
   suppressed record pays for neither representation. Keys are known up front, which is what lets merging, deduplication
   and key-name normalization run without forcing anything.
-* **Custom backends.** Implement `emit` / `enabled` / `unit` — the twenty per-level methods are `final` and forward to
-  `emit`. `LoggingFactory`, `Delay`, `Position`, `LogMessage.render`, and `LoggableValue.normalizeKeys` /
-  `deduplicateKeys` / `mergeByKey` / `withSource` are the public SPI for a backend that isn't shipped here.
+* **Custom backends.** Implement `withContext` / `emit` / `enabled` / `unit` — the twenty per-level methods are `final`
+  and forward to `emit`. `LoggingFactory`, `Delay`, `Position`, `LogRecord.prepare` / `LogRecord.context` and
+  `LogMessage.render` are the public SPI for a backend that isn't shipped here; `LogRecord` is where an event is turned
+  into its final field set, so a new backend gets context merging, key normalization, deduplication, reserved envelope
+  names and the `source` field by calling it rather than reimplementing them.
+* **Writes happen on the calling thread, synchronously, and there is no queue inside logging4s.** A log call is
+  `Delay[F].delay { render; write }`, which for `cats-effect` is `Sync[F].delay` and for ZIO is `ZIO.attempt` — both of
+  which declare the work as cheap and CPU-bound. That is right for a warm sink and wrong for one that can block: stdout
+  in a container nobody is reading fills its pipe buffer and the write parks a compute worker.
+
+  Two deliberate consequences. **First, asynchrony is your logging framework's job, not ours** — logback's
+  `AsyncAppender` and log4j2's `AsyncAppender` / `AsyncLogger` (lock-free, on the LMAX Disruptor) already do this well,
+  and a second queue in `core` would only add double buffering and a second place to lose records on abrupt shutdown.
+  **Second, if your sink really can block, `Delay` is the extension point** — supply your own instance and the library
+  uses it everywhere:
+
+  ```scala
+  import logging4s.cats.CatsInstances.given
+
+  given Delay[IO] = new:                                     // wins over the imported instance
+    override def delay[A](a: => A): IO[A] = Sync[IO].blocking(a)
+    override val unit: IO[Unit]           = IO.unit
+  ```
+
+  This keeps the rest of the application running while a log write waits, at the cost of a thread hop per record —
+  which for a fast sink can exceed the cost of the write itself, so it is a trade to make deliberately and not a
+  default we impose.
 
 ## Contributing
 

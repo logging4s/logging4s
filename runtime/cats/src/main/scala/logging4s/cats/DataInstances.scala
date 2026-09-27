@@ -16,7 +16,7 @@ trait DataInstances:
   given NonEmptySetLoggable: [T: Loggable] => Loggable[NonEmptySet[T]] =
     Loggable[Set[T]].contramap(_.toSortedSet)
 
-  given NonEmptyMapLoggable: [K: Loggable, V: Loggable] => Loggable[NonEmptyMap[K, V]] =
+  given NonEmptyMapLoggable: [K: Loggable, V: Loggable] => LoggableEncodingConfig => Loggable[NonEmptyMap[K, V]] =
     Loggable[Map[K, V]].contramap(_.toSortedMap)
 
   given ChainLoggable: [T: Loggable] => Loggable[Chain[T]] =

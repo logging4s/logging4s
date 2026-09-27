@@ -37,3 +37,15 @@ class LoggableValueSpec extends AnyWordSpec, Matchers:
       val result = LoggableValue.deduplicateKeys(values)
 
       result.map(_.key) shouldEqual Seq("k", "other", "k_2")
+
+    "pick a suffix that is not already taken by another value" in:
+      val values = Seq(
+        LoggableValue(ValueKey("x"), PlainString("a"), JsonString("1")),
+        LoggableValue(ValueKey("x"), PlainString("b"), JsonString("2")),
+        LoggableValue(ValueKey("x_2"), PlainString("c"), JsonString("3")),
+      )
+
+      val keys = LoggableValue.deduplicateKeys(values).map(_.key)
+
+      keys.distinct.size shouldEqual keys.size
+      keys should contain(ValueKey("x_2"))

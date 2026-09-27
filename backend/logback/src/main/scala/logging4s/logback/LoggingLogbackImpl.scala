@@ -3,7 +3,7 @@ package logging4s.logback
 import org.slf4j.Logger
 
 import logging4s.core.config.LoggableEncodingConfig
-import logging4s.core.{Delay, Level, LogMessage, Logging, LoggableValue, LoggingContext, Position}
+import logging4s.core.{Delay, Level, LogMessage, LogRecord, Logging, LoggableValue, LoggingContext, Position}
 
 private[logback] class LoggingLogbackImpl[F[*]: Delay](
     logger: Logger,
@@ -14,17 +14,17 @@ private[logback] class LoggingLogbackImpl[F[*]: Delay](
 
   private val ctxValues = LoggableValue.normalizeKeys(context.values)
 
-  override def withContext(moreContext: LoggingContext): Logging[F] = LoggingLogbackImpl(logger, context + moreContext)
+  override def withContext(moreContext: LoggingContext): Logging[F] =
+    LoggingLogbackImpl(logger, LogRecord.context(ctxValues, moreContext))
 
   override def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue])(using position: Position): F[Unit] =
     Delay[F].delay {
       if enabled(level) then
-        val all        = LoggableValue.mergeByKey(ctxValues, LoggableValue.normalizeKeys(values))
-        val text       = LogMessage.render(message, cause, all)
-        val structured = LoggableValue.withSource(all, position)
+        val record = LogRecord.prepare(ctxValues, values, position, LogRecord.ReservedKeys)
+        val text   = LogMessage.render(message, cause, record.values)
 
-        if structured.isEmpty then write(level, text, cause)
-        else write(level, MarkerHelper.fromLoggable(structured), text, cause)
+        if record.structured.isEmpty then write(level, text, cause)
+        else write(level, MarkerHelper.fromLoggable(record.structured), text, cause)
     }
 
   override def unit: F[Unit] = Delay[F].unit

@@ -8,7 +8,7 @@ import org.scalatest.matchers.should.Matchers
 import org.apache.logging.log4j.{Level, LogManager, ThreadContext}
 import org.apache.logging.log4j.core.{LogEvent, LoggerContext}
 import org.apache.logging.log4j.core.appender.AbstractAppender
-import org.apache.logging.log4j.core.config.{AppenderRef, Configuration, LoggerConfig, Property}
+import org.apache.logging.log4j.core.config.{Configuration, LoggerConfig, Property}
 import org.apache.logging.log4j.message.{Message, MapMessage}
 
 import logging4s.core.{JsonString, Logging, LoggableValue, PlainString, ValueKey}
@@ -39,17 +39,7 @@ class LoggingLog4j2MessageSpec extends AnyWordSpec, Matchers:
       appender.start()
       configuration.addAppender(appender)
 
-      val appenderRef  = AppenderRef.createAppenderRef("message-capturing-appender", null, null)
-      val loggerConfig = LoggerConfig.createLogger(
-        false,
-        Level.ALL,
-        loggerName,
-        "true",
-        Array(appenderRef),
-        null,
-        configuration,
-        null
-      )
+      val loggerConfig = new LoggerConfig(loggerName, Level.ALL, false)
       loggerConfig.addAppender(appender, null, null)
       configuration.addLogger(loggerName, loggerConfig)
       context.updateLoggers()

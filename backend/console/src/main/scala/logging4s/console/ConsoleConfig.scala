@@ -33,16 +33,31 @@ object Stream:
       .find(_.toString.equalsIgnoreCase(raw.trim))
       .getOrElse(throw new IllegalArgumentException(s"Invalid logging4s.console.stream: '$raw'"))
 
+enum Threshold:
+  case Off
+  case At(level: Level)
+
+  def allows(level: Level): Boolean =
+    this match
+      case Off         => false
+      case At(minimum) => level.enabledAt(minimum)
+
+object Threshold:
+  def parse(raw: String): Threshold =
+    if raw.trim.equalsIgnoreCase("off")
+    then Off
+    else Level.parse(raw).map(At.apply).getOrElse(throw new IllegalArgumentException(s"Invalid logging4s.console.level: '$raw'"))
+
 final case class ConsoleConfig(
-    level: Level,
+    level: Threshold,
     format: Format,
     color: ColorMode,
     stream: Stream,
     maxStackTraceLines: Int,
-    levels: Map[String, Level] = Map.empty,
+    levels: Map[String, Threshold] = Map.empty,
 ):
 
-  def levelFor(loggerName: String): Level =
+  def thresholdFor(loggerName: String): Threshold =
     if levels.isEmpty then level
     else
       levels.iterator
@@ -52,28 +67,25 @@ final case class ConsoleConfig(
 
 object ConsoleConfig:
 
-  private def parseLevel(raw: String): Level =
-    Level.parse(raw).getOrElse(throw new IllegalArgumentException(s"Invalid logging4s.console.level: '$raw'"))
-
-  private def parseLevels(section: Config): Map[String, Level] =
+  private def parseThresholds(section: Config): Map[String, Threshold] =
     if !section.hasPath("levels") then Map.empty
     else
       val levels = section.getConfig("levels")
       levels
         .entrySet()
         .asScala
-        .map(entry => ConfigUtil.splitPath(entry.getKey).asScala.mkString(".") -> parseLevel(entry.getValue.unwrapped().toString))
+        .map(entry => ConfigUtil.splitPath(entry.getKey).asScala.mkString(".") -> Threshold.parse(entry.getValue.unwrapped().toString))
         .toMap
 
   private[console] def load(config: Config = ConfigFactory.load()): ConsoleConfig =
     val section = config.getConfig("logging4s.console")
     ConsoleConfig(
-      level = parseLevel(section.getString("level")),
+      level = Threshold.parse(section.getString("level")),
       format = Format.parse(section.getString("format")),
       color = ColorMode.parse(section.getString("color")),
       stream = Stream.parse(section.getString("stream")),
       maxStackTraceLines = section.getInt("max-stack-trace-lines"),
-      levels = parseLevels(section),
+      levels = parseThresholds(section),
     )
 
   given default: ConsoleConfig = load()

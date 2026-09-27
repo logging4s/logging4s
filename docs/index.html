@@ -140,8 +140,8 @@
   <h2 id="start">Quick start</h2>
   <p>Pick a backend and an effect runtime (a JSON library is optional — <code>derives Loggable</code> needs none):</p>
   <pre><code>libraryDependencies ++= Seq(
-  "org.logging4s" %% "logging4s-cats"    % "4.0.0",
-  "org.logging4s" %% "logging4s-logback" % "4.0.0"
+  "org.logging4s" %% "logging4s-cats"    % "5.0.0",
+  "org.logging4s" %% "logging4s-logback" % "5.0.0"
 )</code></pre>
   <pre><code>import cats.effect.{IO, IOApp}
 
@@ -163,7 +163,7 @@ object Main extends IOApp.Simple:
   <h2 id="loggable">The <code>Loggable</code> type class</h2>
   <p>Everything centers on one type class. A <code>Loggable[A]</code> is required for any value you log:</p>
   <pre><code>trait Loggable[A]:
-  val key: ValueKey            // the field name the value logs under
+  def key: ValueKey            // the field name the value logs under
   def json(a: A): JsonString   // structured form
   def plain(a: A): PlainString // human-readable form, appended to the message</code></pre>
   <p>
@@ -185,6 +185,17 @@ Loggable.deriving[User]       // key "user"     Loggable.deriving[User]("account
 
 enum Color derives Loggable:
   case Red, Green, Blue</code></pre>
+  <p>
+    Recursive types derive too — trees, ASTs, mutually recursive products and recursive enums.
+  </p>
+
+  <h3>Named tuples</h3>
+  <p>
+    A named tuple needs no declaration at all — it renders as an object keyed by its own field names, goes through the
+    same <code>keyNameStyle</code> as a derived product, and has no arity limit:
+  </p>
+  <pre><code>log.info("order priced", (currency = "EUR", cents = 1999).asLogValue("price"))
+// "price":{"currency":"EUR","cents":1999}</code></pre>
 
   <h3>From an existing codec</h3>
   <p>
@@ -242,6 +253,17 @@ yield ()</code></pre>
     site as a <code>source</code> field.
   </p>
   <p>
+    The message must stay static text — it is the aggregation key. <code>log.info(s"user $id created")</code> is a
+    compile error; pass the value as a value, or let the interpolator extract it:
+  </p>
+  <pre><code>log.info("user created", id.asLogValue("user_id"))
+info"user created $id"</code></pre>
+  <p>
+    The call site is captured at compile time, so it costs a constant rather than a stack-trace walk. It is the position
+    of the <em>log call</em>: a helper that logs makes every record point at the helper, unless it takes
+    <code>(using Position)</code> itself.
+  </p>
+  <p>
     Duplicate keys resolve by specificity: a call-site value overrides a context value with the same key, and a later
     <code>withContext</code> overrides an earlier one. Only duplicates within a single call are suffixed
     (<code>k</code>, <code>k_2</code>).
@@ -263,6 +285,15 @@ yield ()</code></pre>
   <pre><code>{"message":"user created: …","user":{"id":1,"name":"John"}}     // logback / log4j2 / console
 {"message":"user created: …","user":"{\"id\":1,\"name\":\"John\"}"} // slf4j — stringly-typed</code></pre>
   <p>
+    <code>log4j2</code> reaches the text and the values through the <em>same</em> resolver, so its event template has
+    to ask for both — a template with only <code>{"$resolver": "message"}</code> emits the values and drops the
+    human-readable text. Use:
+  </p>
+  <pre><code>{
+  "message": {"$resolver": "message", "stringified": true},
+  "data": {"$resolver": "message"}
+}</code></pre>
+  <p>
     We never touch your <code>logback.xml</code> / <code>log4j2.xml</code>: values are only attached to the event and
     your encoder/layout decides what to render. <code>logging4s-logback</code> also ships an opt-in
     <code>Logging4sEncoder</code> that writes the JSON itself (no logstash round-trip, no Jackson):
@@ -274,11 +305,16 @@ yield ()</code></pre>
     (override in <code>application.conf</code> or with <code>LOGGING4S_CONSOLE_*</code> env vars):
   </p>
   <pre><code>logging4s.console {
-  level  = "info"    # error | warn | info | debug | trace
+  level  = "info"    # off | error | warn | info | debug | trace
   format = "json"    # json | plain
   color  = "auto"    # auto (TTY only) | on | off
   stream = "stdout"  # stdout | stderr
   max-stack-trace-lines = -1
+
+  levels {
+    "io.netty" = "warn"
+    "io.grpc"  = "off"   # silenced entirely
+  }
 }</code></pre>
 
   <h2 id="config">Configuration</h2>
@@ -294,6 +330,7 @@ yield ()</code></pre>
     <tr><td><code>plainTupleStyle</code></td><td><code>AsScala</code></td><td>tuple plain form: <code>(1, a)</code> / <code>[1, a]</code> / <code>1, a</code> / <code>{1, a}</code></td></tr>
     <tr><td><code>plainValuesStyle</code></td><td><code>Arrow</code></td><td>value join: <code>k -> (v)</code> / <code>k=v</code> / <code>k: v</code> / <code>{k=v}</code></td></tr>
     <tr><td><code>includeSourcePosition</code></td><td><code>true</code></td><td>attach the call site as a <code>source</code> field (<code>"OrderService.scala:42"</code>)</td></tr>
+    <tr><td><code>includeValuesInMessage</code></td><td><code>true</code></td><td>append the values to the message text; <code>false</code> keeps the message as bare static text and renders only the structured form</td></tr>
   </table>
   <p class="muted">
     Default keys: scalars key by type name (<code>Loggable[Int]</code> → <code>int</code>), date/time use
@@ -304,7 +341,7 @@ yield ()</code></pre>
 
   <h2 id="modules">Modules</h2>
   <p>Published for Scala 3 under <code>org.logging4s</code>:</p>
-  <pre><code>"org.logging4s" %% "logging4s-&lt;module&gt;" % "4.0.0"</code></pre>
+  <pre><code>"org.logging4s" %% "logging4s-&lt;module&gt;" % "5.0.0"</code></pre>
   <table>
     <tr><th>Kind</th><th>Module</th><th>Min. Scala</th><th>Notes</th></tr>
     <tr><td>core</td><td><code>logging4s-core</code></td><td>3.9 LTS</td><td>type classes + <code>Logging</code>; no backend dependency</td></tr>
@@ -400,6 +437,51 @@ yield ()</code></pre>
     allocations outright — so read the orders of magnitude, not the nanoseconds.
   </p>
   <h2 id="migration">Migration</h2>
+  <h3>From 4.x to 5.0</h3>
+  <p>
+    5.0 is a correctness release. Everyday call sites are unchanged; what moves is the output in cases where 4.x
+    quietly produced duplicate or wrong data, plus one type-class signature.
+  </p>
+  <pre><code>- "org.logging4s" %% "logging4s-cats" % "4.0.0"
++ "org.logging4s" %% "logging4s-cats" % "5.0.0"</code></pre>
+  <ul>
+    <li><strong>Field policies compose instead of overwriting each other</strong> —
+      <code>.mask(_.password)(…).rename(_.password, "pan")</code> used to silently <em>unmask</em> the value.
+      <code>hide</code> beats <code>mask</code> beats <code>unembed</code>, and <code>FieldPolicy</code> is now a case
+      class of independent settings rather than an enum of mutually exclusive cases.</li>
+    <li><strong>Recursive types derive instead of hanging</strong> — recursive products, mutually recursive products
+      and recursive enums all work; field codecs are bound lazily.</li>
+    <li><strong>Duplicate field names are resolved everywhere</strong> — a user value named <code>level</code>, two
+      fields that normalize to the same key, a tuple rendered as an object, and <code>unembed</code> colliding with
+      its parent.</li>
+    <li><strong>Context keys are compared after normalization</strong>, matching what call-site values already did.</li>
+    <li><strong><code>Map</code> keys come from the key's JSON form</strong>, so keys whose plain rendering collided
+      no longer collapse into one field.</li>
+    <li><strong>Non-finite <code>Float</code>/<code>Double</code> render as JSON <code>null</code></strong> instead of
+      bare <code>NaN</code>, which made the whole record unparseable.</li>
+    <li><strong><code>Logfmt</code> quotes and escapes values</strong>; <strong>key-name styles use
+      <code>Locale.ROOT</code></strong>; <strong>ZIO <code>Debug</code> plain encoders no longer corrupt values</strong>
+      (<code>123</code> used to render as <code>2</code>).</li>
+    <li><strong><code>Loggable.key</code> is a <code>def</code></strong> — <code>override val key = …</code> keeps
+      working.</li>
+    <li><strong>A log message must stay static text</strong> — <code>log.info(s"user $id created")</code> no longer
+      compiles; pass <code>id</code> as a value, or use the <code>info"…"</code> interpolator. A message that merely
+      varies, or an interpolation without holes, is still fine.</li>
+    <li><strong><code>ConsoleConfig</code> holds a <code>Threshold</code></strong> — code that builds it writes
+      <code>Threshold.At(Level.Info)</code> instead of <code>Level.Info</code>, and <code>levelFor</code> became
+      <code>thresholdFor</code>. HOCON is unchanged apart from gaining <code>off</code>.</li>
+  </ul>
+  <p>New in 5.0:</p>
+  <ul>
+    <li><strong>Named tuples</strong> render as objects keyed by their field names, with no arity limit.</li>
+    <li><strong><code>off</code></strong> as a console threshold, at the root or per logger.</li>
+    <li><strong><code>includeValuesInMessage = false</code></strong> keeps the message as bare static text and renders
+      values only into the structured channel.</li>
+    <li><strong>A test toolkit</strong> — <code>Logging.noop[F]</code> and
+      <code>logging4s.core.testing.RecordingLogging[F]</code>, which records every event for assertions without a
+      logging framework.</li>
+  </ul>
+
   <h3>From 3.x to 4.0</h3>
   <p>
     4.0 breaks in exactly two places: the Scala version the artifacts are built on, and the way <code>Map</code>
@@ -436,8 +518,9 @@ yield ()</code></pre>
   <pre><code>- "org.logging4s" %% "logging4s-cats" % "2.0.1"
 + "org.logging4s" %% "logging4s-cats" % "3.0.0"</code></pre>
   <ul>
-    <li><strong><code>Logging[F]</code> has three abstract members instead of twenty</strong> — implement
-      <code>emit</code> / <code>enabled</code> / <code>unit</code>; the per-level overloads are <code>final</code>.</li>
+    <li><strong><code>Logging[F]</code> has four abstract members instead of twenty-one</strong> — implement
+      <code>withContext</code> / <code>emit</code> / <code>enabled</code> / <code>unit</code>; the per-level overloads
+      are <code>final</code>.</li>
     <li><strong><code>Level</code> moved to <code>logging4s.core</code></strong> from <code>logging4s.console</code>.</li>
     <li><strong><code>LoggableValue</code> is a sealed trait and renders lazily</strong> — no <code>copy</code>, no
       pattern matching; use <code>withKey</code> to rewrite a key.</li>

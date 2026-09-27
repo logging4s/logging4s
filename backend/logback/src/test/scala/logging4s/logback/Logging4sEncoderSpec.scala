@@ -86,3 +86,33 @@ class Logging4sEncoderSpec extends AnyWordSpec, Matchers:
 
       json.get("a").asInt() shouldEqual 1
       json.get("b").asInt() shouldEqual 2
+
+    "keep structured data that plain SLF4J code attached through the fluent API" in:
+      val json = LoggingLogbackJsonSpec.appenderLock.synchronized {
+        val logbackLogger = LoggerFactory.getLogger("Logging4sEncoderSpec-fluent").asInstanceOf[LogbackLogger]
+        logbackLogger.setLevel(Level.TRACE)
+
+        val context = logbackLogger.getLoggerContext
+        val out     = new ByteArrayOutputStream()
+
+        val encoder = new Logging4sEncoder()
+        encoder.setContext(context)
+        encoder.start()
+
+        val appender = new OutputStreamAppender[ILoggingEvent]()
+        appender.setContext(context)
+        appender.setEncoder(encoder)
+        appender.setOutputStream(out)
+        appender.start()
+
+        logbackLogger.addAppender(appender)
+        try logbackLogger.atInfo().addKeyValue("request_id", "abc").log("event")
+        finally
+          appender.stop()
+          logbackLogger.detachAppender(appender)
+
+        mapper.readTree(out.toString("UTF-8"))
+      }
+
+      json.get("request_id").asText() shouldEqual "abc"
+      json.get("message").asText() shouldEqual "event"

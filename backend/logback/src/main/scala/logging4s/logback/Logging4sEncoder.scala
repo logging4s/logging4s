@@ -25,6 +25,9 @@ class Logging4sEncoder extends EncoderBase[ILoggingEvent]:
 
     event.getMDCPropertyMap.forEach((key, value) => builder.field(key, value))
 
+    val keyValues = event.getKeyValuePairs
+    if keyValues != null then keyValues.forEach(pair => builder.field(pair.key, String.valueOf(pair.value)))
+
     val throwable = event.getThrowableProxy
     if throwable != null then builder.field("stack_trace", ThrowableProxyUtil.asString(throwable))
 

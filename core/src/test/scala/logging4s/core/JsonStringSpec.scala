@@ -24,3 +24,11 @@ class JsonStringSpec extends AnyWordSpec, Matchers:
   "JsonString.obj" must:
     "quote field names so a renamed key cannot break out of the object" in:
       JsonString.obj("a\"b" -> JsonString("1")).value shouldEqual """{"a\"b":1}"""
+
+  "StructuredJson.Builder.result" must:
+    "stay the same when read more than once" in:
+      val builder = StructuredJson.Builder()
+      builder.field("x", "y")
+
+      builder.result shouldEqual """{"x":"y"}"""
+      builder.result shouldEqual """{"x":"y"}"""

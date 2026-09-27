@@ -210,3 +210,29 @@ class LoggableSpec extends AnyWordSpec, Matchers:
       loggable.key shouldEqual "password"
       loggable.plain("hunter2") shouldEqual "<hidden>"
       loggable.json("hunter2") shouldEqual "\"<hidden>\""
+
+    "render a non-finite Float or Double as JSON null rather than an unparseable literal" in:
+      Loggable[Double].json(Double.NaN) shouldEqual "null"
+      Loggable[Double].json(Double.PositiveInfinity) shouldEqual "null"
+      Loggable[Double].json(Double.NegativeInfinity) shouldEqual "null"
+      Loggable[Float].json(Float.NaN) shouldEqual "null"
+      Loggable[Float].json(Float.PositiveInfinity) shouldEqual "null"
+
+    "keep the human-readable form of a non-finite Float or Double in plain" in:
+      Loggable[Double].plain(Double.NaN) shouldEqual "NaN"
+      Loggable[Double].plain(Double.PositiveInfinity) shouldEqual "Infinity"
+
+    "keep finite Float and Double values as JSON numbers" in:
+      Loggable[Double].json(1.5) shouldEqual "1.5"
+      Loggable[Float].json(2.5f) shouldEqual "2.5"
+
+    "keep Map keys distinct when their plain forms coincide" in:
+      val rendered = Loggable[Map[Option[String], Int]].json(Map(None -> 1, Some("") -> 2)).value
+
+      rendered should (be("""{"null":1,"":2}""") or be("""{"":2,"null":1}"""))
+
+    "keep masking of a Map key out of the JSON schema" in:
+      given Loggable[String] = Loggable.LoggableString.mapPlain(_ => "***")
+
+      Loggable[Map[String, Int]].json(Map("a" -> 1)) shouldEqual """{"a":1}"""
+      Loggable[Map[String, Int]].plain(Map("a" -> 1)) shouldEqual "*** -> (1)"

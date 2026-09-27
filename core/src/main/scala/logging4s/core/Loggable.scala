@@ -3,6 +3,7 @@ package logging4s.core
 import java.util.UUID
 import java.time.{Duration as JavaDuration, *}
 
+import scala.NamedTuple.NamedTuple
 import scala.deriving.Mirror
 import scala.concurrent.duration.FiniteDuration
 
@@ -12,7 +13,7 @@ import logging4s.core.deriving.{macros, LoggableBuilder}
 trait Loggable[A]:
   self: Loggable[A] =>
 
-  val key: ValueKey
+  def key: ValueKey
   def json(a: A): JsonString
   def plain(a: A): PlainString
 
@@ -85,8 +86,16 @@ object Loggable extends LoggableLowPriority:
   given LoggableBoolean: Loggable[Boolean] = fromAnyVal("boolean")
   given LoggableInt: Loggable[Int]         = fromAnyVal("int")
   given LoggableLong: Loggable[Long]       = fromAnyVal("long")
-  given LoggableFloat: Loggable[Float]     = fromAnyVal("float")
-  given LoggableDouble: Loggable[Double]   = fromAnyVal("double")
+
+  given LoggableFloat: Loggable[Float] = new:
+    override val key: ValueKey                = ValueKey("float")
+    override def plain(a: Float): PlainString = PlainString(a.toString)
+    override def json(a: Float): JsonString   = if a.isFinite then JsonString(a.toString) else JsonString.Null
+
+  given LoggableDouble: Loggable[Double] = new:
+    override val key: ValueKey                 = ValueKey("double")
+    override def plain(a: Double): PlainString = PlainString(a.toString)
+    override def json(a: Double): JsonString   = if a.isFinite then JsonString(a.toString) else JsonString.Null
 
   given LoggableBigDecimal: Loggable[BigDecimal] = new:
     override val key: ValueKey                     = ValueKey("bigdecimal")
@@ -174,6 +183,9 @@ object Loggable extends LoggableLowPriority:
   ) => Loggable[(A, B, C, D, E)] =
     macros.deriveTuple
 
+  inline given LoggableNamedTuple: [N <: Tuple, V <: Tuple] => LoggableEncodingConfig => Loggable[NamedTuple[N, V]] =
+    macros.deriveNamedTuple[N, V]
+
   given LoggableList: [T] => (L: Loggable[T]) => Loggable[List[T]] =
     new:
       override val key: ValueKey                  = L.key.pluralized
@@ -215,9 +227,16 @@ object Loggable extends LoggableLowPriority:
         then PlainString(cfg.plainValuesStyle.renderFields(a.toSeq.map((k, v) => KL.plain(k).value -> VL.plain(v).value)))
         else PlainString.array(a.toSeq.map(entry.plain)*)
 
+      private def objectKey(k: K): String =
+        val encoded = KL.json(k).value
+
+        if encoded.length >= 2 && encoded.charAt(0) == '"' && encoded.charAt(encoded.length - 1) == '"'
+        then encoded
+        else JsonString.quoted(encoded).value
+
       override def json(a: Map[K, V]): JsonString =
         if cfg.mapAsObject
-        then JsonString.obj(a.toSeq.map((k, v) => KL.plain(k).value -> VL.json(v))*)
+        then JsonString(a.iterator.map((k, v) => s"${objectKey(k)}:${VL.json(v).value}").mkString("{", ",", "}"))
         else JsonString.array(a.toSeq.map(entry.json)*)
 
 private[core] trait LoggableLowPriority:

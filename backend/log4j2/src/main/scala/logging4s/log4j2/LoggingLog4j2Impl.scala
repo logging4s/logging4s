@@ -14,15 +14,15 @@ private[log4j2] class LoggingLog4j2Impl[F[*]: Delay](
 
   private val ctxValues = LoggableValue.normalizeKeys(context.values)
 
-  override def withContext(moreContext: LoggingContext): Logging[F] = LoggingLog4j2Impl(logger, context + moreContext)
+  override def withContext(moreContext: LoggingContext): Logging[F] =
+    LoggingLog4j2Impl(logger, LogRecord.context(ctxValues, moreContext))
 
   override def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue])(using position: Position): F[Unit] =
     Delay[F].delay {
       if enabled(level) then
-        val deduplicated = LoggableValue.deduplicateKeys(LoggableValue.mergeByKey(ctxValues, LoggableValue.normalizeKeys(values)))
-        val structured   = LoggableValue.withSource(deduplicated, position)
-        val entries      = structured.map(v => v.key.value -> v.json.value)
-        val payload      = LoggableMapMessage(entries, LogMessage.render(message, cause, deduplicated))
+        val record  = LogRecord.prepare(ctxValues, values, position, LogRecord.ReservedKeys)
+        val entries = record.structured.map(v => v.key.value -> v.json.value)
+        val payload = LoggableMapMessage(entries, LogMessage.render(message, cause, record.values))
 
         write(level, payload, cause.orNull)
     }

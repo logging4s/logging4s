@@ -1,7 +1,7 @@
 import Dependencies.Versions
 import com.typesafe.tools.mima.plugin.MimaKeys.mimaPreviousArtifacts
 
-lazy val binaryCompatibleWith = Set("4.0.0")
+lazy val binaryCompatibleWith = Set.empty[String]
 
 lazy val noPublishSettings = Seq(
   publish / skip        := true,
@@ -13,7 +13,7 @@ lazy val commonSettings = Seq(
   organizationName       := "Logging4s",
   homepage               := Some(uri("https://logging4s.org/")),
   description            := "Structural logging for Scala 3 for any backend, runtime and json library",
-  version                := "4.0.0",
+  version                := "5.0.0",
   versionScheme          := Some("semver-spec"),
   scalaVersion           := Versions.scalaLTS,
   parallelExecution      := true,
@@ -70,7 +70,7 @@ lazy val logback = project
     libraryDependencies ++= Dependencies.Logback.all,
     libraryDependencies += Dependencies.Logback.jacksonDatabind,
   )
-  .dependsOn(core)
+  .dependsOn(core % "compile->compile;test->test")
 
 lazy val log4j2 = project
   .in(file("backend/log4j2"))
@@ -79,7 +79,7 @@ lazy val log4j2 = project
     name := "logging4s-log4j2",
     libraryDependencies ++= Dependencies.Log4j2.all,
   )
-  .dependsOn(core)
+  .dependsOn(core % "compile->compile;test->test")
 
 lazy val slf4j = project
   .in(file("backend/slf4j"))
@@ -89,7 +89,7 @@ lazy val slf4j = project
     libraryDependencies ++= Dependencies.Slf4j.all,
   )
   .dependsOn(
-    core,
+    core    % "compile->compile;test->test",
     logback % Test,
   )
 
@@ -100,7 +100,7 @@ lazy val console = project
     name := "logging4s-console",
     libraryDependencies ++= Dependencies.Console.all,
   )
-  .dependsOn(core)
+  .dependsOn(core % "compile->compile;test->test")
 
 lazy val backend = project
   .in(file("backend"))
@@ -146,6 +146,7 @@ lazy val kyo = project
   .settings(
     name := "logging4s-kyo",
     libraryDependencies ++= Dependencies.Kyo.all,
+    scalacOptions += "-Wconf:msg=@nowarn annotation does not suppress any warnings:s",
   )
   .dependsOn(
     core,

@@ -8,7 +8,9 @@ trait DebugToPlainEncoderInstance:
 
   given DebugPlainEncoder: [T] => (D: Debug[T]) => PlainEncoder[T] =
     (a: T) =>
-      val rendered = D.render(a)
-      PlainString(rendered.substring(1, rendered.length() - 1))
+      D.debug(a) match
+        case Debug.Repr.String(value) => PlainString(value)
+        case Debug.Repr.Char(value)   => PlainString(value.toString)
+        case repr                     => PlainString(repr.render)
 
 object DebugToPlainEncoderInstance extends DebugToPlainEncoderInstance

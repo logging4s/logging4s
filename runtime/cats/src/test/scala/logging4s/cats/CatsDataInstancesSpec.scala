@@ -52,3 +52,12 @@ class CatsDataInstancesSpec extends AnyWordSpec, Matchers:
 
       Loggable[Ior[String, Int]].plain(Ior.both("err", 5)) shouldEqual "(err, 5)"
       Loggable[Ior[String, Int]].json(Ior.both("err", 5)) shouldEqual """["err",5]"""
+
+    "let NonEmptyMap follow the application's encoding config, like a plain Map" in:
+      given logging4s.core.config.LoggableEncodingConfig =
+        logging4s.core.config.LoggableEncodingConfig(mapAsObject = false)
+
+      val nem = NonEmptyMap.of("a" -> 1)
+
+      Loggable[NonEmptyMap[String, Int]].json(nem) shouldEqual Loggable[Map[String, Int]].json(Map("a" -> 1))
+      Loggable[NonEmptyMap[String, Int]].json(nem) shouldEqual """[["a",1]]"""

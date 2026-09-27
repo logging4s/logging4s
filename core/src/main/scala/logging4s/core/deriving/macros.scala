@@ -1,6 +1,7 @@
 package logging4s.core.deriving
 
 import scala.quoted.*
+import scala.NamedTuple.NamedTuple
 import scala.deriving.Mirror
 import scala.compiletime.{constValue, erasedValue, summonAll, summonFrom, summonInline}
 
@@ -12,6 +13,17 @@ private[core] object macros:
 
   inline def deriveTuple[T <: Tuple](using cfg: LoggableEncodingConfig): Loggable[T] =
     TupleLoggable[T](summonAll[Tuple.Map[T, Loggable]].toList.asInstanceOf[List[Loggable[Any]]], cfg)
+
+  inline def deriveNamedTuple[N <: Tuple, V <: Tuple](using cfg: LoggableEncodingConfig): Loggable[NamedTuple[N, V]] =
+    val names = elemLabels[N]
+
+    ProductLoggable[NamedTuple[N, V]](
+      typeName = names.mkString("_"),
+      labels = names,
+      codecs = summonAll[Tuple.Map[V, Loggable]].toList.asInstanceOf[List[Loggable[Any]]],
+      policies = Map.empty,
+      cfg = cfg,
+    )
 
   inline def derived[A](using m: Mirror.Of[A]): Loggable[A] =
     inline m match

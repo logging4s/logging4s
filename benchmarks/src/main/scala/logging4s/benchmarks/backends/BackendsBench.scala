@@ -17,7 +17,7 @@ import ch.qos.logback.classic.{Level as LogbackLevel, Logger as LogbackLogger}
 import org.apache.logging.log4j.{Level as Log4jLevel, LogManager}
 import org.apache.logging.log4j.core.{Layout, LogEvent, LoggerContext}
 import org.apache.logging.log4j.core.appender.AbstractAppender
-import org.apache.logging.log4j.core.config.{AppenderRef, LoggerConfig, Property}
+import org.apache.logging.log4j.core.config.{LoggerConfig, Property}
 import org.apache.logging.log4j.layout.template.json.JsonTemplateLayout
 
 import logging4s.logback.Logging4sEncoder
@@ -54,9 +54,11 @@ class BackendsBench:
     log4j2Ours = log4j2("bench-log4j2-ours", nestedTemplate)
 
   private def console(): Logging[Try] =
+    import logging4s.console.{ColorMode, ConsoleConfig, Format, Stream, Threshold}
     import logging4s.console.ConsoleInstances.given
-    import logging4s.console.{ColorMode, ConsoleConfig, Format, Stream}
-    given ConsoleConfig = ConsoleConfig(Level.Trace, Format.Json, ColorMode.Off, Stream.Stdout, -1)
+
+    given ConsoleConfig = ConsoleConfig(Threshold.At(Level.Trace), Format.Json, ColorMode.Off, Stream.Stdout, -1)
+
     Logging.createTry("bench-console").get
 
   private def logback(name: String, encoder: LogbackEncoder[ILoggingEvent]): Logging[Try] =
@@ -90,8 +92,7 @@ class BackendsBench:
     appender.start()
     config.addAppender(appender)
 
-    val ref          = AppenderRef.createAppenderRef(s"$name-appender", null, null)
-    val loggerConfig = LoggerConfig.createLogger(false, Log4jLevel.TRACE, name, "true", Array(ref), null, config, null)
+    val loggerConfig = new LoggerConfig(name, Log4jLevel.TRACE, false)
     loggerConfig.addAppender(appender, null, null)
     config.addLogger(name, loggerConfig)
     context.updateLoggers()

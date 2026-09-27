@@ -13,6 +13,8 @@ final class LoggableMapMessage(
 
   override def getFormattedMessage: String = plainMessage
 
+  override def formatTo(buffer: java.lang.StringBuilder): Unit = buffer.append(plainMessage): Unit
+
   override def getFormattedMessage(formats: Array[String]): String =
     if formats != null && formats.exists(_.equalsIgnoreCase("JSON"))
     then entries.iterator.map((key, value) => s"${JsonString.quoted(key).value}:$value").mkString("{", ",", "}")
