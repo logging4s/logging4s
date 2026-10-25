@@ -1,7 +1,7 @@
 import Dependencies.Versions
 import com.typesafe.tools.mima.plugin.MimaKeys.mimaPreviousArtifacts
 
-lazy val binaryCompatibleWith = Set.empty[String]
+lazy val binaryCompatibleWith = Set("5.0.0")
 
 lazy val noPublishSettings = Seq(
   publish / skip        := true,
