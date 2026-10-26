@@ -3,6 +3,8 @@ import com.typesafe.tools.mima.plugin.MimaKeys.mimaPreviousArtifacts
 
 lazy val binaryCompatibleWith = Set.empty[String]
 
+lazy val compilerOnlyOptions = Seq("-source", "-Xcheck-macros", "-Wvalue-discard", "-Wnonunit-statement", "-Wconf")
+
 lazy val noPublishSettings = Seq(
   publish / skip        := true,
   mimaPreviousArtifacts := Set.empty,
@@ -54,6 +56,7 @@ lazy val commonSettings = Seq(
     "17",
   ),
   Test / scalacOptions ~= (_.filterNot(Set("-Wvalue-discard", "-Wnonunit-statement"))),
+  Compile / doc / scalacOptions ~= (_.filterNot(option => compilerOnlyOptions.exists(option.startsWith))),
   credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials"),
 )
 
