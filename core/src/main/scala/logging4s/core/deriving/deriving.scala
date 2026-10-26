@@ -10,9 +10,11 @@ enum MaskMode:
   case Full
   case KeepLast(visible: Int)
   case KeepFirst(visible: Int)
+  case Fixed(mask: String)
 
   def apply(value: String): String =
     this match
+      case Fixed(mask)  => mask
       case Full         => "*" * value.length
       case KeepLast(n)  => if value.length <= n then value else "*" * (value.length - n) + value.takeRight(n)
       case KeepFirst(n) => if value.length <= n then value else value.take(n) + "*" * (value.length - n)

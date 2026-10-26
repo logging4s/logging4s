@@ -61,9 +61,17 @@ private[console] object Renderer:
     val enabled = console.color match
       case ColorMode.On   => true
       case ColorMode.Off  => false
-      case ColorMode.Auto => System.console() != null
+      case ColorMode.Auto => interactive
 
     if !enabled then text else s"$Esc[${colorCode(level)}m$text$Esc[0m"
+
+  private lazy val interactive: Boolean =
+    val console = System.console()
+    console != null && terminal(console)
+
+  private def terminal(console: java.io.Console): Boolean =
+    try classOf[java.io.Console].getMethod("isTerminal").invoke(console) == java.lang.Boolean.TRUE
+    catch case _: ReflectiveOperationException => true
 
   private def colorCode(level: Level): String =
     level match

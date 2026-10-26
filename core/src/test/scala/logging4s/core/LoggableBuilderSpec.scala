@@ -25,6 +25,13 @@ class LoggableBuilderSpec extends AnyWordSpec, Matchers:
 
       loggable.json(Account(7, "42")) shouldEqual """{"user_id":7,"card_number":"**"}"""
 
+    "mask a field with a fixed mask, so the secret's length does not leak" in:
+      val loggable = Loggable.deriving[Account].mask(_.cardNumber)(MaskMode.Fixed("***")).derived
+
+      loggable.json(Account(7, "42")) shouldEqual """{"user_id":7,"card_number":"***"}"""
+      loggable.json(Account(7, "1234567890")) shouldEqual """{"user_id":7,"card_number":"***"}"""
+      loggable.plain(Account(7, "1234567890")) shouldEqual "user_id -> (7), card_number -> (***)"
+
     "rename a field's key" in:
       val loggable = Loggable.deriving[Account].rename(_.userId, "uid").derived
 

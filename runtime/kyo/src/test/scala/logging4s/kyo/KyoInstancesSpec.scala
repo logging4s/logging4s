@@ -45,3 +45,5 @@ class KyoInstancesSpec extends AnyWordSpec, Matchers:
 
       L.json(Maybe.Absent) shouldEqual "null"
       L.plain(Maybe.Absent) shouldEqual ""
+      L.isAbsent(Maybe.Absent) shouldEqual true
+      L.isAbsent(user) shouldEqual false

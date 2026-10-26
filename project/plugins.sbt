@@ -1,6 +1,6 @@
 addSbtPlugin("com.github.sbt"      % "sbt-pgp"          % "2.3.2")
 addSbtPlugin("org.jetbrains.scala" % "sbt-ide-settings" % "1.1.4")
 addSbtPlugin("org.scalameta"       % "sbt-scalafmt"     % "2.6.2")
-addSbtPlugin("com.timushev.sbt"    % "sbt-updates"      % "0.7.0")
+addSbtPlugin("com.timushev.sbt"    % "sbt-updates"      % "0.7.1")
 addSbtPlugin("pl.project13.scala"  % "sbt-jmh"          % "0.4.8")
-addSbtPlugin("com.typesafe"        % "sbt-mima-plugin"  % "1.2.0")
+addSbtPlugin("com.typesafe"        % "sbt-mima-plugin"  % "1.2.1")

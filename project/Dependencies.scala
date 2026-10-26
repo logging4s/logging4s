@@ -5,26 +5,26 @@ object Dependencies {
   object Versions {
     val scalaLTS = "3.9.0"
 
-    val logback         = "1.6.3"
+    val logback         = "1.6.6"
     val logbackEncoder  = "9.0"
     val log4j           = "2.26.1"
-    val slf4j           = "2.0.19"
+    val slf4j           = "2.0.20"
     val typesafeConfig  = "1.4.9"
-    val jacksonDatabind = "2.22.2"
+    val jacksonDatabind = "2.22.4"
 
     val cats              = "2.13.0"
     val catsEffect        = "3.7.1"
     val catsEffectTesting = "1.8.0"
 
-    val zio        = "2.1.26"
+    val zio        = "2.1.27"
     val zioPrelude = "1.0.0-RC48"
 
-    val kyo = "1.0.0-RC6"
+    val kyo = "1.0.0-RC7"
 
     val rapid = "2.9.9"
 
-    val circe     = "0.14.16"
-    val jsoniter  = "2.40.1"
+    val circe     = "0.14.17"
+    val jsoniter  = "2.42.0"
     val playJson  = "3.0.6"
     val sprayJson = "1.3.6"
     val json4s    = "4.0.7"
@@ -32,8 +32,8 @@ object Dependencies {
     val borer     = "1.18.0"
     val upickle   = "4.4.3"
     val weepickle = "1.9.1"
-    val zioJson   = "1.1.0"
-    val fabric    = "1.30.0"
+    val zioJson   = "1.1.1"
+    val fabric    = "1.30.3"
 
     val scalatest     = "3.2.20"
     val scalatestPlus = "3.2.20.0"
@@ -70,7 +70,6 @@ object Dependencies {
 
   object Cats {
     val catsEffect3        = "org.typelevel" %% "cats-effect"                   % Versions.catsEffect
-    val catsEffect3Kernel  = "org.typelevel" %% "cats-effect-kernel"            % Versions.catsEffect
     val catsEffect3Testing = "org.typelevel" %% "cats-effect-testing-scalatest" % Versions.catsEffectTesting % Test
   }
 
@@ -132,7 +131,7 @@ object Dependencies {
 
   object Testing {
     val scalatest  = "org.scalatest"     %% "scalatest"       % Versions.scalatest     % Test
-    val scalacheck = "org.scalatestplus" %% "scalacheck-1-19" % Versions.scalatestPlus % Test
+    val scalacheck = "org.scalatestplus" %% "scalacheck-1-20" % Versions.scalatestPlus % Test
     val scalactic  = "org.scalactic"     %% "scalactic"       % Versions.scalatest     % Test
 
     val all: Seq[ModuleID] = Seq(scalatest, scalactic, scalacheck)

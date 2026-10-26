@@ -19,6 +19,23 @@ class CatsDataInstancesSpec extends AnyWordSpec, Matchers:
       Loggable[NonEmptyList[Int]].plain(nel) shouldEqual "[1,2,3]"
       Loggable[NonEmptyList[Int]].json(nel) shouldEqual "[1,2,3]"
 
+    "right summon NonEmptyChain instances" in:
+      val nec = NonEmptyChain.of(1, 2, 3)
+
+      Loggable[NonEmptyChain[Int]].key shouldEqual "ints"
+      Loggable[NonEmptyChain[Int]].plain(nec) shouldEqual "[1,2,3]"
+      Loggable[NonEmptyChain[Int]].json(nec) shouldEqual "[1,2,3]"
+
+    "right summon NonEmptySeq instances" in:
+      val nes = NonEmptySeq.of(1, 2, 3)
+
+      Loggable[NonEmptySeq[Int]].json(nes) shouldEqual "[1,2,3]"
+
+    "right summon Validated instances, rendering whichever side is present" in:
+      Loggable[Validated[String, Int]].key shouldEqual "string_int"
+      Loggable[Validated[String, Int]].json(Validated.valid(1)) shouldEqual "1"
+      Loggable[Validated[String, Int]].json(Validated.invalid("bad")) shouldEqual "\"bad\""
+
     "right summon NonEmptyVector instances" in:
       val nev = NonEmptyVector.of(1, 2, 3)
 

@@ -6,6 +6,7 @@ sealed trait LoggableValue:
   def key: ValueKey
   def plain: PlainString
   def json: JsonString
+  def absent: Boolean
 
   def withKey(updatedKey: ValueKey): LoggableValue
 
@@ -16,11 +17,14 @@ object LoggableValue:
   def deferred[A](key: ValueKey, value: A, loggable: Loggable[A]): LoggableValue = Deferred(key, value, loggable)
 
   private final case class Rendered(key: ValueKey, plain: PlainString, json: JsonString) extends LoggableValue:
+    override def absent: Boolean = json == JsonString.Null
+
     override def withKey(updatedKey: ValueKey): LoggableValue = copy(key = updatedKey)
 
   private final class Deferred[A](val key: ValueKey, value: A, loggable: Loggable[A]) extends LoggableValue:
     override lazy val plain: PlainString = loggable.plain(value)
     override lazy val json: JsonString   = loggable.json(value)
+    override def absent: Boolean         = loggable.isAbsent(value)
 
     override def withKey(updatedKey: ValueKey): LoggableValue = Deferred(updatedKey, value, loggable)
 
@@ -39,10 +43,15 @@ object LoggableValue:
 
   given [T, C[*]] => (L: Loggable[C[T]]) => Conversion[C[T], LoggableValue] = v => deferred(L.key, v, L)
 
-  def deduplicateKeys(values: Seq[LoggableValue], reserved: Set[ValueKey] = Set.empty): Seq[LoggableValue] =
-    val counts = values.groupBy(_.key).view.mapValues(_.size).toMap
+  private def collides(values: Seq[LoggableValue], reserved: Set[ValueKey]): Boolean =
+    if values.isEmpty then false
+    else if values.sizeIs == 1 then reserved.contains(values.head.key)
+    else
+      val seen = scala.collection.mutable.HashSet.empty[ValueKey]
+      values.exists(value => reserved.contains(value.key) || !seen.add(value.key))
 
-    if counts.size == values.size && !counts.keysIterator.exists(reserved.contains)
+  def deduplicateKeys(values: Seq[LoggableValue], reserved: Set[ValueKey] = Set.empty): Seq[LoggableValue] =
+    if !collides(values, reserved)
     then values
     else
       val taken = scala.collection.mutable.HashSet.from(values.iterator.map(_.key))
@@ -82,6 +91,9 @@ object LoggableValue:
       while taken.contains(Position.Key.suffixed(index)) do index += 1
 
       values :+ Position.asLogValue(position).withKey(Position.Key.suffixed(index))
+
+  def omitAbsent(values: Seq[LoggableValue]): Seq[LoggableValue] =
+    if values.exists(_.absent) then values.filterNot(_.absent) else values
 
   def mergeByKey(earlier: Seq[LoggableValue], later: Seq[LoggableValue]): Seq[LoggableValue] =
     if earlier.isEmpty then later

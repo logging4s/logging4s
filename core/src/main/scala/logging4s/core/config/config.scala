@@ -112,6 +112,8 @@ final case class LoggableEncodingConfig(
     includeSourcePosition: Boolean = true,
     mapAsObject: Boolean = true,
     includeValuesInMessage: Boolean = true,
+    omitAbsentValues: Boolean = false,
+    sumTypeDiscriminator: Option[String] = None,
 )
 
 object LoggableEncodingConfig:

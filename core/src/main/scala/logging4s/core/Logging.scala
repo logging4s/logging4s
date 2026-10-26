@@ -84,6 +84,18 @@ trait Logging[F[*]]:
   final inline def trace(inline message: String, error: Throwable, values: LoggableValue*)(using Position): F[Unit] =
     emit(Level.Trace, LogMessage.static(message), Some(error), values)
 
+  final inline def log(level: Level, inline message: String)(using Position): F[Unit] =
+    emit(level, LogMessage.static(message), None, Nil)
+
+  final inline def log(level: Level, inline message: String, error: Throwable)(using Position): F[Unit] =
+    emit(level, LogMessage.static(message), Some(error), Nil)
+
+  final inline def log(level: Level, inline message: String, values: LoggableValue*)(using Position): F[Unit] =
+    emit(level, LogMessage.static(message), None, values)
+
+  final inline def log(level: Level, inline message: String, error: Throwable, values: LoggableValue*)(using Position): F[Unit] =
+    emit(level, LogMessage.static(message), Some(error), values)
+
 object Logging:
 
   def apply[F[*]](using instance: Logging[F]): Logging[F] = instance
@@ -96,6 +108,22 @@ object Logging:
 
       override def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue])(using Position): F[Unit] =
         unit
+
+  def contextual[F[*]](underlying: Logging[F])(using local: LocalContext[F]): Logging[F] =
+    new:
+      override def withContext(context: LoggingContext): Logging[F] = contextual(underlying.withContext(context))
+      override def enabled(level: Level): Boolean                   = underlying.enabled(level)
+      override def unit: F[Unit]                                    = underlying.unit
+
+      override def emit(level: Level, message: String, cause: Option[Throwable], values: Seq[LoggableValue])(using Position): F[Unit] =
+        if !underlying.enabled(level)
+        then underlying.unit
+        else
+          local.use { context =>
+            if context.values.isEmpty
+            then underlying.emit(level, message, cause, values)
+            else underlying.withContext(context).emit(level, message, cause, values)
+          }
 
   def create[F[*]: Delay, S](using factory: LoggingFactory, S: ClassTag[S]): F[Logging[F]] =
     factory.create(S.runtimeClass.getName.stripSuffix("$"), LoggingContext.empty)

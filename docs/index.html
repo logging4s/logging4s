@@ -140,8 +140,8 @@
   <h2 id="start">Quick start</h2>
   <p>Pick a backend and an effect runtime (a JSON library is optional — <code>derives Loggable</code> needs none):</p>
   <pre><code>libraryDependencies ++= Seq(
-  "org.logging4s" %% "logging4s-cats"    % "5.0.0",
-  "org.logging4s" %% "logging4s-logback" % "5.0.0"
+  "org.logging4s" %% "logging4s-cats"    % "6.0.0",
+  "org.logging4s" %% "logging4s-logback" % "6.0.0"
 )</code></pre>
   <pre><code>import cats.effect.{IO, IOApp}
 
@@ -186,7 +186,9 @@ Loggable.deriving[User]       // key "user"     Loggable.deriving[User]("account
 enum Color derives Loggable:
   case Red, Green, Blue</code></pre>
   <p>
-    Recursive types derive too — trees, ASTs, mutually recursive products and recursive enums.
+    Recursive types derive too — trees, ASTs, mutually recursive products and recursive enums. With
+    <code>sumTypeDiscriminator = Some("type")</code> every variant leads with its name —
+    <code>{"type":"Card","last4":"4242"}</code> — so a log query can tell the variants apart.
   </p>
 
   <h3>Named tuples</h3>
@@ -229,6 +231,10 @@ val secret             = Loggable[String].redacted()   // always renders "***"</
     .rename(_.id, "account_id")          // custom key
     .unembed(_.address)                  // splice its fields into the parent object
     .derived</code></pre>
+  <p>
+    <code>MaskMode.Full</code> still reveals the length; for secrets use <code>MaskMode.Fixed("***")</code>, which
+    renders the same mask whatever the value.
+  </p>
 
   <h2 id="logging">Logging</h2>
   <p>
@@ -268,6 +274,29 @@ info"user created $id"</code></pre>
     <code>withContext</code> overrides an earlier one. Only duplicates within a single call are suffixed
     (<code>k</code>, <code>k_2</code>).
   </p>
+  <p>
+    An interpolated <code>Throwable</code> becomes the record's <strong>cause</strong>, so its stack trace is kept —
+    <code>error"payment failed $e"</code> is <code>log.error("payment failed", e)</code>. For a level known only at
+    runtime there is <code>log.log(level, "message", values*)</code>. Control characters inside values are escaped in
+    the message text, so a value can never forge a second line in a plain-text log.
+  </p>
+
+  <h3>Fiber-local context</h3>
+  <p>
+    To attach values to everything logged <em>while an effect runs</em> — a request id set by a middleware — without
+    threading a logger through every call, wrap the logger with <code>Logging.contextual</code> and scope the effect.
+    The context lives in the runtime's fiber-local storage: <code>IOLocal</code> for cats-effect,
+    <code>FiberRef</code> for ZIO, <code>Local</code> for Kyo.
+  </p>
+  <pre><code>val log = Logging.contextual(base)
+
+ZioLoggingContext.scoped(requestId.asLogValue("request_id")) {  // any ZIO[R, E, A]
+  handle(request)                                                // every record inside carries request_id
+}</code></pre>
+  <p class="muted">
+    A call-site value wins over the ambient context, which wins over the logger's own <code>withContext</code>. Nested
+    scopes add up, the previous context comes back when a scope ends, and a disabled level never reads the fiber-local.
+  </p>
 
   <h2 id="backends">Backends</h2>
   <p>
@@ -296,7 +325,8 @@ info"user created $id"</code></pre>
   <p>
     We never touch your <code>logback.xml</code> / <code>log4j2.xml</code>: values are only attached to the event and
     your encoder/layout decides what to render. <code>logging4s-logback</code> also ships an opt-in
-    <code>Logging4sEncoder</code> that writes the JSON itself (no logstash round-trip, no Jackson):
+    <code>Logging4sEncoder</code> that writes the JSON itself (no logstash round-trip, no Jackson). It also carries the
+    MDC and slf4j key-value pairs, and never writes a key twice:
   </p>
   <pre><code>&lt;encoder class="logging4s.logback.Logging4sEncoder"/&gt;</code></pre>
   <p>
@@ -307,7 +337,7 @@ info"user created $id"</code></pre>
   <pre><code>logging4s.console {
   level  = "info"    # off | error | warn | info | debug | trace
   format = "json"    # json | plain
-  color  = "auto"    # auto (TTY only) | on | off
+  color  = "auto"    # auto (terminal only, also on JDK 22+) | on | off
   stream = "stdout"  # stdout | stderr
   max-stack-trace-lines = -1
 
@@ -331,6 +361,8 @@ info"user created $id"</code></pre>
     <tr><td><code>plainValuesStyle</code></td><td><code>Arrow</code></td><td>value join: <code>k -> (v)</code> / <code>k=v</code> / <code>k: v</code> / <code>{k=v}</code></td></tr>
     <tr><td><code>includeSourcePosition</code></td><td><code>true</code></td><td>attach the call site as a <code>source</code> field (<code>"OrderService.scala:42"</code>)</td></tr>
     <tr><td><code>includeValuesInMessage</code></td><td><code>true</code></td><td>append the values to the message text; <code>false</code> keeps the message as bare static text and renders only the structured form</td></tr>
+    <tr><td><code>omitAbsentValues</code></td><td><code>false</code></td><td><code>true</code> drops <code>None</code> instead of rendering <code>null</code>, at the top level and inside derived products</td></tr>
+    <tr><td><code>sumTypeDiscriminator</code></td><td><code>None</code></td><td><code>Some("type")</code> makes a derived sum type's JSON lead with the variant name</td></tr>
   </table>
   <p class="muted">
     Default keys: scalars key by type name (<code>Loggable[Int]</code> → <code>int</code>), date/time use
@@ -341,7 +373,7 @@ info"user created $id"</code></pre>
 
   <h2 id="modules">Modules</h2>
   <p>Published for Scala 3 under <code>org.logging4s</code>:</p>
-  <pre><code>"org.logging4s" %% "logging4s-&lt;module&gt;" % "5.0.0"</code></pre>
+  <pre><code>"org.logging4s" %% "logging4s-&lt;module&gt;" % "6.0.0"</code></pre>
   <table>
     <tr><th>Kind</th><th>Module</th><th>Min. Scala</th><th>Notes</th></tr>
     <tr><td>core</td><td><code>logging4s-core</code></td><td>3.9 LTS</td><td>type classes + <code>Logging</code>; no backend dependency</td></tr>
@@ -349,9 +381,9 @@ info"user created $id"</code></pre>
     <tr><td><code>logging4s-log4j2</code></td><td>3.9 LTS</td><td>Log4j2 API; values as a <code>MapMessage</code></td></tr>
     <tr><td><code>logging4s-slf4j</code></td><td>3.9 LTS</td><td>bare slf4j-api 2.x; bring your own binding</td></tr>
     <tr><td><code>logging4s-console</code></td><td>3.9 LTS</td><td>standalone JSON/plain to stdout; HOCON-configured</td></tr>
-    <tr><td rowspan="4">runtime</td><td><code>logging4s-cats</code></td><td>3.9 LTS</td><td>cats-effect 3; plain via <code>cats.Show</code></td></tr>
-    <tr><td><code>logging4s-zio</code></td><td>3.9 LTS</td><td>zio.Task; plain via <code>zio.prelude.Debug</code></td></tr>
-    <tr><td><code>logging4s-kyo</code></td><td>3.9 LTS</td><td>kyo.Sync; plain via <code>kyo.Render</code></td></tr>
+    <tr><td rowspan="4">runtime</td><td><code>logging4s-cats</code></td><td>3.9 LTS</td><td>cats-effect 3; plain via <code>cats.Show</code>; context via <code>IOLocal</code></td></tr>
+    <tr><td><code>logging4s-zio</code></td><td>3.9 LTS</td><td>zio.Task and zio.UIO; plain via <code>zio.prelude.Debug</code>; context via <code>FiberRef</code></td></tr>
+    <tr><td><code>logging4s-kyo</code></td><td>3.9 LTS</td><td>kyo.Sync; plain via <code>kyo.Render</code>; context via <code>kyo.Local</code></td></tr>
     <tr><td><code>logging4s-rapid</code></td><td>3.9 LTS</td><td>rapid.Task</td></tr>
     <tr><td rowspan="11">json</td><td><code>logging4s-circe</code></td><td>3.9 LTS</td><td>io.circe.Encoder</td></tr>
     <tr><td><code>logging4s-jsoniter</code></td><td>3.9 LTS</td><td>jsoniter-scala JsonValueCodec</td></tr>
@@ -380,13 +412,17 @@ info"user created $id"</code></pre>
     In exchange, the split that 3.x had is gone: <code>logging4s-kyo</code> and <code>logging4s-rapid</code> used to be
     pinned to a newer Scala than everything else, and now sit on the same release as <code>core</code>.
   </p>
+  <p>
+    Every artifact is compiled with <code>-release 17</code>, so it runs on <strong>JDK 17 or later</strong>;
+    <code>logging4s-kyo</code> is the exception, below.
+  </p>
   <p class="muted">
     Within a major version, binary compatibility is checked by
     <a href="https://github.com/lightbend/mima">MiMa</a> on every build, and
     <code>versionScheme := "semver-spec"</code> describes what the artifacts promise.
   </p>
   <p class="muted">
-    <code>logging4s-kyo</code> depends on a kyo release candidate (<code>1.0.0-RC6</code>). Until kyo reaches
+    <code>logging4s-kyo</code> depends on a kyo release candidate (<code>1.0.0-RC7</code>). Until kyo reaches
     <code>1.0.0</code> final, that module sits outside the binary-compatibility promise the other artifacts make.
     Compiling it also needs <strong>JDK 25</strong> — kyo's <code>Frame</code> macro runs inside the compiler and its
     class files target Java 25, so this is a compile-time requirement, not just a runtime one.
@@ -437,6 +473,42 @@ info"user created $id"</code></pre>
     allocations outright — so read the orders of magnitude, not the nanoseconds.
   </p>
   <h2 id="migration">Migration</h2>
+  <h3>From 5.x to 6.0</h3>
+  <p>
+    Call sites compile unchanged. What moves is output in a few places where 5.x lost data or produced lines that could
+    be forged, plus some test-toolkit and SPI signatures.
+  </p>
+  <pre><code>- "org.logging4s" %% "logging4s-cats" % "5.0.0"
++ "org.logging4s" %% "logging4s-cats" % "6.0.0"</code></pre>
+  <ul>
+    <li><strong>An interpolated <code>Throwable</code> is the cause</strong> — <code>error"failed $e"</code> used to
+      attach <code>e</code> as a field and drop the stack trace. The record now gains <code>stack_trace</code> and the
+      <code>e</code> field is gone; pass <code>e.asLogValue("e")</code> to keep it as a value.</li>
+    <li><strong>Control characters in values are escaped in the message text</strong>, closing a log-forging hole in
+      plain-text logs. JSON fields are unchanged.</li>
+    <li><strong><code>RecordingLogging</code> behaves like a backend</strong> — <code>RecordedEvent.fields</code> holds
+      the merged, normalized values; <code>valueOf</code> no longer prefers the context over the call site, and keys
+      are normalized.</li>
+    <li><strong>Colliding <code>Map</code> keys are suffixed</strong> (<code>null</code>, <code>null_2</code>) instead
+      of written twice; <strong><code>Logging4sEncoder</code></strong> no longer writes an MDC key that a value or the
+      envelope already uses, and <code>LogstashEncoder</code> lines no longer carry
+      <code>"tags":["logging4s.values"]</code>.</li>
+    <li><strong>Console <code>color = "auto"</code></strong> stays plain for redirected output on JDK 22+.</li>
+    <li><strong>New members</strong> — two <code>LoggableEncodingConfig</code> fields (appended last),
+      <code>Loggable.isAbsent</code> (defaults to <code>false</code>), <code>MaskMode.Fixed</code>.
+      <code>logging4s-cats</code> now depends on <code>cats-effect</code> for <code>IOLocal</code>.</li>
+  </ul>
+  <p>New in 6.0:</p>
+  <ul>
+    <li><strong>Fiber-local context</strong> via <code>Logging.contextual</code> and <code>IOLocal</code> /
+      <code>FiberRef</code> / kyo <code>Local</code>.</li>
+    <li><strong><code>log(level, …)</code></strong> for a level chosen at runtime.</li>
+    <li><strong><code>omitAbsentValues</code></strong> and <strong><code>sumTypeDiscriminator</code></strong>.</li>
+    <li><strong><code>MaskMode.Fixed</code></strong>, and instances for cats <code>NonEmptyChain</code> /
+      <code>NonEmptySeq</code> / <code>Validated</code>, zio <code>NonEmptyChunk</code>, plus
+      <code>Delay[UIO]</code>.</li>
+  </ul>
+
   <h3>From 4.x to 5.0</h3>
   <p>
     5.0 is a correctness release. Everyday call sites are unchanged; what moves is the output in cases where 4.x

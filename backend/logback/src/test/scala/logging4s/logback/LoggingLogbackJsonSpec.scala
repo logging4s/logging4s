@@ -159,7 +159,7 @@ class LoggingLogbackJsonSpec extends AnyWordSpec, Matchers:
 
       json.get("session").asText() shouldEqual "abc"
 
-    "attach an interpolated throwable as a structured field" in:
+    "pass an interpolated throwable to logback as the cause, so its stack trace is kept" in:
       val json = captureJson("LoggingLogbackJsonSpec-throwable") { logging =>
         given Logging[Try] = logging
         val boom           = new IllegalStateException("kaboom")
@@ -167,9 +167,17 @@ class LoggingLogbackJsonSpec extends AnyWordSpec, Matchers:
         val _ = error"request failed $boom"
       }
 
-      json.get("boom").isObject shouldEqual true
-      json.get("boom").get("class").asText() shouldEqual "java.lang.IllegalStateException"
-      json.get("boom").get("message").asText() shouldEqual "kaboom"
+      json.has("boom") shouldEqual false
+      json.get("stack_trace").asText() should include("java.lang.IllegalStateException: kaboom")
+      json.get("message").asText() shouldEqual "request failed: class=java.lang.IllegalStateException, message=kaboom"
+
+    "not leak the internal values marker into LogstashEncoder's tags" in:
+      val json = captureJson("LoggingLogbackJsonSpec-tags") { logging =>
+        logging.info("tagged", LoggableValue(ValueKey("n"), PlainString("1"), JsonString("1")))
+      }
+
+      json.has("tags") shouldEqual false
+      json.get("n").asInt() shouldEqual 1
 
     "attach the call site as a source field" in:
       val json = captureJson("LoggingLogbackJsonSpec-source") { logging =>

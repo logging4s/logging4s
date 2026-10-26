@@ -7,12 +7,13 @@ import scala.util.Try
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers
 
-import org.slf4j.LoggerFactory
+import org.slf4j.{LoggerFactory, MDC}
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.OutputStreamAppender
 import ch.qos.logback.classic.{Level, Logger as LogbackLogger}
 import com.fasterxml.jackson.databind.{JsonNode, ObjectMapper}
 
+import logging4s.core.conformance.JsonRecord
 import logging4s.core.{JsonString, Logging, LoggableValue, PlainString, ValueKey}
 
 import LogbackInstances.given
@@ -24,6 +25,9 @@ class Logging4sEncoderSpec extends AnyWordSpec, Matchers:
   private val mapper = new ObjectMapper()
 
   private def capture(loggerName: String)(run: Logging[Try] => Unit): JsonNode =
+    mapper.readTree(captureLine(loggerName)(run))
+
+  private def captureLine(loggerName: String)(run: Logging[Try] => Unit): String =
     LoggingLogbackJsonSpec.appenderLock.synchronized {
       val logbackLogger = LoggerFactory.getLogger(loggerName).asInstanceOf[LogbackLogger]
       logbackLogger.setLevel(Level.TRACE)
@@ -49,10 +53,47 @@ class Logging4sEncoderSpec extends AnyWordSpec, Matchers:
         appender.stop()
         logbackLogger.detachAppender(appender)
 
-      mapper.readTree(out.toString("UTF-8"))
+      out.toString("UTF-8")
     }
 
+  private def withMdc[A](entries: (String, String)*)(run: => A): A =
+    entries.foreach((key, value) => MDC.put(key, value))
+    try run
+    finally entries.foreach((key, _) => MDC.remove(key))
+
   "Logging4sEncoder" must:
+    "let a logging4s value win over an MDC entry with the same key, so the line carries that key once" in:
+      val traceId = LoggableValue(ValueKey("trace_id"), PlainString("from-value"), JsonString("\"from-value\""))
+
+      val record = JsonRecord.parse(captureLine("Logging4sEncoderSpec-mdc-own") { logging =>
+        withMdc("trace_id" -> "from-mdc")(logging.info("handled", traceId))
+      })
+
+      record.count("trace_id") shouldEqual 1
+      record("trace_id") shouldEqual Some("\"from-value\"")
+
+    "suffix an MDC entry named after an envelope field instead of emitting that field twice" in:
+      val record = JsonRecord.parse(captureLine("Logging4sEncoderSpec-mdc-envelope") { logging =>
+        withMdc("level" -> "custom", "message" -> "shadow")(logging.info("handled"))
+      })
+
+      record.count("level") shouldEqual 1
+      record.count("message") shouldEqual 1
+      record("level_2") shouldEqual Some("\"custom\"")
+      record("message_2") shouldEqual Some("\"shadow\"")
+      record.message shouldEqual "handled"
+
+    "skip a suffix that a logging4s value already uses" in:
+      val levelTwo = LoggableValue(ValueKey("level_2"), PlainString("mine"), JsonString("\"mine\""))
+
+      val record = JsonRecord.parse(captureLine("Logging4sEncoderSpec-mdc-suffix") { logging =>
+        withMdc("level" -> "custom")(logging.info("handled", levelTwo))
+      })
+
+      record.count("level_2") shouldEqual 1
+      record("level_2") shouldEqual Some("\"mine\"")
+      record("level_3") shouldEqual Some("\"custom\"")
+
     "render structured values as real nested JSON, read from the event markers" in:
       val user = LoggableValue(ValueKey("user"), PlainString("id=1, name=John"), JsonString("""{"id":1,"name":"John"}"""))
 

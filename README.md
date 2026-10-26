@@ -49,8 +49,8 @@ Pick a backend and an effect runtime (a JSON library is optional — `derives Lo
 
 ```scala
 libraryDependencies ++= Seq(
-  "org.logging4s" %% "logging4s-cats"    % "5.0.0",
-  "org.logging4s" %% "logging4s-logback" % "5.0.0"
+  "org.logging4s" %% "logging4s-cats"    % "6.0.0",
+  "org.logging4s" %% "logging4s-logback" % "6.0.0"
 )
 ```
 
@@ -112,7 +112,10 @@ enum Color derives Loggable:
 ```
 
 Products render as objects keyed by field name (run through `keyNameStyle`); sum types delegate to the selected
-variant, and a parameterless case renders as its label.
+variant, and a parameterless case renders as its label. Set `sumTypeDiscriminator = Some("type")` in the
+[configuration](#configuration) to have every variant lead with its name — `{"type":"Card","last4":"4242"}` — so a
+log query can tell `Card` from `Cash`. A variant that already has a field of that name gets the first free suffix
+(`type_2`) for the tag instead, and a nested hierarchy is tagged once, with the leaf's name.
 
 ### Named tuples
 
@@ -198,6 +201,10 @@ object Account:
 
 `unembed` flattens the JSON only; the plain rendering keeps the field nested.
 
+`MaskMode.Full` replaces every character, so it still reveals the length; for secrets prefer
+`MaskMode.Fixed("***")`, which renders the same mask whatever the value. `KeepLast(n)` / `KeepFirst(n)` show part of
+the value, for card numbers and the like.
+
 ## Logging
 
 `Logging.create` returns `F[Logging[F]]`; the log methods return `F[Unit]`. There are `createTry` / `createEither` /
@@ -245,8 +252,52 @@ to `INFO` evaluates neither the interpolated expressions nor their JSON. The che
 *constructed*, so a log action built once under a disabled level and run later stays suppressed; build and run it in the
 same place (the usual `for` comprehension) and this never comes up.
 
+A hole whose static type is a `Throwable` becomes the record's **cause** rather than a value, so the backend gets
+the exception and keeps its stack trace — `error"payment failed $e"` is `log.error("payment failed", e)`. With
+several, the last one is the cause and the earlier ones stay values.
+
+When the level is only known at runtime, `log(level, …)` takes it as the first argument, with the same four shapes
+as the per-level methods and the same static-message check:
+
+```scala
+log.log(if attempt > 3 then Level.Warn else Level.Debug, "retrying", attempt.asLogValue("attempt"))
+```
+
 Value-building helpers (`asLogValue`, `mapPlain`, `withKey`) are in `logging4s.core.syntax.loggable.*`;
 `logging4s.core.syntax.all.*` brings both.
+
+Control characters inside values — newlines, carriage returns, terminal escape sequences, the Unicode line
+separators — are escaped when values are rendered into the message text (`\n`, `\r`, `\u001b`), and so is the
+cause's message, which often carries user input. A value can therefore never forge a second line in a plain-text log.
+The structured JSON channel was already safe; your own static message text is left as written.
+
+### Fiber-local context
+
+`withContext` attaches values to one logger. To attach them to everything logged *while an effect runs* — a request
+id set by a middleware, say — without threading a logger through every call, wrap the logger with
+`Logging.contextual` and scope the effect. The context lives in the runtime's own fiber-local storage, so it follows
+the effect across threads and into the fibers it forks:
+
+```scala
+import logging4s.zio.ZioInstances.given
+
+val log = Logging.contextual(base)                              // reads the ambient context on every record
+
+ZioLoggingContext.scoped(requestId.asLogValue("request_id")) {  // any ZIO[R, E, A]
+  handle(request)                                                // every record inside carries request_id
+}
+```
+
+| Runtime | Storage | Scope an effect with |
+| --- | --- | --- |
+| cats-effect | `IOLocal` | `IOLocalContext.make` gives a `LocalContext[IO]`; `local.scoped(values*)(io)` |
+| ZIO | one global `FiberRef` | `ZioLoggingContext.scoped(values*)(zio)`; `given LocalContext[Task]` / `[UIO]` |
+| Kyo | one global `Local` | `KyoLoggingContext.scoped(values*)(v)` for any `A < S`; `given LocalContext[KIO]` |
+
+A call-site value still wins over the ambient context, and the ambient context wins over the logger's own
+`withContext`, since it is scoped closer to the call. Nested scopes add to each other, and the previous context comes
+back when a scope ends, however it ends. A disabled level does not read the fiber-local at all. For any other effect,
+`LocalContext[F]` is two methods — `use` and `scoped` — to implement over whatever fiber-local your runtime has.
 
 ## Backends
 
@@ -321,7 +372,9 @@ at it in `logback.xml`:
 
 It reads logging4s values, the MDC and the event's own key-value pairs, so plain
 `logger.atInfo().addKeyValue("request_id", id).log("event")` from elsewhere in your application keeps its structured
-field. It does **not** understand third-party logstash markers — if a dependency attaches those, stay on
+field. A line never carries a key twice: an MDC or key-value entry with the same key as a logging4s value is dropped,
+since the value is the more specific of the two, and one named after an envelope field (`level`, `message`, …) gets
+the first free suffix (`level_2`) rather than shadowing it. It does **not** understand third-party logstash markers — if a dependency attaches those, stay on
 `LogstashEncoder`.
 
 If you'd rather keep `LogstashEncoder` (or any other), nothing changes — the structured values are attached both ways.
@@ -336,7 +389,7 @@ it in your `application.conf`, or with `LOGGING4S_CONSOLE_*` environment variabl
 logging4s.console {
   level  = "info"    # off | error | warn | info | debug | trace
   format = "json"    # json | plain
-  color  = "auto"    # auto (TTY only) | on | off   — plain format
+  color  = "auto"    # auto (terminal only) | on | off   — plain format
   stream = "stdout"  # stdout | stderr
   max-stack-trace-lines = -1   # -1 keeps the full trace
 
@@ -348,6 +401,10 @@ logging4s.console {
   }
 }
 ```
+
+`auto` colors only when stdout is an interactive terminal. On JDK 22 and later `System.console()` also exists when the
+output is redirected, so `auto` additionally asks the console whether it is a terminal — piped and container logs
+stay free of ANSI codes.
 
 `off` silences a logger completely, at the root or per logger. It is a *threshold*, not a level — `Level` still has
 exactly the five levels you can log at, and the console config holds a `Threshold` (`Threshold.Off` or
@@ -385,6 +442,8 @@ given LoggableEncodingConfig =
 | `plainValuesStyle` | `Arrow` | value-list join: `Arrow` `k -> (v)`, `Logfmt` `k=v`, `Colon` `k: v`, `CurlyMap` `{k=v}`, … |
 | `includeSourcePosition` | `true` | attach the call site as a `source` field (`"OrderService.scala:42"`) |
 | `includeValuesInMessage` | `true` | append the values to the message text; `false` keeps the message as bare static text and renders only the structured form |
+| `omitAbsentValues` | `false` | `true` drops an absent value (`None`, `Some(None)`, kyo `Absent`) instead of rendering `null` — both a top-level value and a field of a derived product. Absence is decided without rendering the value |
+| `sumTypeDiscriminator` | `None` | `Some("type")` makes a derived sum type's JSON lead with the variant name: `{"type":"Card",…}` |
 
 `keyNameStyle` and `plainValuesStyle` are applied by the backend at aggregation time; `jsonTupleAsArray`,
 `plainTupleStyle` and `mapAsObject` are baked into compound `Loggable`s when they are summoned. A single top-level
@@ -399,7 +458,7 @@ Default keys: scalars key by type name (`Loggable[Int]` → `int`), date/time ty
 Published for Scala 3 under `org.logging4s`:
 
 ```scala
-"org.logging4s" %% "logging4s-<module>" % "5.0.0"
+"org.logging4s" %% "logging4s-<module>" % "6.0.0"
 ```
 
 | | Module | Min. Scala | Notes |
@@ -409,9 +468,9 @@ Published for Scala 3 under `org.logging4s`:
 | | `logging4s-log4j2` | 3.9 LTS | Log4j2 API; values as a `MapMessage` |
 | | `logging4s-slf4j` | 3.9 LTS | bare slf4j-api 2.x `addKeyValue`; bring your own binding |
 | | `logging4s-console` | 3.9 LTS | standalone JSON/plain to stdout/stderr; HOCON-configured; no logging framework needed |
-| runtime | `logging4s-cats` | 3.9 LTS | `cats-effect 3`; plain via `cats.Show` |
-| | `logging4s-zio` | 3.9 LTS | `zio.Task`; plain via `zio.prelude.Debug` |
-| | `logging4s-kyo` | 3.9 LTS | `kyo.Sync`; plain via `kyo.Render` |
+| runtime | `logging4s-cats` | 3.9 LTS | `cats-effect 3`; plain via `cats.Show`; context via `IOLocal` |
+| | `logging4s-zio` | 3.9 LTS | `zio.Task` and `zio.UIO`; plain via `zio.prelude.Debug`; context via `FiberRef` |
+| | `logging4s-kyo` | 3.9 LTS | `kyo.Sync`; plain via `kyo.Render`; context via `kyo.Local` |
 | | `logging4s-rapid` | 3.9 LTS | `rapid.Task` |
 | json | `logging4s-circe` | 3.9 LTS | `io.circe.Encoder` |
 | | `logging4s-jsoniter` | 3.9 LTS | `jsoniter-scala JsonValueCodec` |
@@ -432,11 +491,14 @@ cannot be consumed from a `3.3 LTS` project** — `3.0.x` is the line to stay on
 In exchange, the split that 3.x had is gone: `logging4s-kyo` and `logging4s-rapid` used to be pinned to a newer Scala
 than everything else, and now sit on the same release as `core`.
 
+Every artifact is compiled with `-release 17`, so it runs on **JDK 17 or later** and the compiler checks each call
+against the JDK 17 API rather than whichever JDK built it. `logging4s-kyo` is the exception, below.
+
 Within a major version, binary compatibility is checked by
 [MiMa](https://github.com/lightbend/mima) on every build, and `versionScheme := "semver-spec"` describes what the
 artifacts promise.
 
-`logging4s-kyo` depends on a kyo release candidate (`1.0.0-RC6`). Until kyo reaches `1.0.0` final, that module sits
+`logging4s-kyo` depends on a kyo release candidate (`1.0.0-RC7`). Until kyo reaches `1.0.0` final, that module sits
 outside the binary-compatibility promise the other artifacts make. Compiling it also needs **JDK 25** — kyo's `Frame`
 macro runs inside the compiler and its class files target Java 25, so this is a compile-time requirement, not just a
 runtime one.
@@ -510,6 +572,63 @@ when the level is off (another ~2×). With the level *on*, the guard costs nothi
 > the ordering are the signal; the enabled rows are ordinary measured work.
 
 ## Migration
+
+### From 5.x to 6.0
+
+Call sites compile unchanged. What moves is output in a few places where 5.x lost data or produced lines that could
+be forged, plus some test-toolkit and SPI signatures.
+
+```diff
+- "org.logging4s" %% "logging4s-cats" % "5.0.0"
++ "org.logging4s" %% "logging4s-cats" % "6.0.0"
+```
+
+**1. An interpolated `Throwable` is the cause.** `error"payment failed $e"` used to attach `e` as a field
+`{"class":…,"message":…}` and pass no cause, so the stack trace was lost. The exception now reaches the backend as the
+cause: the record gains `stack_trace`, the message text gains `class=…, message=…`, and the `e` field is gone. To keep
+an exception as a plain value, pass `e.asLogValue("e")`.
+
+**2. Control characters in values are escaped in the message text.** A value containing a newline used to produce a
+second, fake line in plain-text logs (PatternLayout, console `plain`). It now renders as `\n`; carriage returns,
+terminal escapes and the Unicode line separators are escaped too, and so is the cause's message. JSON fields are
+unchanged.
+
+**3. `RecordingLogging` behaves like a backend.** `RecordedEvent` gains `fields` — the merged, key-normalized,
+deduplicated values a backend would emit — and `keys` / `valueOf` read from it. That fixes two 5.x bugs: `valueOf`
+returned the *context* value where a call-site value overrides it, and keys were not normalized (`userId` where every
+backend writes `user_id`). `values` and `context` are still there, now normalized, and `RecordingLogging.apply` takes
+the `LoggableEncodingConfig` (the default `given` applies).
+
+**4. `Map` keys that collide are suffixed.** Two keys with the same JSON form, such as `None` and `Some("null")`, used
+to produce `{"null":1,"null":2}`. The second is now `null_2`.
+
+**5. `Logging4sEncoder` writes each key once.** An MDC or key-value entry that shares a key with a logging4s value is
+dropped, and one named after an envelope field is suffixed; 5.x wrote both. And with the stock `LogstashEncoder`, a
+line no longer carries `"tags":["logging4s.values"]` — the name of the internal marker leaked into the tags field.
+
+**6. Console `color = "auto"` stays plain when the output is not a terminal on JDK 22+**, where `System.console()` is
+no longer `null` for redirected output.
+
+**7. New members.** `LoggableEncodingConfig` gains `omitAbsentValues` and `sumTypeDiscriminator` (appended last, so
+positional construction of the existing fields still compiles), `Loggable` gains `isAbsent` (defaulting to `false`, so
+hand-written instances compile unchanged), and `MaskMode` gains `Fixed` — an exhaustive `match` on `MaskMode` needs
+the new case.
+
+**8. `logging4s-cats` depends on `cats-effect`, not only `cats-effect-kernel`**, because the fiber-local context is
+built on `IOLocal`.
+
+### New in 6.0 (optional — pick these up while you're here)
+
+- **Fiber-local context** — `Logging.contextual` plus `IOLocal` / `FiberRef` / kyo `Local` scoping; see
+  [Fiber-local context](#fiber-local-context) and the runnable
+  [`ContextualLoggingExample`](examples/src/main/scala/logging4s/examples/ContextualLoggingExample.scala), where two
+  parallel requests keep their own `request_id`.
+- **`log(level, …)`** for a level chosen at runtime.
+- **`omitAbsentValues = true`** drops `None` instead of rendering `null`.
+- **`sumTypeDiscriminator = Some("type")`** tags derived sum types with the variant name.
+- **`MaskMode.Fixed(mask)`** masks without revealing the length.
+- **More instances**: cats `NonEmptyChain`, `NonEmptySeq`, `Validated`; zio `NonEmptyChunk`; and `Delay[UIO]`, so a
+  ZIO service can log in `UIO` without `.orDie`.
 
 ### From 4.x to 5.0
 

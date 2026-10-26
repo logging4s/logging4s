@@ -1,6 +1,6 @@
 package logging4s.cats
 
-import cats.data.{Chain, Ior, NonEmptyList, NonEmptyMap, NonEmptySet, NonEmptyVector}
+import cats.data.{Chain, Ior, NonEmptyChain, NonEmptyList, NonEmptyMap, NonEmptySeq, NonEmptySet, NonEmptyVector, Validated}
 
 import logging4s.core.config.LoggableEncodingConfig
 import logging4s.core.{JsonString, Loggable, PlainString, ValueKey}
@@ -9,6 +9,15 @@ trait DataInstances:
 
   given NonEmptyListLoggable: [T: Loggable] => Loggable[NonEmptyList[T]] =
     Loggable[List[T]].contramap(_.toList)
+
+  given NonEmptyChainLoggable: [T: Loggable] => Loggable[NonEmptyChain[T]] =
+    Loggable[List[T]].contramap(_.toChain.toList)
+
+  given NonEmptySeqLoggable: [T: Loggable] => Loggable[NonEmptySeq[T]] =
+    Loggable[Seq[T]].contramap(_.toSeq)
+
+  given ValidatedLoggable: [E: Loggable, A: Loggable] => Loggable[Validated[E, A]] =
+    Loggable[Either[E, A]].contramap(_.toEither)
 
   given NonEmptyVectorLoggable: [T: Loggable] => Loggable[NonEmptyVector[T]] =
     Loggable[Vector[T]].contramap(_.toVector)

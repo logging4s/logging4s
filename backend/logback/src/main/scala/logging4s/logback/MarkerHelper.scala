@@ -13,13 +13,11 @@ private[logback] object MarkerHelper:
     appendRaw(value.key.value, value.json.value)
 
   def fromLoggable(values: Seq[LoggableValue]): LogstashMarker =
-    val deduplicated = LoggableValue.deduplicateKeys(values)
-
-    val logstash = deduplicated match
+    val logstash = values match
       case head +: tail =>
         tail.foldLeft(fromLoggable(head)) { (marker, value) =>
           marker.and[LogstashMarker](fromLoggable(value))
         }
       case _            => empty()
 
-    logstash.and[LogstashMarker](LoggableValuesMarker(deduplicated))
+    logstash.and[LogstashMarker](LoggableValuesMarker(values))

@@ -17,23 +17,28 @@ trait Loggable[A]:
   def json(a: A): JsonString
   def plain(a: A): PlainString
 
+  def isAbsent(a: A): Boolean = false
+
   final def rename(updatedKey: String): Loggable[A] =
     new:
       override val key: ValueKey            = ValueKey(updatedKey)
       override def json(a: A): JsonString   = self.json(a)
       override def plain(a: A): PlainString = self.plain(a)
+      override def isAbsent(a: A): Boolean  = self.isAbsent(a)
 
   final def contramap[B](f: B => A, keyName: String = key.value): Loggable[B] =
     new:
       override val key: ValueKey            = ValueKey(keyName)
       override def json(b: B): JsonString   = self.json(f(b))
       override def plain(b: B): PlainString = self.plain(f(b))
+      override def isAbsent(b: B): Boolean  = self.isAbsent(f(b))
 
   final def mapPlain(f: String => String): Loggable[A] =
     new:
       override val key: ValueKey            = self.key
       override def json(a: A): JsonString   = self.json(a)
       override def plain(a: A): PlainString = PlainString(f(self.plain(a).value))
+      override def isAbsent(a: A): Boolean  = self.isAbsent(a)
 
   final def redacted(mask: String = "***"): Loggable[A] =
     new:
@@ -157,6 +162,7 @@ object Loggable extends LoggableLowPriority:
       override val key: ValueKey                    = L.key
       override def plain(t: Option[T]): PlainString = t.fold(PlainString(""))(L.plain)
       override def json(t: Option[T]): JsonString   = t.fold(JsonString.Null)(L.json)
+      override def isAbsent(t: Option[T]): Boolean  = t.forall(L.isAbsent)
 
   given LoggableEither: [A, B] => (AL: Loggable[A], BL: Loggable[B]) => Loggable[Either[A, B]] =
     new:
@@ -234,10 +240,23 @@ object Loggable extends LoggableLowPriority:
         then encoded
         else JsonString.quoted(encoded).value
 
+      private def uniqueKey(quoted: String, taken: scala.collection.mutable.HashSet[String]): String =
+        if taken.add(quoted)
+        then quoted
+        else
+          val stem  = quoted.substring(0, quoted.length - 1)
+          var index = 2
+
+          while !taken.add(s"${stem}_$index\"") do index += 1
+
+          s"${stem}_$index\""
+
       override def json(a: Map[K, V]): JsonString =
-        if cfg.mapAsObject
-        then JsonString(a.iterator.map((k, v) => s"${objectKey(k)}:${VL.json(v).value}").mkString("{", ",", "}"))
-        else JsonString.array(a.toSeq.map(entry.json)*)
+        if !cfg.mapAsObject
+        then JsonString.array(a.toSeq.map(entry.json)*)
+        else
+          val taken = scala.collection.mutable.HashSet.empty[String]
+          JsonString(a.iterator.map((k, v) => s"${uniqueKey(objectKey(k), taken)}:${VL.json(v).value}").mkString("{", ",", "}"))
 
 private[core] trait LoggableLowPriority:
 

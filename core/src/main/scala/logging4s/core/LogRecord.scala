@@ -18,8 +18,9 @@ object LogRecord:
       values: Seq[LoggableValue],
       position: Position,
       reserved: Set[ValueKey] = Set.empty,
-  )(using LoggableEncodingConfig): LogRecord =
+  )(using cfg: LoggableEncodingConfig): LogRecord =
     val merged  = LoggableValue.mergeByKey(context, LoggableValue.normalizeKeys(values))
-    val deduped = LoggableValue.deduplicateKeys(merged, reserved)
+    val present = if cfg.omitAbsentValues then LoggableValue.omitAbsent(merged) else merged
+    val deduped = LoggableValue.deduplicateKeys(present, reserved)
 
     LogRecord(deduped, LoggableValue.withSource(deduped, position))

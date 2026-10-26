@@ -121,6 +121,9 @@ final class ProductLoggable[A](
     }
   end specs
 
+  private def visible(spec: FieldSpec, value: Any): Boolean =
+    !spec.policy.hidden && !(cfg.omitAbsentValues && spec.loggable.isAbsent(value))
+
   override def json(a: A): JsonString =
     if specs.isEmpty
     then JsonString.quoted(typeName)
@@ -139,7 +142,7 @@ final class ProductLoggable[A](
 
       specs.foreach { spec =>
         val v = fields.next()
-        if !spec.policy.hidden
+        if visible(spec, v)
         then
           spec.policy.mask match
             case Some(mode) => entry(spec.quotedKey, JsonString.quoted(mode(spec.loggable.plain(v).value)).value)
@@ -170,7 +173,7 @@ final class ProductLoggable[A](
 
       specs.foreach { spec =>
         val v = fields.next()
-        if !spec.policy.hidden
+        if visible(spec, v)
         then
           spec.policy.mask match
             case Some(mode) => rendered += spec.key -> mode(spec.loggable.plain(v).value)
@@ -179,11 +182,41 @@ final class ProductLoggable[A](
 
       PlainString(cfg.plainValuesStyle.renderFields(rendered.result()))
 
-final class SumLoggable[A](typeName: String, codecs: => List[Loggable[Any]], mirror: Mirror.SumOf[A]) extends Loggable[A]:
+final class SumLoggable[A](
+    typeName: String,
+    labels: List[String],
+    codecs: => List[Loggable[Any]],
+    mirror: Mirror.SumOf[A],
+    cfg: LoggableEncodingConfig,
+) extends Loggable[A]:
+
   private lazy val variants: Vector[Loggable[Any]] = codecs.toVector
 
-  override val key: ValueKey            = ValueKey(decapitalize(typeName))
-  override def json(a: A): JsonString   = variants(mirror.ordinal(a)).json(a)
+  private lazy val tags: Vector[Option[String]] =
+    cfg.sumTypeDiscriminator match
+      case None        => Vector.fill(variants.size)(None)
+      case Some(field) =>
+        variants.lazyZip(labels).map { (variant, label) =>
+          variant match
+            case _: SumLoggable[?] => None
+            case _                 =>
+              val taken = nestedNames(variant).getOrElse(Nil).toSet
+              val name  = if !taken.contains(field) then field else Iterator.from(2).map(i => s"${field}_$i").find(!taken.contains(_)).get
+              Some(s"${JsonString.quoted(name).value}:${JsonString.quoted(label).value}")
+        }
+
+  override val key: ValueKey = ValueKey(decapitalize(typeName))
+
+  override def json(a: A): JsonString =
+    val ordinal = mirror.ordinal(a)
+    val raw     = variants(ordinal).json(a).value
+
+    tags(ordinal) match
+      case Some(tag) if raw.length >= 2 && raw.charAt(0) == '{' && raw.charAt(raw.length - 1) == '}' =>
+        if raw.length == 2 then JsonString(s"{$tag}") else JsonString(s"{$tag,${raw.substring(1)}")
+      case _                                                                                         =>
+        JsonString(raw)
+
   override def plain(a: A): PlainString = variants(mirror.ordinal(a)).plain(a)
 
 final class EncodersLoggable[A](typeName: String, enc: JsonEncoder[A], plainEnc: PlainEncoder[A]) extends Loggable[A]:

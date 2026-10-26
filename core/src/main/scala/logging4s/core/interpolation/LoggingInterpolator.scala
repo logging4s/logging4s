@@ -59,7 +59,12 @@ private[core] object LoggingInterpolator:
       case Varargs(exprs) => exprs
       case _              => report.errorAndAbort("the logging interpolator requires inline arguments")
 
-    val values = Expr.ofSeq(argExprs.map(toLoggableValue))
+    val causeIndex = argExprs.lastIndexWhere(_.asTerm.tpe.widen <:< TypeRepr.of[Throwable])
+
+    val cause: Expr[Option[Throwable]] =
+      if causeIndex < 0 then '{ None } else '{ Some(${ argExprs(causeIndex).asExprOf[Throwable] }) }
+
+    val values = Expr.ofSeq(argExprs.zipWithIndex.collect { case (arg, index) if index != causeIndex => toLoggableValue(arg) })
 
     val levelExpr = level match
       case "info"  => '{ Level.Info }
@@ -73,7 +78,7 @@ private[core] object LoggingInterpolator:
 
     '{
       val logger = $logging
-      if logger.enabled($levelExpr) then logger.emit($levelExpr, $message, None, $values)(using $position) else logger.unit
+      if logger.enabled($levelExpr) then logger.emit($levelExpr, $message, $cause, $values)(using $position) else logger.unit
     }
 
   private def joinParts(parts: Seq[String]): String =

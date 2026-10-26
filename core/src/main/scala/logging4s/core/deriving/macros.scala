@@ -28,7 +28,7 @@ private[core] object macros:
   inline def derived[A](using m: Mirror.Of[A]): Loggable[A] =
     inline m match
       case p: Mirror.ProductOf[A] => deriveProduct[A](using p, summonInline[LoggableEncodingConfig])
-      case s: Mirror.SumOf[A]     => deriveSum[A](using s)
+      case s: Mirror.SumOf[A]     => deriveSum[A](using s, summonInline[LoggableEncodingConfig])
 
   inline def fromEncoders[A](using enc: JsonEncoder[A]): Loggable[A] = fromEncoders[A](typeName[A])
 
@@ -56,8 +56,8 @@ private[core] object macros:
       cfg,
     )
 
-  inline def deriveSum[A](using s: Mirror.SumOf[A]): Loggable[A] =
-    SumLoggable[A](constValue[s.MirroredLabel], summonOrDeriveAll[s.MirroredElemTypes], s)
+  inline def deriveSum[A](using s: Mirror.SumOf[A], cfg: LoggableEncodingConfig): Loggable[A] =
+    SumLoggable[A](constValue[s.MirroredLabel], elemLabels[s.MirroredElemLabels], summonOrDeriveAll[s.MirroredElemTypes], s, cfg)
 
   private inline def elemLabels[T <: Tuple]: List[String] =
     inline erasedValue[T] match

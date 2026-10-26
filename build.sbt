@@ -1,7 +1,7 @@
 import Dependencies.Versions
 import com.typesafe.tools.mima.plugin.MimaKeys.mimaPreviousArtifacts
 
-lazy val binaryCompatibleWith = Set("5.0.0")
+lazy val binaryCompatibleWith = Set.empty[String]
 
 lazy val noPublishSettings = Seq(
   publish / skip        := true,
@@ -13,7 +13,7 @@ lazy val commonSettings = Seq(
   organizationName       := "Logging4s",
   homepage               := Some(uri("https://logging4s.org/")),
   description            := "Structural logging for Scala 3 for any backend, runtime and json library",
-  version                := "5.0.0",
+  version                := "6.0.0",
   versionScheme          := Some("semver-spec"),
   scalaVersion           := Versions.scalaLTS,
   parallelExecution      := true,
@@ -50,6 +50,8 @@ lazy val commonSettings = Seq(
     "-Wunused:all",
     "-Wvalue-discard",
     "-Wnonunit-statement",
+    "-release",
+    "17",
   ),
   Test / scalacOptions ~= (_.filterNot(Set("-Wvalue-discard", "-Wnonunit-statement"))),
   credentials += Credentials(Path.userHome / ".sbt" / "sonatype_credentials"),
@@ -119,7 +121,7 @@ lazy val cats = project
   .settings(
     name := "logging4s-cats",
     libraryDependencies ++= Seq(
-      Dependencies.Cats.catsEffect3Kernel,
+      Dependencies.Cats.catsEffect3,
       Dependencies.Cats.catsEffect3Testing,
     )
   )
