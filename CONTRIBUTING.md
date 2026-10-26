@@ -63,6 +63,11 @@ See `backend/console` for the smallest reference implementation — it wraps a `
 A runtime needs a `given Delay[F]` — one method, `delay[A](a: => A): F[A]`. See `runtime/cats` for the
 reference implementation.
 
+If the runtime has fiber-local storage, also give it a `LocalContext[F]` — `use` reads the current
+`LoggingContext`, `scoped` runs an effect with more context and restores the previous one however the effect
+ends — so `Logging.contextual` works for it. `runtime/cats` (`IOLocal`), `runtime/zio` (`FiberRef`) and
+`runtime/kyo` (`Local`) are the three shapes to copy.
+
 ## Adding a new JSON codec bridge
 
 A bridge needs a `given JsonEncoder[A]`:

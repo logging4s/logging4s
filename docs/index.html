@@ -293,9 +293,17 @@ info"user created $id"</code></pre>
 ZioLoggingContext.scoped(requestId.asLogValue("request_id")) {  // any ZIO[R, E, A]
   handle(request)                                                // every record inside carries request_id
 }</code></pre>
+  <table>
+    <tr><th>Runtime</th><th>Storage</th><th>Scope an effect with</th></tr>
+    <tr><td>cats-effect</td><td><code>IOLocal</code></td><td><code>IOLocalContext.make</code> gives a <code>LocalContext[IO]</code>; <code>local.scoped(values*)(io)</code></td></tr>
+    <tr><td>ZIO</td><td>one global <code>FiberRef</code></td><td><code>ZioLoggingContext.scoped(values*)(zio)</code>; <code>given LocalContext[Task]</code> / <code>[UIO]</code></td></tr>
+    <tr><td>Kyo</td><td>one global <code>Local</code></td><td><code>KyoLoggingContext.scoped(values*)(v)</code> for any <code>A &lt; S</code>; <code>given LocalContext[KIO]</code></td></tr>
+  </table>
   <p class="muted">
     A call-site value wins over the ambient context, which wins over the logger's own <code>withContext</code>. Nested
     scopes add up, the previous context comes back when a scope ends, and a disabled level never reads the fiber-local.
+    The runnable <a href="https://github.com/logging4s/logging4s/blob/main/examples/src/main/scala/logging4s/examples/ContextualLoggingExample.scala"><code>ContextualLoggingExample</code></a>
+    runs two requests in parallel, each keeping its own <code>request_id</code>.
   </p>
 
   <h2 id="backends">Backends</h2>
